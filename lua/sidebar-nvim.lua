@@ -15,7 +15,10 @@ vim.g.sidebar_nvim_width = vim.g.sidebar_nvim_width or 50
 
 vim.g.sidebar_nvim_update_interval = vim.g.sidebar_nvim_update_interval or 1000
 
-vim.g.sidebar_nvim_sections = vim.g.sidebar_nvim_sections or {"datetime"}
+vim.g.sidebar_nvim_sections = vim.g.sidebar_nvim_sections or {
+  "datetime",
+  "git-status",
+}
 
 local M = {}
 

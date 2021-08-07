@@ -10,17 +10,22 @@ local M = {}
 
 local function expand_section_lines(section_lines)
   if type(section_lines) == "string" then
-    return {section_lines}
+    return vim.split(section_lines, "\n")
   end
 
   return section_lines
 end
 
-local function build_section_title(title, section)
-  return "# "..title
+local function build_section_title(section)
+  local icon = "#"
+  if section.icon ~= nil then
+    icon = section.icon
+  end
+
+  return icon.." "..section.title
 end
 
-local function build_section_separator(title, section)
+local function build_section_separator(section)
   return "-----"
 end
 
@@ -28,17 +33,18 @@ local function get_lines_and_hl(sections_data)
   lines = {}
   hl = {}
 
-  for section_name, section_lines in pairs(sections_data) do
-    local section_title = build_section_title(section_name, section_lines)
+  for _, data in pairs(sections_data) do
+    local section_title = build_section_title(data.section)
 
     table.insert(hl, {'SidebarNvimSectionTitle', #lines, 0, #section_title})
 
     table.insert(lines, section_title)
-    for _, line in ipairs(expand_section_lines(section_lines)) do
+    table.insert(lines, "")
+    for _, line in ipairs(expand_section_lines(data.lines)) do
       table.insert(lines, line)
     end
 
-    local separator = build_section_separator(title, section_lines)
+    local separator = build_section_separator(data.section)
 
     table.insert(hl, {"SidebarNvimSectionSeperator", #lines+1, 0, #separator})
     table.insert(lines, "")
