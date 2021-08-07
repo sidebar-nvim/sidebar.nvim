@@ -1,31 +1,54 @@
 local api = vim.api
 local luv = vim.loop
 
-local renderer = require'sidebar-nvim.renderer'
-local utils = require'sidebar-nvim.utils'
-local view = require'sidebar-nvim.view'
-local events = require'sidebar-nvim.events'
+local renderer = require('sidebar-nvim.renderer')
+local view = require('sidebar-nvim.view')
+local events = require('sidebar-nvim.events')
+local updater = require('sidebar-nvim.updater')
 
 local first_init_done = false
 
 local M = {}
 
-M.State = {
-  sections = {},
-  loaded = false,
-}
+M.State = {}
 
-function M.init(with_open, with_reload)
-  if with_open then
+M.timer = nil
+
+local function _redraw()
+  if vim.v.exiting ~= vim.NIL then return end
+
+  if view.win_open() then
+    renderer.draw(updater.sections_data)
+  end
+end
+
+local function loop()
+  updater.update()
+  _redraw()
+end
+
+local function _start_timer(should_delay)
+  M.timer = luv.new_timer()
+
+  local delay = 100
+  if should_delay then
+    delay = vim.g.sidebar_nvim_update_interval
+  end
+
+  -- wait `delay`ms and then repeats every `vim.g.sidebar_nvim_update_interval`ms
+  M.timer:start(delay, vim.g.sidebar_nvim_update_interval, vim.schedule_wrap(function()
+    loop()
+  end))
+end
+
+function M.init(should_open)
+  if should_open then
     M.open()
-  elseif view.win_open() then
-    M.refresh()
   end
 
-  if with_reload then
-    M.redraw()
-    M.State.loaded = true
-  end
+  _redraw()
+
+  _start_timer(false)
 
   if not first_init_done then
     events._dispatch_ready()
@@ -33,8 +56,13 @@ function M.init(with_open, with_reload)
   end
 end
 
-function M.redraw()
-  renderer.draw(M.State, true)
+function M.update()
+  M.timer:stop()
+  M.timer = nil
+
+  loop()
+
+  _start_timer(true)
 end
 
 local function get_section_at_line(line)
@@ -55,35 +83,13 @@ function M.get_section_at_cursor()
   end
 end
 
--- this variable is used to bufferize the refresh actions
--- so only one happens every second at most
-local refreshing = false
-
-function M.refresh()
-  if refreshing or vim.v.exiting ~= vim.NIL then return end
-  refreshing = true
-
-  -- TODO: update sections
-
-  if view.win_open() then
-    renderer.draw(M.State, true)
-  else
-    M.State.loaded = false
-  end
-
-  vim.defer_fn(function() refreshing = false end, 1000)
-end
-
 function M.open()
   view.open()
-
-  renderer.draw(M.State, not M.State.loaded)
-  M.State.loaded = true
 end
 
 function M.toggle_help()
   view.toggle_help()
-  return M.refresh()
+  return _redraw()
 end
 
 return M

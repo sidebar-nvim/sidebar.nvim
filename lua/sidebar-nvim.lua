@@ -1,11 +1,21 @@
-local luv = vim.loop
 local lib = require('sidebar-nvim.lib')
 local colors = require('sidebar-nvim.colors')
 local renderer = require('sidebar-nvim.renderer')
-local utils = require('sidebar-nvim.utils')
 local view = require('sidebar-nvim.view')
+local updater = require('sidebar-nvim.updater')
 
 local api = vim.api
+
+vim.g.sidebar_nvim_auto_open = vim.g.sidebar_nvim_auto_open or 0
+vim.g.sidebar_nvim_auto_resize = vim.g.sidebar_nvim_auto_resize or 0
+vim.g.sidebar_nvim_disable_default_keybindings = vim.g.sidebar_nvim_disable_default_keybindings or 0
+vim.g.sidebar_nvim_bindings = vim.g.sidebar_nvim_bindings or nil
+vim.g.sidebar_nvim_side = vim.g.sidebar_nvim_side or 'left'
+vim.g.sidebar_nvim_width = vim.g.sidebar_nvim_width or 50
+
+vim.g.sidebar_nvim_update_interval = vim.g.sidebar_nvim_update_interval or 1000
+
+vim.g.sidebar_nvim_sections = vim.g.sidebar_nvim_sections or {"datetime"}
 
 local M = {}
 
@@ -13,12 +23,7 @@ function M.toggle()
   if view.win_open() then
     view.close()
   else
-    if vim.g.sidebar_nvim_follow == 1 then
-      M.find_file(true)
-    end
-    if not view.win_open() then
-      lib.open()
-    end
+    lib.open()
   end
 end
 
@@ -51,7 +56,7 @@ end
 
 local keypress_funcs = {
   toggle_help = lib.toggle_help,
-  refresh = lib.refresh,
+  update = lib.update,
   close = function() M.close() end,
 }
 
@@ -64,18 +69,14 @@ function M.on_keypress(mode)
   end
 end
 
-function M.refresh()
-  lib.refresh()
+function M.update()
+  lib.update()
 end
 
 function M.on_enter()
-  local bufnr = api.nvim_get_current_buf()
-  local bufname = api.nvim_buf_get_name(bufnr)
-  local buftype = api.nvim_buf_get_option(bufnr, 'filetype')
-  local ft_ignore = vim.g.sidebar_nvim_auto_ignore_ft or {}
-
-  local should_open = vim.g.sidebar_nvim_auto_open == 1 and not vim.tbl_contains(ft_ignore, buftype)
-  lib.init(should_open, should_open)
+  local should_open = vim.g.sidebar_nvim_auto_open == 1
+  updater.setup()
+  lib.init(should_open)
 end
 
 function M.resize(size)

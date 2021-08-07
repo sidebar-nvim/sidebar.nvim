@@ -14,22 +14,42 @@ function M.draw_help()
   return help_lines, help_hl
 end
 
-function M.draw(state, reload)
+local function expand_section_lines(section_lines)
+  if type(section_lines) == "string" then
+    return {section_lines}
+  end
+
+  return section_lines
+end
+
+local function get_lines_and_hl(sections_data)
+  if view.is_help_ui() then
+    return M.draw_help()
+  end
+
+  lines = {}
+  hl = {}
+
+  for section, section_lines in pairs(sections_data) do
+    table.insert(lines, "# "..section)
+    for _, line in ipairs(expand_section_lines(section_lines)) do
+      table.insert(lines, line)
+    end
+  end
+
+  return lines, hl
+end
+
+function M.draw(sections_data)
   if not api.nvim_buf_is_loaded(view.View.bufnr) then return end
+
   local cursor
   if view.win_open() then
     cursor = api.nvim_win_get_cursor(view.get_winnr())
   end
-  if reload then
-    lines = {}
-    hl = {}
-  end
 
-  lines = {"test"}
+  lines, hl = get_lines_and_hl(sections_data)
 
-  if view.is_help_ui() then
-    lines, hl = M.draw_help()
-  end
   api.nvim_buf_set_option(view.View.bufnr, 'modifiable', true)
   api.nvim_buf_set_lines(view.View.bufnr, 0, -1, false, lines)
   M.render_hl(view.View.bufnr)
