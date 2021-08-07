@@ -5,8 +5,8 @@ local status = "<no changes>"
 local status_tmp = ""
 
 local function async_update()
-  local stdout = luv.new_pipe()
-  local stderr = luv.new_pipe()
+  local stdout = luv.new_pipe(false)
+  local stderr = luv.new_pipe(false)
 
   local handle, pid
   handle, _  = luv.spawn("git", {
