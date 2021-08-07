@@ -63,10 +63,11 @@ local keypress_funcs = {
 }
 
 function M.on_keypress(mode)
-  local section = lib.get_section_at_cursor()
+  -- TODO: get_section_at_cursor not implemented
+  --local section = lib.get_section_at_cursor()
 
   if keypress_funcs[mode] then
-    return keypress_funcs[mode](section)
+    return keypress_funcs[mode]()
   end
 end
 
