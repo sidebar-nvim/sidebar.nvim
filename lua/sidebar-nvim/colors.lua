@@ -29,45 +29,13 @@ local function get_hl_groups()
   local colors = get_colors()
 
   return {
-    IndentMarker = { fg = '#8094b4' },
-    Symlink = { gui = 'bold', fg = colors.cyan },
-    FolderIcon = { fg = '#8094b4' },
-    RootFolder = { fg = colors.purple },
-
-    ExecFile = { gui = 'bold', fg = colors.green },
-    SpecialFile = { gui = 'bold,underline', fg = colors.yellow },
-    ImageFile = { gui = 'bold', fg = colors.purple },
-    OpenedFile = { gui = 'bold', fg = colors.green },
-
-    GitDirty = { fg = colors.dark_red },
-    GitDeleted = { fg = colors.dark_red },
-    GitStaged = { fg = colors.green },
-    GitMerge = { fg = colors.orange },
-    GitRenamed = { fg = colors.purple },
-    GitNew = { fg = colors.yellow },
-
-    WindowPicker = { gui = "bold", fg = "#ededed", bg = "#4493c8" }
+    SectionTitle = { fg = colors.purple },
   }
 end
 
 local function get_links()
   return {
-    FolderName = 'Directory',
-    EmptyFolderName = 'Directory',
-    OpenedFolderName = 'Directory',
-    Normal = 'Normal',
-    EndOfBuffer = 'EndOfBuffer',
-    CursorLine = 'CursorLine',
-    VertSplit = 'VertSplit',
-    CursorColumn = 'CursorColumn',
-    Popup = 'Normal',
-    GitIgnored = 'Comment',
-    LspDiagnosticsError = "LspDiagnosticsDefaultError",
-    LspDiagnosticsWarning = "LspDiagnosticsDefaultWarning",
-    LspDiagnosticsInformation = "LspDiagnosticsDefaultInformation",
-    LspDiagnosticsHint = "LspDiagnosticsDefaultHint",
-    StatusLine = "StatusLine",
-    StatusLineNC = "StatusLineNC",
+    SectionSeperator = 'Comment',
   }
 end
 

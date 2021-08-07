@@ -8,12 +8,6 @@ local namespace_id = api.nvim_create_namespace('SidebarNvimHighlights')
 
 local M = {}
 
-function M.draw_help()
-  local help_lines = {'HELP'}
-  local help_hl = {{'SidebarNvimRootFolder', 0, 0, #help_lines[1]}}
-  return help_lines, help_hl
-end
-
 local function expand_section_lines(section_lines)
   if type(section_lines) == "string" then
     return {section_lines}
@@ -22,19 +16,34 @@ local function expand_section_lines(section_lines)
   return section_lines
 end
 
-local function get_lines_and_hl(sections_data)
-  if view.is_help_ui() then
-    return M.draw_help()
-  end
+local function build_section_title(title, section)
+  return "# "..title
+end
 
+local function build_section_separator(title, section)
+  return "-----"
+end
+
+local function get_lines_and_hl(sections_data)
   lines = {}
   hl = {}
 
-  for section, section_lines in pairs(sections_data) do
-    table.insert(lines, "# "..section)
+  for section_name, section_lines in pairs(sections_data) do
+    local section_title = build_section_title(section_name, section_lines)
+
+    table.insert(hl, {'SidebarNvimSectionTitle', #lines, 0, #section_title})
+
+    table.insert(lines, section_title)
     for _, line in ipairs(expand_section_lines(section_lines)) do
       table.insert(lines, line)
     end
+
+    local separator = build_section_separator(title, section_lines)
+
+    table.insert(hl, {"SidebarNvimSectionSeperator", #lines+1, 0, #separator})
+    table.insert(lines, "")
+    table.insert(lines, separator)
+    table.insert(lines, "")
   end
 
   return lines, hl

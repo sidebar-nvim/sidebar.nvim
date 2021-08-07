@@ -65,31 +65,8 @@ function M.update()
   _start_timer(true)
 end
 
-local function get_section_at_line(line)
-  -- TODO: not implemented
-  return nil
-end
-
-function M.get_section_at_cursor()
-  local cursor = api.nvim_win_get_cursor(view.get_winnr())
-  local line = cursor[1]
-  if view.is_help_ui() then
-    local help_lines, _ = renderer.draw_help()
-    local help_text = get_section_at_line(line+1)(help_lines)
-    return {name = help_text}
-  else
-    -- TODO: sections!
-    return nil
-  end
-end
-
 function M.open()
   view.open()
-end
-
-function M.toggle_help()
-  view.toggle_help()
-  return _redraw()
 end
 
 return M

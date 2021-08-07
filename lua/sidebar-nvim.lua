@@ -55,13 +55,11 @@ function M.tab_change()
 end
 
 local keypress_funcs = {
-  toggle_help = lib.toggle_help,
   update = lib.update,
   close = function() M.close() end,
 }
 
 function M.on_keypress(mode)
-  if view.is_help_ui() and mode ~= 'toggle_help' then return end
   local section = lib.get_section_at_cursor()
 
   if keypress_funcs[mode] then

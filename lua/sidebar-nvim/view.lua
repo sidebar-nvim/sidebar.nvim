@@ -22,15 +22,6 @@ M.View = {
     foldcolumn = '0',
     cursorcolumn = false,
     colorcolumn = '0',
-    winhl = table.concat({
-      'EndOfBuffer:SidebarNvimEndOfBuffer',
-      'Normal:SidebarNvimNormal',
-      'CursorLine:SidebarNvimCursorLine',
-      'VertSplit:SidebarNvimVertSplit',
-      'SignColumn:SidebarNvimNormal',
-      'StatusLine:SidebarNvimStatusLine',
-      'StatusLineNC:SidebarNvimStatuslineNC'
-    }, ',')
   },
   bufopts = {
     { name = 'swapfile', val = false },
@@ -41,7 +32,6 @@ M.View = {
   },
   bindings = {
     { key = "q",                            cb = utils.sidebar_nvim_callback("close") },
-    { key = "g?",                           cb = utils.sidebar_nvim_callback("toggle_help") }
   }
 }
 
@@ -226,7 +216,7 @@ function M.open(options)
   a.nvim_command("vertical resize "..get_width())
   local winnr = a.nvim_get_current_win()
   local tabpage = a.nvim_get_current_tabpage()
-  M.View.tabpages[tabpage] = vim.tbl_extend("force", M.View.tabpages[tabpage] or {help = false}, {winnr = winnr})
+  M.View.tabpages[tabpage] = vim.tbl_extend("force", M.View.tabpages[tabpage] or {}, {winnr = winnr})
   vim.cmd("buffer "..M.View.bufnr)
   for k, v in pairs(M.View.winopts) do
     set_local(k, v)
@@ -260,22 +250,6 @@ function M.get_winnr(tabpage)
   if tabinfo ~= nil then
     return tabinfo.winnr
   end
-end
-
---- Checks if sidebar-nvim is displaying the help ui within the tabpage specified
----@param tabpage number: (optional) the number of the chosen tabpage. Defaults to current tabpage.
----@return number
-function M.is_help_ui(tabpage)
-  tabpage = tabpage or a.nvim_get_current_tabpage()
-  local tabinfo = M.View.tabpages[tabpage]
-  if tabinfo ~= nil then
-    return tabinfo.help
-  end
-end
-
-function M.toggle_help(tabpage)
-  tabpage = tabpage or a.nvim_get_current_tabpage()
-  M.View.tabpages[tabpage].help = not M.View.tabpages[tabpage].help
 end
 
 return M
