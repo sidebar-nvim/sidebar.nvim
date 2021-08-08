@@ -1,4 +1,4 @@
-local severityLevel = {"Error", "Warning", "Info", "Hint"}
+local severity_level = {"Error", "Warning", "Info", "Hint"}
 local icons = {"", "", "", ""}
 local use_icons = true
 
@@ -13,10 +13,10 @@ local function get_diagnostics(ctx)
     for _, diag in pairs(diagnostics) do
         message = diag["message"]
         local severity = diag["severity"]
-        local level = severityLevel[severity]
+        local level = severity_level[severity]
         local icon = icons[severity]
 
-        if useIcons then
+        if use_icons then
           table.insert(messages, icon .. " " .. message:gsub("\n", " "))
         else
           table.insert(messages, level .. " " .. message:gsub("\n", " "))
