@@ -1,5 +1,5 @@
 local view = require('sidebar-nvim.view')
-local maxWidth = view.View.width - 10
+local max_width = view.View.width - 10
 local severityLevel = {"Error", "Warning", "Info", "Hint"}
 local icons = {"", "", "", ""}
 local useIcons = true
@@ -15,8 +15,8 @@ local function get_diagnostics()
         local level = severityLevel[severity]
         local icon = icons[severity]
 
-        if message:len() > maxWidth then
-          message = message:sub(1, maxWidth) .. "..."
+        if message:len() > max_width then
+          message = message:sub(1, max_width) .. "..."
         end
 
         if useIcons then

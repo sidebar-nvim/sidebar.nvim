@@ -2,8 +2,20 @@ local utils = require("sidebar-nvim.utils")
 local luv = vim.loop
 
 local status = "<no changes>"
+local hl = {}
 
 local status_tmp = ""
+local hl_tmp = {}
+
+local function build_hl()
+  hl_tmp = {}
+
+  for i, _ in ipairs(vim.split(status, '\n')) do
+    table.insert(hl_tmp, { 'SidebarNvimSectionKeyword', i, 0, 3 })
+  end
+
+  hl = hl_tmp
+end
 
 local function async_update()
   local stdout = luv.new_pipe(false)
@@ -21,6 +33,8 @@ local function async_update()
     else
       status = status_tmp
     end
+
+    build_hl()
 
     luv.read_stop(stdout)
     luv.read_stop(stderr)
@@ -48,6 +62,9 @@ return {
   icon = "📄",
   draw = function()
     async_update()
-    return status
+    return {
+      lines = status,
+      hl = hl,
+    }
   end,
 }

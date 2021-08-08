@@ -36,6 +36,7 @@ end
 local function get_links()
   return {
     SectionSeperator = 'Comment',
+    SectionKeyword = 'Keyword',
   }
 end
 
