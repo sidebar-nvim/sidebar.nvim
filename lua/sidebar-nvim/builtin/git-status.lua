@@ -1,7 +1,7 @@
 local utils = require("sidebar-nvim.utils")
 local luv = vim.loop
 
-local status = "<no changes>"
+local status = {}
 local hl = {}
 
 local status_tmp = ""
@@ -10,8 +10,8 @@ local hl_tmp = {}
 local function build_hl()
   hl_tmp = {}
 
-  for i, _ in ipairs(vim.split(status, '\n')) do
-    table.insert(hl_tmp, { 'SidebarNvimSectionKeyword', i, 0, 3 })
+  for i, _ in ipairs(status) do
+    table.insert(hl_tmp, { 'SidebarNvimSectionKeyword', i, 0, 1 })
   end
 
   hl = hl_tmp
@@ -32,7 +32,13 @@ local function async_update()
       status = "<no changes>"
       hl = {}
     else
-      status = status_tmp
+      status = {}
+      for _, line in ipairs(vim.split(status_tmp, '\n')) do
+        striped_line = line:match("^%s*(.-)%s*$")
+        line_status = striped_line:sub(0, 1)
+        line_filename = striped_line:sub(2, -1):match("^%s*(.-)%s*$")
+        table.insert(status, line_status .. " " .. line_filename)
+      end
       build_hl()
     end
 
