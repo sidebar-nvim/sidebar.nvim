@@ -5,7 +5,7 @@ local icons = {"", "", "", ""}
 local useIcons = true
 
 local function get_diagnostics()
-    local messages = ""
+    local messages = {}
     local current_buf = vim.api.nvim_get_current_buf()
     local filename = vim.api.nvim_buf_get_name(current_buf)
     diagnostics = vim.lsp.diagnostic.get(current_buf - 1)
@@ -15,17 +15,13 @@ local function get_diagnostics()
         local level = severityLevel[severity]
         local icon = icons[severity]
 
-        if message:len() > maxWidth then
-          message = message:sub(1, maxWidth) .. "..."
-        end
-
         if useIcons then
-          messages = messages .. "\n" .. icon .. " " .. message:gsub("\n", " ")
+          table.insert(messages, icon .. " " .. message:gsub("\n", " "))
         else
-          messages = messages .. "\n" .. level .. " " .. message:gsub("\n", " ")
+          table.insert(messages, level .. " " .. message:gsub("\n", " "))
         end
     end
-    if messages ~= "" then return messages else return "<no diagnostics>" end
+    if messages ~= {} then return messages else return "<no diagnostics>" end
 end
 
 return {
