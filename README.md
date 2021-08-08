@@ -144,6 +144,11 @@ local section = {
 
 ```
 
+## TODO
+
+- [ ] Sections custom mappings - allow sections to bind custom key mappings
+- [ ] Section options - allow sections to receive options during startup
+
 ## References
 
 We based most of the code from the awesome work of @kyazdani42 in [nvim-tree](https://github.com/kyazdani42/nvim-tree.lua)
