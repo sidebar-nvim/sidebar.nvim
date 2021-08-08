@@ -5,6 +5,7 @@ local renderer = require('sidebar-nvim.renderer')
 local view = require('sidebar-nvim.view')
 local events = require('sidebar-nvim.events')
 local updater = require('sidebar-nvim.updater')
+local config = require('sidebar-nvim.config')
 
 local first_init_done = false
 
@@ -32,20 +33,16 @@ local function _start_timer(should_delay)
 
   local delay = 100
   if should_delay then
-    delay = vim.g.sidebar_nvim_update_interval
+    delay = config.update_interval
   end
 
-  -- wait `delay`ms and then repeats every `vim.g.sidebar_nvim_update_interval`ms
-  M.timer:start(delay, vim.g.sidebar_nvim_update_interval, vim.schedule_wrap(function()
+  -- wait `delay`ms and then repeats every `config.update_interval`ms
+  M.timer:start(delay, config.update_interval, vim.schedule_wrap(function()
     loop()
   end))
 end
 
-function M.init(should_open)
-  if should_open then
-    M.open()
-  end
-
+function M.init()
   _redraw()
 
   _start_timer(false)
@@ -68,8 +65,18 @@ function M.update()
   _start_timer(true)
 end
 
-function M.open()
-  view.open()
+function M.open(opts)
+  view.open(opts or { focus = false })
+end
+
+function M.destroy()
+  view.close()
+
+  M.timer:stop()
+  M.timer:close()
+  M.timer = nil
+
+  view._wipe_rogue_buffer()
 end
 
 return M

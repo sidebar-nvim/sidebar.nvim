@@ -1,4 +1,5 @@
 local utils = require("sidebar-nvim.utils")
+local config = require("sidebar-nvim.config")
 
 local a = vim.api
 
@@ -39,7 +40,7 @@ M.View = {
 ---@return integer|nil
 local function find_rogue_buffer()
   for _, v in ipairs(a.nvim_list_bufs()) do
-    if vim.fn.bufname(v) == "SidebarNvim" then
+    if string.match(vim.fn.bufname(v), "^SidebarNvim_.*") then
       return v
     end
   end
@@ -71,16 +72,22 @@ function M._wipe_rogue_buffer()
   end
 end
 
+local function generate_buffer_name()
+  return "SidebarNvim_"..math.random(1000000)
+end
+
 -- set user options and create tree buffer (should never be wiped)
 function M.setup()
-  M.View.side = vim.g.sidebar_nvim_side or M.View.side
-  M.View.width = vim.g.sidebar_nvim_width or M.View.width
+  M.View.side = config.side or M.View.side
+  M.View.width = config.width or M.View.width
 
   M.View.bufnr = a.nvim_create_buf(false, false)
 
-  if not pcall(a.nvim_buf_set_name, M.View.bufnr, 'SidebarNvim') then
+  local buffer_name = generate_buffer_name()
+
+  if not pcall(a.nvim_buf_set_name, M.View.bufnr, buffer_name) then
     M._wipe_rogue_buffer()
-    a.nvim_buf_set_name(M.View.bufnr, 'SidebarNvim')
+    a.nvim_buf_set_name(M.View.bufnr, buffer_name)
   end
 
   for _, opt in ipairs(M.View.bufopts) do
@@ -89,8 +96,8 @@ function M.setup()
 
   vim.cmd("au! BufWinEnter * lua require('sidebar-nvim.view')._prevent_buffer_override()")
 
-  local user_mappings = vim.g.sidebar_nvim_bindings or {}
-  if vim.g.sidebar_nvim_disable_default_keybindings == 1 then
+  local user_mappings = config.bindings or {}
+  if config.disable_default_keybindings == 1 then
     M.View.bindings = user_mappings
   else
     local result = vim.fn.extend(M.View.bindings, user_mappings)
@@ -176,7 +183,7 @@ local function get_width()
 end
 
 function M.resize()
-  if vim.g.sidebar_nvim_auto_resize == 0 or not a.nvim_win_is_valid(M.get_winnr()) then
+  if not a.nvim_win_is_valid(M.get_winnr()) then
     return
   end
 
@@ -221,7 +228,7 @@ function M.open(options)
   for k, v in pairs(M.View.winopts) do
     set_local(k, v)
   end
-  vim.cmd ":wincmd ="
+  vim.cmd(":wincmd =")
   if not options.focus then
     vim.cmd("wincmd p")
   end

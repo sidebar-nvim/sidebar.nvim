@@ -21,7 +21,7 @@ local function async_update()
   local stdout = luv.new_pipe(false)
   local stderr = luv.new_pipe(false)
 
-  local handle, pid
+  local handle
   handle, _  = luv.spawn("git", {
     args = {"status", "--porcelain"},
     stdio = {nil, stdout, stderr},
@@ -76,4 +76,10 @@ return {
       hl = hl,
     }
   end,
+  highlights = {
+    -- { MyHLGroup = { gui=<color>, fg=<color>, bg=<color> } }
+    groups = {},
+    -- { MyHLGroupLink = <string> }
+    links = {},
+  },
 }
