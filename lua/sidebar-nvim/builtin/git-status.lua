@@ -30,11 +30,12 @@ local function async_update()
 
     if status_tmp == "" then
       status = "<no changes>"
+      hl = {}
     else
       status = status_tmp
+      build_hl()
     end
 
-    build_hl()
 
     luv.read_stop(stdout)
     luv.read_stop(stderr)
