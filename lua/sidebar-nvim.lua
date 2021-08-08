@@ -18,7 +18,7 @@ vim.g.sidebar_nvim_update_interval = vim.g.sidebar_nvim_update_interval or 1000
 vim.g.sidebar_nvim_sections = vim.g.sidebar_nvim_sections or {
   "datetime",
   "git-status",
-  "diagnostics",
+  "lsp-diagnostics",
 }
 
 local M = {}
