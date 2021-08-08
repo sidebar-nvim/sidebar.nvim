@@ -1,4 +1,5 @@
 local utils = require("sidebar-nvim.utils")
+local view = require("sidebar-nvim.view")
 
 
 local M = {}
@@ -39,11 +40,15 @@ function M.update()
 
   M.sections_data = {}
 
+  local draw_ctx = {
+    width = view.View.width,
+  }
+
   for name, section_data in pairs(vim.g.sidebar_nvim_sections) do
     local section = resolve_section(name, section_data)
 
     if section ~= nil then
-      local data = { lines = section.draw(), section = section }
+      local data = { lines = section.draw(draw_ctx), section = section }
       table.insert(M.sections_data, data)
     end
   end
