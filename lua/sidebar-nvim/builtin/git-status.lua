@@ -39,7 +39,9 @@ local function async_update()
 
     luv.read_stop(stdout)
     luv.read_stop(stderr)
-    luv.close(handle)
+    stdout:close()
+    stderr:close()
+    handle:close()
   end)
 
   status_tmp = ""
