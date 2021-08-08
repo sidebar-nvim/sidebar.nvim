@@ -10,7 +10,6 @@ au SessionLoadPost * lua require'sidebar-nvim'._session_post()
 au VimLeavePre * lua require'sidebar-nvim'._vim_leave()
 augroup end
 
-command! SidebarNvimSetup lua require'sidebar-nvim'.setup()
 command! SidebarNvimOpen lua require'sidebar-nvim'.open()
 command! SidebarNvimClose lua require'sidebar-nvim'.close()
 command! SidebarNvimToggle lua require'sidebar-nvim'.toggle()

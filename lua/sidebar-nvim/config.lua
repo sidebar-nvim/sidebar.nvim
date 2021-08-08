@@ -1,7 +1,6 @@
 
 local M = {}
 
-M.auto_open = 0
 M.disable_default_keybindings = 0
 M.bindings = nil
 M.side = "left"
@@ -14,7 +13,5 @@ M.sections = {
   "git-status",
   "diagnostics",
 }
-
-M.with_session = 0
 
 return M
