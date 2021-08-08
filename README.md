@@ -2,6 +2,8 @@
 
 A generic and module lua sidebar inspired by [lualine](https://github.com/hoob3rt/lualine.nvim)
 
+Development status: Alpha - bugs are expected
+
 ## Quick start
 
 ```lua
