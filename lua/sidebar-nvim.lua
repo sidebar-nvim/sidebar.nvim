@@ -3,25 +3,42 @@ local colors = require('sidebar-nvim.colors')
 local renderer = require('sidebar-nvim.renderer')
 local view = require('sidebar-nvim.view')
 local updater = require('sidebar-nvim.updater')
+local config = require("sidebar-nvim.config")
 
 local api = vim.api
 
-vim.g.sidebar_nvim_auto_open = vim.g.sidebar_nvim_auto_open or 0
-vim.g.sidebar_nvim_auto_resize = vim.g.sidebar_nvim_auto_resize or 0
-vim.g.sidebar_nvim_disable_default_keybindings = vim.g.sidebar_nvim_disable_default_keybindings or 0
-vim.g.sidebar_nvim_bindings = vim.g.sidebar_nvim_bindings or nil
-vim.g.sidebar_nvim_side = vim.g.sidebar_nvim_side or 'left'
-vim.g.sidebar_nvim_width = vim.g.sidebar_nvim_width or 50
-
-vim.g.sidebar_nvim_update_interval = vim.g.sidebar_nvim_update_interval or 1000
-
-vim.g.sidebar_nvim_sections = vim.g.sidebar_nvim_sections or {
-  "datetime",
-  "git-status",
-  "diagnostics",
-}
-
 local M = {}
+
+local open_after_session = false
+
+function M.setup(opts)
+  opts = opts or {}
+
+  for key, value in pairs(opts) do
+    config[key] = value
+  end
+
+  view._wipe_rogue_buffer()
+
+  colors.setup()
+  view.setup()
+
+  updater.setup()
+  lib.init()
+end
+
+function M._session_post()
+  view._wipe_rogue_buffer()
+
+  if open_after_session then
+    open_after_session = false
+    M._internal_open()
+  end
+end
+
+function M._vim_leave()
+  lib.destroy()
+end
 
 function M.toggle()
   if view.win_open() then
@@ -38,12 +55,19 @@ function M.close()
   end
 end
 
-function M.open()
+function M._internal_open(opts)
   if not view.win_open() then
     lib.open()
-  else
-    lib.set_target_win()
   end
+end
+
+function M.open()
+  open_after_session = true
+
+  -- open with whatever finishes first, this timeout or session post au
+  vim.defer_fn(function()
+    M._internal_open()
+  end, 200)
 end
 
 function M.tab_change()
@@ -74,12 +98,6 @@ end
 
 function M.update()
   lib.update()
-end
-
-function M.on_enter()
-  local should_open = vim.g.sidebar_nvim_auto_open == 1
-  updater.setup()
-  lib.init(should_open)
 end
 
 function M.resize(size)
@@ -119,9 +137,7 @@ function M.place_cursor_on_section()
   api.nvim_win_set_cursor(0, {cursor[1], idx})
 end
 
-view.setup()
-colors.setup()
-vim.defer_fn(M.on_enter, 1)
+
 
 
 return M

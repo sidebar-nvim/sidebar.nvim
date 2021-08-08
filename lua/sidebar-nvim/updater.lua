@@ -1,5 +1,6 @@
 local utils = require("sidebar-nvim.utils")
 local view = require("sidebar-nvim.view")
+local config = require("sidebar-nvim.config")
 
 
 local M = {}
@@ -32,7 +33,7 @@ local function resolve_section(name, section)
 end
 
 function M.setup()
-  if vim.g.sidebar_nvim_sections == nil then return end
+  if config.sections == nil then return end
 end
 
 function M.update()
@@ -44,7 +45,7 @@ function M.update()
     width = view.View.width,
   }
 
-  for name, section_data in pairs(vim.g.sidebar_nvim_sections) do
+  for name, section_data in pairs(config.sections) do
     local section = resolve_section(name, section_data)
 
     if section ~= nil then
