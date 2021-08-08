@@ -53,7 +53,7 @@ function M.tab_change()
       if bufname:match("Neogit") ~= nil or bufname:match("--graph") ~= nil then
         return
       end
-      view.open({ focus_tree = false })
+      view.open({ focus = false })
     end
   end)
 end
