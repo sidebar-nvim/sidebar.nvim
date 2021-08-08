@@ -58,6 +58,7 @@ end
 
 function M.update()
   M.timer:stop()
+  M.timer:close()
   M.timer = nil
 
   loop()

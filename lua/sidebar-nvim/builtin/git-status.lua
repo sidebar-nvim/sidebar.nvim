@@ -1,3 +1,4 @@
+local utils = require("sidebar-nvim.utils")
 local luv = vim.loop
 
 local status = "<no changes>"
@@ -35,7 +36,9 @@ local function async_update()
 
   luv.read_start(stderr, function(err, data)
     if data == nil then return end
-    print(data)
+    vim.schedule_wrap(function()
+      utils.echo_warning(data)
+    end)
   end)
 
 end
