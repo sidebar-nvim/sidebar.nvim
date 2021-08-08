@@ -29,29 +29,38 @@ local function get_hl_groups()
   local colors = get_colors()
 
   return {
-    SectionTitle = { fg = colors.purple },
+    SidebarNvimSectionTitle = { fg = colors.purple },
   }
 end
 
 local function get_links()
   return {
-    SectionSeperator = 'Comment',
-    SectionKeyword = 'Keyword',
+    SidebarNvimSectionSeperator = 'Comment',
+    SidebarNvimSectionKeyword = 'Keyword',
   }
+end
+
+function M.def_hl_group(group, gui, fg, bg)
+  gui = gui and ' gui='..gui or ''
+  fg = fg and ' guifg='..fg or ''
+  bg = bg and ' guibg='..bg or ''
+
+  api.nvim_command('hi def '..group..gui..fg..bg)
+end
+
+function M.def_hl_link(group, link_to)
+  api.nvim_command('hi def link '..group..' '..link_to)
 end
 
 function M.setup()
   local higlight_groups = get_hl_groups()
   for k, d in pairs(higlight_groups) do
-    local gui = d.gui and ' gui='..d.gui or ''
-    local fg = d.fg and ' guifg='..d.fg or ''
-    local bg = d.bg and ' guibg='..d.bg or ''
-    api.nvim_command('hi def SidebarNvim'..k..gui..fg..bg)
+    M.def_hl_group(k, d.gui, d.fg, d.bg)
   end
 
   local links = get_links()
   for k, d in pairs(links) do
-    api.nvim_command('hi def link SidebarNvim'..k..' '..d)
+    M.def_hl_link(k, d)
   end
 end
 

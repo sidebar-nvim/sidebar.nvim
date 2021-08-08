@@ -57,7 +57,7 @@ end
 
 function M._internal_open(opts)
   if not view.win_open() then
-    lib.open()
+    lib.open(opts)
   end
 end
 

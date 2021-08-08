@@ -1,6 +1,7 @@
 local utils = require("sidebar-nvim.utils")
 local view = require("sidebar-nvim.view")
 local config = require("sidebar-nvim.config")
+local colors = require("sidebar-nvim.colors")
 
 
 local M = {}
@@ -34,6 +35,20 @@ end
 
 function M.setup()
   if config.sections == nil then return end
+
+  for name, section_data in pairs(config.sections) do
+    local section = resolve_section(name, section_data)
+
+    local hl_def = section.highlights or {}
+
+    for hl_group, hl_group_data in pairs(hl_def.groups or {}) do
+      colors.def_hl_group(hl_group, hl_group_data.gui, hl_group_data.fg, hl_group_data.bg)
+    end
+
+    for hl_group, hl_group_link_to in pairs(hl_def.links or {}) do
+      colors.def_hl_link(hl_group, hl_group_link_to)
+    end
+  end
 end
 
 function M.update()
