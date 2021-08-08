@@ -57,8 +57,11 @@ function M.init(should_open)
 end
 
 function M.update()
-  M.timer:stop()
-  M.timer = nil
+  if M.timer ~= nil then
+    M.timer:stop()
+    M.timer:close()
+    M.timer = nil
+  end
 
   loop()
 

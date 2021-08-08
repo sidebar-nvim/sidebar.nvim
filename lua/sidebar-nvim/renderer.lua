@@ -8,12 +8,28 @@ local namespace_id = api.nvim_create_namespace('SidebarNvimHighlights')
 
 local M = {}
 
-local function expand_section_lines(section_lines)
+local function expand_section_lines(section_lines, lines_offset)
   if type(section_lines) == "string" then
-    return vim.split(section_lines, "\n")
+    return vim.split(section_lines, "\n"), nil
+  elseif type(section_lines) == "table" and section_lines.lines == nil then
+    return section_lines, nil
   end
 
-  return section_lines
+  -- we probably have here section_lines = { lines = string|table of strings, hl = table }
+
+  local section_hl = section_lines.hl or {}
+  section_lines = section_lines.lines
+
+  if type(section_lines) == "string" then
+    section_lines = vim.split(section_lines, "\n")
+  end
+
+  -- we must offset the hl lines so it matches the current section position
+  for _, hl_entry in ipairs(section_hl) do
+    hl_entry[2] = hl_entry[2] + lines_offset - 1
+  end
+
+  return section_lines, section_hl
 end
 
 local function build_section_title(section)
@@ -40,8 +56,15 @@ local function get_lines_and_hl(sections_data)
 
     table.insert(lines, section_title)
     table.insert(lines, "")
-    for _, line in ipairs(expand_section_lines(data.lines)) do
+
+    local section_lines, section_hl = expand_section_lines(data.lines, #lines)
+
+    for _, line in ipairs(section_lines) do
       table.insert(lines, line)
+    end
+
+    for _, hl_entry in ipairs(section_hl or {}) do
+      table.insert(hl, hl_entry)
     end
 
     local separator = build_section_separator(data.section)
