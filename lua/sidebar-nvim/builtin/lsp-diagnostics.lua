@@ -27,6 +27,12 @@ local function get_diagnostics(ctx)
             message = diag.message
             message = message:gsub('\n', " ")
             line = diag.range.start.line
+            if line > 0 then
+              line_length = math.floor(math.log10(line) + 1)
+            else
+              line_length = 1
+            end
+            print(line_length)
 
             local severity = diag.severity
             local level = severity_level[severity]
@@ -49,7 +55,7 @@ local function get_diagnostics(ctx)
             -- Highlight Icon
             table.insert(hl, { 'SidebarNvimLspDiagnostics' .. level, #messages, 4, 8 })
             -- Highlight Line
-            table.insert(hl, { 'SidebarNvimLspDiagnosticsLineNumber', #messagest , 8, 10 })
+            table.insert(hl, { 'SidebarNvimLspDiagnosticsLineNumber', #messages , 8, 8 + line_length })
         end
       else
         local file_path = vim.api.nvim_buf_get_name(number)
