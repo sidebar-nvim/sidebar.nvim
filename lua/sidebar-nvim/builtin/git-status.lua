@@ -11,7 +11,7 @@ local function build_hl()
   hl_tmp = {}
 
   for i, _ in ipairs(status) do
-    table.insert(hl_tmp, { 'SidebarNvimSectionKeyword', i, 0, 1 })
+    table.insert(hl_tmp, { 'SidebarNvimSectionKeyword', i, 0, 2 })
   end
 
   hl = hl_tmp
@@ -34,9 +34,9 @@ local function async_update()
     else
       status = {}
       for _, line in ipairs(vim.split(status_tmp, '\n')) do
-        striped_line = line:match("^%s*(.-)%s*$")
-        line_status = striped_line:sub(0, 1)
-        line_filename = striped_line:sub(2, -1):match("^%s*(.-)%s*$")
+        local striped_line = line:match("^%s*(.-)%s*$")
+        local line_status = striped_line:sub(0, 2)
+        local line_filename = striped_line:sub(2, -1):match("^%s*(.-)%s*$")
         table.insert(status, line_status .. " " .. line_filename)
       end
       build_hl()

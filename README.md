@@ -2,6 +2,8 @@
 
 A generic and module lua sidebar inspired by [lualine](https://github.com/hoob3rt/lualine.nvim)
 
+Development status: Alpha - bugs are expected
+
 ## Quick start
 
 ```lua
@@ -143,6 +145,11 @@ local section = {
 }
 
 ```
+
+## TODO
+
+- [ ] Sections custom mappings - allow sections to bind custom key mappings
+- [ ] Section options - allow sections to receive options during startup
 
 ## References
 
