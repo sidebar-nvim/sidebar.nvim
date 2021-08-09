@@ -14,7 +14,6 @@ local function get_diagnostics(ctx)
         local file_path = vim.api.nvim_buf_get_name(current_buf)
         local split = vim.split(file_path, '/')
         local filename = split[#split]
-        local start_line = 0
         if next(diagnostics) ~= nil then
           local total = #diagnostics
 
@@ -23,7 +22,6 @@ local function get_diagnostics(ctx)
           table.insert(messages, message)
           table.insert(hl, { 'SidebarNvimLspDiagnosticsFileName', #messages, 0, #filename + 4 })
           table.insert(hl, { 'SidebarNvimLspDiagnosticsTotalNumber', #messages, ctx.width - 5, ctx.width})
-          start_line = 1
         end
         for i, diag in pairs(diagnostics) do
             message = diag.message
@@ -47,11 +45,11 @@ local function get_diagnostics(ctx)
             table.insert(messages, message)
 
             -- Highlight separator
-            table.insert(hl, { 'SidebarNvimLspDiagnosticsLineNumber', i + start_line, 0, 3 })
+            table.insert(hl, { 'SidebarNvimLspDiagnosticsLineNumber', #messages, 0, 3 })
             -- Highlight Icon
-            table.insert(hl, { 'SidebarNvimLspDiagnostics' .. level, i + start_line, 4, 8 })
+            table.insert(hl, { 'SidebarNvimLspDiagnostics' .. level, #messages, 4, 8 })
             -- Highlight Line
-            table.insert(hl, { 'SidebarNvimLspDiagnosticsLineNumber', i + start_line, 8, 10 })
+            table.insert(hl, { 'SidebarNvimLspDiagnosticsLineNumber', #messagest , 8, 10 })
         end
       else
         local file_path = vim.api.nvim_buf_get_name(number)
