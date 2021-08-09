@@ -7,6 +7,7 @@ local function get_diagnostics(ctx)
     local messages = {}
     local hl = {}
     local current_buf = vim.api.nvim_get_current_buf()
+    local open_bufs = vim.api.nvim_list_bufs()
 
     all_diagnostics = vim.lsp.diagnostic.get_all()
     for number, diagnostics in pairs(all_diagnostics) do
@@ -57,7 +58,7 @@ local function get_diagnostics(ctx)
             -- Highlight Line
             table.insert(hl, { 'SidebarNvimLspDiagnosticsLineNumber', #messages , 8, 8 + line_length })
         end
-      else
+      elseif open_bufs[number] ~= nil and vim.api.nvim_buf_is_loaded(number) then
         local file_path = vim.api.nvim_buf_get_name(number)
         local split = vim.split(file_path, '/')
         local filename = split[#split]
