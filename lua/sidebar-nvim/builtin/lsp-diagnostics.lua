@@ -16,7 +16,10 @@ local function get_diagnostics(ctx)
         local filename = split[#split]
         local start_line = 0
         if next(diagnostics) ~= nil then
-          message = ' ' .. filename .. string.rep(' ', ctx.width - #filename - 8) .. #diagnostics .. ' '
+          local total = #diagnostics
+
+          if total > 9 then total = '+' end
+          message = ' ' .. filename .. string.rep(' ', ctx.width - #filename - 8) .. total .. ' '
           table.insert(messages, message)
           table.insert(hl, { 'SidebarNvimLspDiagnosticsFileName', #messages, 0, #filename + 4 })
           table.insert(hl, { 'SidebarNvimLspDiagnosticsTotalNumber', #messages, ctx.width - 5, ctx.width})
@@ -55,8 +58,10 @@ local function get_diagnostics(ctx)
         local split = vim.split(file_path, '/')
         local filename = split[#split]
         if next(diagnostics) ~= nil then
-          message = ' ' .. filename .. string.rep(' ', ctx.width - #filename - 8) .. #diagnostics .. ' '
-          diag_str_length = math.floor(math.log10(#diagnostics) + 1)
+          local total = #diagnostics
+
+          if total > 9 then total = '+' end
+          message = ' ' .. filename .. string.rep(' ', ctx.width - #filename - 8) .. total .. ' '
           table.insert(messages, message)
           table.insert(hl, { 'SidebarNvimLspDiagnosticsFileName', #messages, 0, #filename + 4 })
           table.insert(hl, { 'SidebarNvimLspDiagnosticsTotalNumber', #messages, ctx.width - 5, ctx.width - 2})
