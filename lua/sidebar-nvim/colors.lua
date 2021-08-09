@@ -12,6 +12,7 @@ local function get_color_from_hl(hl_name, fallback)
   return foreground
 end
 
+-- TODO: support more colors
 local function get_colors()
   return {
     red      = vim.g.terminal_color_1  or get_color_from_hl('Keyword', 'Red'),
@@ -22,8 +23,12 @@ local function get_colors()
     cyan     = vim.g.terminal_color_6  or get_color_from_hl('Conditional', 'Cyan'),
     dark_red = vim.g.terminal_color_9  or get_color_from_hl('Keyword', 'DarkRed'),
     orange   = vim.g.terminal_color_11 or get_color_from_hl('Number', 'Orange'),
+    gray   = vim.g.terminal_color_11 or get_color_from_hl('Number', 'Gray'),
+    white   = vim.g.terminal_color_11 or get_color_from_hl('Number', 'White'),
   }
 end
+
+M.color = get_colors()
 
 local function get_hl_groups()
   local colors = get_colors()
