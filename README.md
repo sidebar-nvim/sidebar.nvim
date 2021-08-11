@@ -149,7 +149,6 @@ local section = {
 ## TODO
 
 - [ ] Sections custom mappings - allow sections to bind custom key mappings
-- [ ] Section options - allow sections to receive options during startup
 
 ## References
 

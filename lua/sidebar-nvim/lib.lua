@@ -1,4 +1,3 @@
-local api = vim.api
 local luv = vim.loop
 
 local renderer = require('sidebar-nvim.renderer')
