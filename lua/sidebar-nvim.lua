@@ -11,12 +11,6 @@ local M = {}
 
 local open_after_session = false
 
-vim.g.sidebar_nvim_sections = vim.g.sidebar_nvim_sections or {
-  "datetime",
-  "git-status",
-  "lsp-diagnostics",
-}
-
 function M.setup(opts)
   opts = opts or {}
 

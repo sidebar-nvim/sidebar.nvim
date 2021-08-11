@@ -9,7 +9,7 @@ local function get_diagnostics(ctx)
     local current_buf = vim.api.nvim_get_current_buf()
     local open_bufs = vim.api.nvim_list_bufs()
 
-    all_diagnostics = vim.lsp.diagnostic.get_all()
+    local all_diagnostics = vim.lsp.diagnostic.get_all()
     for number, diagnostics in pairs(all_diagnostics) do
       if number == current_buf then
         local file_path = vim.api.nvim_buf_get_name(current_buf)
@@ -19,21 +19,21 @@ local function get_diagnostics(ctx)
           local total = #diagnostics
 
           if total > 9 then total = '+' end
-          message = ' ' .. filename .. string.rep(' ', ctx.width - #filename - 8) .. total .. ' '
+          local message = ' ' .. filename .. string.rep(' ', ctx.width - #filename - 8) .. total .. ' '
           table.insert(messages, message)
           table.insert(hl, { 'SidebarNvimLspDiagnosticsFileName', #messages, 0, #filename + 4 })
           table.insert(hl, { 'SidebarNvimLspDiagnosticsTotalNumber', #messages, ctx.width - 5, ctx.width})
         end
-        for i, diag in pairs(diagnostics) do
-            message = diag.message
+        for _, diag in pairs(diagnostics) do
+            local message = diag.message
             message = message:gsub('\n', " ")
-            line = diag.range.start.line
+            local line = diag.range.start.line
+            local line_length = 0
             if line > 0 then
               line_length = math.floor(math.log10(line) + 1)
             else
               line_length = 1
             end
-            print(line_length)
 
             local severity = diag.severity
             local level = severity_level[severity]
@@ -66,7 +66,7 @@ local function get_diagnostics(ctx)
           local total = #diagnostics
 
           if total > 9 then total = '+' end
-          message = ' ' .. filename .. string.rep(' ', ctx.width - #filename - 8) .. total .. ' '
+          local message = ' ' .. filename .. string.rep(' ', ctx.width - #filename - 8) .. total .. ' '
           table.insert(messages, message)
           table.insert(hl, { 'SidebarNvimLspDiagnosticsFileName', #messages, 0, #filename + 4 })
           table.insert(hl, { 'SidebarNvimLspDiagnosticsTotalNumber', #messages, ctx.width - 5, ctx.width - 2})
