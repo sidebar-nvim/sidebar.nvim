@@ -74,13 +74,13 @@ local function get_diagnostics(ctx)
       end
     end
 
-    if messages ~= {} then
+    if messages == nil or #messages == 0 then
+      return "<no diagnostics>"
+    else
       return {
         lines = messages,
         hl = hl
       }
-    else
-      return "<no diagnostics>"
     end
 end
 
