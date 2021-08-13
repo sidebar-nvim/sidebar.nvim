@@ -73,10 +73,6 @@ end
 function M.tab_change()
   vim.schedule(function()
     if not view.win_open() and view.win_open({ any_tabpage = true }) then
-      local bufname = vim.api.nvim_buf_get_name(0)
-      if bufname:match("Neogit") ~= nil or bufname:match("--graph") ~= nil then
-        return
-      end
       view.open({ focus = false })
     end
   end)
@@ -88,11 +84,10 @@ local keypress_funcs = {
 }
 
 function M.on_keypress(mode)
-  -- TODO: get_section_at_cursor not implemented
-  --local section = lib.get_section_at_cursor()
+  local section = lib.get_section_at_cursor()
 
   if keypress_funcs[mode] then
-    return keypress_funcs[mode]()
+    return keypress_funcs[mode](section)
   end
 end
 

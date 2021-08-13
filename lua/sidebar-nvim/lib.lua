@@ -1,4 +1,5 @@
 local luv = vim.loop
+local api = vim.api
 
 local renderer = require('sidebar-nvim.renderer')
 local view = require('sidebar-nvim.view')
@@ -10,7 +11,9 @@ local first_init_done = false
 
 local M = {}
 
-M.State = {}
+M.State = {
+  section_line_indexes = {}
+}
 
 M.timer = nil
 
@@ -18,7 +21,7 @@ local function _redraw()
   if vim.v.exiting ~= vim.NIL then return end
 
   if view.win_open() then
-    renderer.draw(updater.sections_data)
+    M.State.section_line_indexes = renderer.draw(updater.sections_data)
   end
 end
 
@@ -76,6 +79,20 @@ function M.destroy()
   M.timer = nil
 
   view._wipe_rogue_buffer()
+end
+
+function M.get_section_at_cursor()
+  local cursor = api.nvim_win_get_cursor(0)
+  local cursor_line = cursor[1]
+
+  for section_index, section_line_index in ipairs(M.State.section_line_indexes) do
+    -- check if the start of this section is after the cursor line
+    if cursor_line < section_line_index then
+      return config.sections[section_index - 1]
+    end
+  end
+
+  return nil
 end
 
 return M

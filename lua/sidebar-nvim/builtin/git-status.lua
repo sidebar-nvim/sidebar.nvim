@@ -26,7 +26,7 @@ local function async_update()
     args = {"status", "--porcelain"},
     stdio = {nil, stdout, stderr},
     cwd = luv.cwd(),
-  }, function(code, signal)
+  }, function(_, _)
 
     if status_tmp == "" then
       status = "<no changes>"
@@ -54,12 +54,26 @@ local function async_update()
 
   luv.read_start(stdout, function(err, data)
     if data == nil then return end
+
     status_tmp = status_tmp .. data
+
+    if err ~= nil then
+      vim.schedule(function()
+        utils.echo_warning(err)
+      end)
+    end
   end)
 
   luv.read_start(stderr, function(err, data)
     if data == nil then return end
-    vim.schedule_wrap(function()
+
+    if err ~= nil then
+      vim.schedule(function()
+        utils.echo_warning(err)
+      end)
+    end
+
+    vim.schedule(function()
       utils.echo_warning(data)
     end)
   end)
@@ -81,5 +95,10 @@ return {
     groups = {},
     -- { MyHLGroupLink = <string> }
     links = {},
+  },
+  maps = {
+    ["<CR>"] = function(line, col)
+      print(line, col)
+    end,
   },
 }

@@ -2,8 +2,6 @@ local view = require('sidebar-nvim.view')
 
 local api = vim.api
 
-local lines = {}
-local hl = {}
 local namespace_id = api.nvim_create_namespace('SidebarNvimHighlights')
 
 local M = {}
@@ -46,14 +44,16 @@ local function build_section_separator(section)
 end
 
 local function get_lines_and_hl(sections_data)
-  lines = {}
-  hl = {}
+  local lines = {}
+  local hl = {}
+  local section_line_indexes = {}
 
   for _, data in pairs(sections_data) do
     local section_title = build_section_title(data.section)
 
     table.insert(hl, {'SidebarNvimSectionTitle', #lines, 0, #section_title})
 
+    table.insert(section_line_indexes, #lines)
     table.insert(lines, section_title)
     table.insert(lines, "")
 
@@ -75,7 +75,7 @@ local function get_lines_and_hl(sections_data)
     table.insert(lines, "")
   end
 
-  return lines, hl
+  return lines, hl, section_line_indexes
 end
 
 function M.draw(sections_data)
@@ -86,11 +86,11 @@ function M.draw(sections_data)
     cursor = api.nvim_win_get_cursor(view.get_winnr())
   end
 
-  lines, hl = get_lines_and_hl(sections_data)
+  local lines, hl, section_line_indexes = get_lines_and_hl(sections_data)
 
   api.nvim_buf_set_option(view.View.bufnr, 'modifiable', true)
   api.nvim_buf_set_lines(view.View.bufnr, 0, -1, false, lines)
-  M.render_hl(view.View.bufnr)
+  M.render_hl(view.View.bufnr, hl)
   api.nvim_buf_set_option(view.View.bufnr, 'modifiable', false)
 
   if cursor and #lines >= cursor[1] then
@@ -99,9 +99,11 @@ function M.draw(sections_data)
   if cursor then
     api.nvim_win_set_option(view.get_winnr(), 'wrap', false)
   end
+
+  return section_line_indexes
 end
 
-function M.render_hl(bufnr)
+function M.render_hl(bufnr, hl)
   if not api.nvim_buf_is_loaded(bufnr) then return end
   api.nvim_buf_clear_namespace(bufnr, namespace_id, 0, -1)
   for _, data in ipairs(hl) do
