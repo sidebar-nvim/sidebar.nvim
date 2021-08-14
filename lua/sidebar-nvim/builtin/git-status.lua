@@ -103,7 +103,7 @@ return {
     links = {},
   },
   bindings = {
-    ["a"] = function(line, col)
+    ["e"] = function(line)
       local filename = filenames[line]
       if filename == nil then
         return

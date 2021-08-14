@@ -7,6 +7,7 @@ local events = require('sidebar-nvim.events')
 local updater = require('sidebar-nvim.updater')
 local config = require('sidebar-nvim.config')
 local bindings = require('sidebar-nvim.bindings')
+local utils = require('sidebar-nvim.utils')
 
 local first_init_done = false
 
@@ -128,7 +129,7 @@ end
 
 function M.on_keypress(key)
   local section_match = M.find_section_at_cursor()
-  bindings.on_keypress(key, section_match)
+  bindings.on_keypress(utils.unescape_keycode(key), section_match)
 end
 
 return M
