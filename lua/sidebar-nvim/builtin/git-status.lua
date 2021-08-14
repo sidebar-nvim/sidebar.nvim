@@ -3,6 +3,7 @@ local luv = vim.loop
 
 local status = {}
 local hl = {}
+local filenames = {}
 
 local status_tmp = ""
 local hl_tmp = {}
@@ -28,6 +29,7 @@ local function async_update()
     cwd = luv.cwd(),
   }, function(_, _)
 
+    filenames = {}
     if status_tmp == "" then
       status = "<no changes>"
       hl = {}
@@ -35,9 +37,13 @@ local function async_update()
       status = {}
       for _, line in ipairs(vim.split(status_tmp, '\n')) do
         local striped_line = line:match("^%s*(.-)%s*$")
-        local line_status = striped_line:sub(0, 2)
-        local line_filename = striped_line:sub(2, -1):match("^%s*(.-)%s*$")
+        local line_status = striped_line:sub(0, 3)
+        local line_filename = striped_line:sub(3, -1):match("^%s*(.-)%s*$")
         table.insert(status, line_status .. " " .. line_filename)
+
+        if line_filename ~= "" then
+          table.insert(filenames, line_filename)
+        end
       end
       build_hl()
     end
@@ -73,9 +79,9 @@ local function async_update()
       end)
     end
 
-    vim.schedule(function()
-      utils.echo_warning(data)
-    end)
+    --vim.schedule(function()
+      --utils.echo_warning(data)
+    --end)
   end)
 
 end
@@ -96,9 +102,14 @@ return {
     -- { MyHLGroupLink = <string> }
     links = {},
   },
-  maps = {
-    ["<CR>"] = function(line, col)
-      print(line, col)
+  bindings = {
+    ["a"] = function(line, col)
+      local filename = filenames[line]
+      if filename == nil then
+        return
+      end
+      vim.cmd("wincmd p")
+      vim.cmd("e "..filename)
     end,
   },
 }

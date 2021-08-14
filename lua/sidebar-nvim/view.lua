@@ -1,4 +1,4 @@
-local utils = require("sidebar-nvim.utils")
+local bindings = require("sidebar-nvim.bindings")
 local config = require("sidebar-nvim.config")
 
 local a = vim.api
@@ -31,9 +31,6 @@ M.View = {
     { name = 'filetype', val = 'SidebarNvim' },
     { name = 'bufhidden', val = 'hide' }
   },
-  bindings = {
-    { key = "q",                            cb = utils.sidebar_nvim_callback("close") },
-  }
 }
 
 ---Find a rogue SidebarNvim buffer that might have been spawned by i.e. a session.
@@ -82,6 +79,7 @@ function M.setup()
   M.View.width = config.width or M.View.width
 
   M.View.bufnr = a.nvim_create_buf(false, false)
+  bindings.inject(M.View.bufnr)
 
   local buffer_name = generate_buffer_name()
 
@@ -95,24 +93,6 @@ function M.setup()
   end
 
   vim.cmd("au! BufWinEnter * lua require('sidebar-nvim.view')._prevent_buffer_override()")
-
-  local user_mappings = config.bindings or {}
-  if config.disable_default_keybindings == 1 then
-    M.View.bindings = user_mappings
-  else
-    local result = vim.fn.extend(M.View.bindings, user_mappings)
-    M.View.bindings = result
-  end
-
-  for _, b in pairs(M.View.bindings) do
-    if type(b.key) == "table" then
-      for _, key in pairs(b.key) do
-        a.nvim_buf_set_keymap(M.View.bufnr, b.mode or 'n', key, b.cb, { noremap = true, silent = true, nowait = true })
-      end
-    else
-      a.nvim_buf_set_keymap(M.View.bufnr, b.mode or 'n', b.key, b.cb, { noremap = true, silent = true, nowait = true })
-    end
-  end
 end
 
 local goto_tbl = {

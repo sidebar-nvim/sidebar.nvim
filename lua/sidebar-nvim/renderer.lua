@@ -53,11 +53,19 @@ local function get_lines_and_hl(sections_data)
 
     table.insert(hl, {'SidebarNvimSectionTitle', #lines, 0, #section_title})
 
-    table.insert(section_line_indexes, #lines)
+    local section_content_start = #lines+3 -- +3 white spaces
+    local section_title_start = #lines+1
     table.insert(lines, section_title)
     table.insert(lines, "")
 
     local section_lines, section_hl = expand_section_lines(data.lines, #lines)
+
+    table.insert(section_line_indexes, {
+      content_start = section_content_start,
+      content_length = #section_lines,
+      section_start = section_title_start,
+      section_length = #section_lines + 4, -- +4 whitespaces
+    })
 
     for _, line in ipairs(section_lines) do
       table.insert(lines, line)

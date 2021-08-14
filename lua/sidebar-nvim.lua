@@ -4,6 +4,7 @@ local renderer = require('sidebar-nvim.renderer')
 local view = require('sidebar-nvim.view')
 local updater = require('sidebar-nvim.updater')
 local config = require("sidebar-nvim.config")
+local bindings = require("sidebar-nvim.bindings")
 
 local api = vim.api
 
@@ -21,10 +22,11 @@ function M.setup(opts)
   view._wipe_rogue_buffer()
 
   colors.setup()
+  bindings.setup()
   view.setup()
 
   updater.setup()
-  lib.init()
+  lib.setup()
 end
 
 function M._session_post()
@@ -78,17 +80,8 @@ function M.tab_change()
   end)
 end
 
-local keypress_funcs = {
-  update = lib.update,
-  close = function() M.close() end,
-}
-
-function M.on_keypress(mode)
-  local section = lib.get_section_at_cursor()
-
-  if keypress_funcs[mode] then
-    return keypress_funcs[mode](section)
-  end
+function M.on_keypress(key)
+  lib.on_keypress(key)
 end
 
 function M.update()
