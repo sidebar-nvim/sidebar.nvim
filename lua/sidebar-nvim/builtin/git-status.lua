@@ -13,7 +13,7 @@ local function build_hl()
 
   for i, _ in ipairs(status) do
     table.insert(hl_tmp, { 'SidebarNvimGitStatusState', i, 0, 2 })
-    table.insert(hl_tmp, { 'SidebarNvimGitStatusFilename', i, 3, -1 })
+    table.insert(hl_tmp, { 'SidebarNvimGitStatusFileName', i, 3, -1 })
   end
 
   hl = hl_tmp
@@ -103,7 +103,7 @@ return {
     -- { MyHLGroupLink = <string> }
     links = {
       SidebarNvimGitStatusState = "Keyword",
-      SidebarNvimGitStatusFilename = "Normal",
+      SidebarNvimGitStatusFileName = "Normal",
     },
   },
   bindings = {

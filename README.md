@@ -211,7 +211,7 @@ local section = {
 | *SidebarNvimSectionTitle* | Directory |
 | *SidebarNvimSectionSeparator* | Comment |
 | *SidebarNvimGitStatusState* | Keyword |
-| *SidebarNvimGitStatusFilename* | Normal |
+| *SidebarNvimGitStatusFileName* | Normal |
 | *SidebarNvimLspDiagnosticsError* | LspDiagnosticsDefaultError |
 | *SidebarNvimLspDiagnosticsWarn* | LspDiagnosticsDefaultWarning |
 | *SidebarNvimLspDiagnosticsInfo* | LspDiagnosticsDefaultInformation |
