@@ -42,15 +42,17 @@ Enable/disable the default keybindings
 
 Default: nil
 
-Attach custom bindings to the sidebar buffer
+Attach custom bindings to the sidebar buffer.
 
 Example:
 
 ```lua
 require("sidebar-nvim").setup({
-    bindings = { key = "q", cb = ":SidebarNvimClose<CR>" }
+    bindings = { ["q"] = function() require("sidebar-nvim").close() end }
 })
 ```
+
+Note sections can override these bindings, please see [Section Bindings](#bindings)
 
 #### `side`
 
@@ -137,7 +139,7 @@ local section = {
         return {
             lines = {"> item1", "> item2"},
             hl = {
-                -- { <group name>, <line index relative to the returned lines>, <column start>, <column end> }
+                -- { <group name>, <line index relative to the returned lines>, <column start>, <column end, -1 means end of the line> }
                 { "SectionMarker", 0, 0, 1 },
             }
         }
@@ -146,9 +148,61 @@ local section = {
 
 ```
 
-## TODO
+#### `highlights`
 
-- [ ] Sections custom mappings - allow sections to bind custom key mappings
+Specify the highlight groups associated with this section. This table contains two properties: `groups` and `links`
+
+- `groups` define new highlight groups
+- `links` link highlight groups to another
+
+Example:
+
+```lua
+local section = {
+    title = "Custom Section",
+    icon = "->",
+    draw = function()
+        return {
+            lines = {"hello world"},
+            hl = {
+                -- more info see `:h nvim_buf_add_highlight()`
+                { "CustomHighlightGroupHello", 0, 0, 5 }, -- adds `CustomHighlightGroupHello` to the word "hello"
+                { "CustomHighlightGroupWorld", 0, 6, -1 }, -- adds `CustomHighlightGroupWorld` to the word "world"
+            }, 
+        }
+    end,
+    highlights = {
+        groups = { CustomHighlightGroupHello = { gui="#ff0000", fg="#00ff00", bg="#0000ff" } },
+        links = { CustomHighlightGroupWorld = "Keyword" }
+    }
+}
+```
+
+more info see: [:h nvim_buf_add_highlight](https://neovim.io/doc/user/api.html#nvim_buf_add_highlight())
+
+#### `bindings`
+
+Custom sections can define custom bindings. Bindings are dispatched to the section that the cursor is currently over.
+
+This means that multiple sections can define the same bindings and SidebarNvim will dispatch to the correct section depending on the cursor position.
+
+Example:
+
+```lua
+local lines = {"hello", "world"}
+local section = {
+    title = "Custom Section",
+    icon = "->",
+    draw = function()
+        return lines
+    end,
+    bindings = {
+        ["e"] = function(line, col)
+            print("current word: "..lines[line])
+        end,
+    },
+}
+```
 
 ## References
 
