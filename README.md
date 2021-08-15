@@ -52,7 +52,7 @@ require("sidebar-nvim").setup({
 })
 ```
 
-Note sections can override these bindings, please see [Section Bindings](#bindings)
+Note sections can override these bindings, please see [Section Bindings](#bindings-1)
 
 #### `side`
 
