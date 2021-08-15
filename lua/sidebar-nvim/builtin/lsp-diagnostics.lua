@@ -19,10 +19,14 @@ local function get_diagnostics(ctx)
           local total = #diagnostics
 
           if total > 9 then total = '+' end
-          local message = ' ' .. filename .. string.rep(' ', ctx.width - #filename - 8) .. total .. ' '
+          local message = ' ' .. filename .. string.rep(' ', ctx.width - #filename - 8)
+          local total_col_start = #message
+
+          message = message .. total .. ' '
+
           table.insert(messages, message)
-          table.insert(hl, { 'SidebarNvimLspDiagnosticsFileName', #messages, 0, #filename + 4 })
-          table.insert(hl, { 'SidebarNvimLspDiagnosticsTotalNumber', #messages, ctx.width - 5, ctx.width})
+          table.insert(hl, { 'SidebarNvimLspDiagnosticsFileName', #messages, 0, total_col_start })
+          table.insert(hl, { 'SidebarNvimLspDiagnosticsTotalNumber', #messages, total_col_start+1, -1})
         end
         for _, diag in pairs(diagnostics) do
             local message = diag.message
@@ -66,10 +70,14 @@ local function get_diagnostics(ctx)
           local total = #diagnostics
 
           if total > 9 then total = '+' end
-          local message = ' ' .. filename .. string.rep(' ', ctx.width - #filename - 8) .. total .. ' '
+          local message = ' ' .. filename .. string.rep(' ', ctx.width - #filename - 8)
+          local total_col_start = #message
+
+          message = message .. total .. ' '
+
           table.insert(messages, message)
-          table.insert(hl, { 'SidebarNvimLspDiagnosticsFileName', #messages, 0, #filename + 4 })
-          table.insert(hl, { 'SidebarNvimLspDiagnosticsTotalNumber', #messages, ctx.width - 5, ctx.width - 2})
+          table.insert(hl, { 'SidebarNvimLspDiagnosticsFileName',    #messages,                 0, total_col_start })
+          table.insert(hl, { 'SidebarNvimLspDiagnosticsTotalNumber', #messages, total_col_start+1, -1})
         end
       end
     end
@@ -92,15 +100,15 @@ return {
   end,
   highlights = {
     -- { MyHLGroup = { gui=<color>, fg=<color>, bg=<color> } }
-    groups = {
-      SidebarNvimLspDiagnosticsError = {fg = colors.color.red},
-      SidebarNvimLspDiagnosticsWarn = {fg = colors.color.orange},
-      SidebarNvimLspDiagnosticsInfo = {fg = colors.color.cyan},
-      SidebarNvimLspDiagnosticsHint = {fg = colors.color.cyan},
-      SidebarNvimLspDiagnosticsLineNumber = {fg = colors.color.gray},
-      SidebarNvimLspDiagnosticsFileName = {fg = colors.color.orange},
-      SidebarNvimLspDiagnosticsTotalNumber = {fg = colors.color.white, bg = colors.color.orange},
+    groups = {},
+    links = {
+      SidebarNvimLspDiagnosticsError = "LspDiagnosticsDefaultError",
+      SidebarNvimLspDiagnosticsWarn = "LspDiagnosticsDefaultWarning",
+      SidebarNvimLspDiagnosticsInfo = "LspDiagnosticsDefaultInformation",
+      SidebarNvimLspDiagnosticsHint = "LspDiagnosticsDefaultHint",
+      SidebarNvimLspDiagnosticsLineNumber = "LineNr",
+      SidebarNvimLspDiagnosticsFileName = "Label",
+      SidebarNvimLspDiagnosticsTotalNumber = "LspTroubleCount",
     },
-    links = {},
   },
 }

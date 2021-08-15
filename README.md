@@ -204,6 +204,22 @@ local section = {
 }
 ```
 
+## Colors
+
+| Highlight Group | Defaults To |
+| --------------- | ----------- |
+| *SidebarNvimSectionTitle* | Directory |
+| *SidebarNvimSectionSeparator* | Comment |
+| *SidebarNvimGitStatusState* | Keyword |
+| *SidebarNvimGitStatusFilename* | Normal |
+| *SidebarNvimLspDiagnosticsError* | LspDiagnosticsDefaultError |
+| *SidebarNvimLspDiagnosticsWarn* | LspDiagnosticsDefaultWarning |
+| *SidebarNvimLspDiagnosticsInfo* | LspDiagnosticsDefaultInformation |
+| *SidebarNvimLspDiagnosticsHint* | LspDiagnosticsDefaultHint |
+| *SidebarNvimLspDiagnosticsLineNumber* | LineNr |
+| *SidebarNvimLspDiagnosticsFileName* | Label |
+| *SidebarNvimLspDiagnosticsTotalNumber* | LspTroubleCount |
+
 ## References
 
 We based most of the code from the awesome work of @kyazdani42 in [nvim-tree](https://github.com/kyazdani42/nvim-tree.lua)

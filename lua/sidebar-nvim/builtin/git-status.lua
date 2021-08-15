@@ -12,7 +12,8 @@ local function build_hl()
   hl_tmp = {}
 
   for i, _ in ipairs(status) do
-    table.insert(hl_tmp, { 'SidebarNvimSectionKeyword', i, 0, 2 })
+    table.insert(hl_tmp, { 'SidebarNvimGitStatusState', i, 0, 2 })
+    table.insert(hl_tmp, { 'SidebarNvimGitStatusFilename', i, 3, -1 })
   end
 
   hl = hl_tmp
@@ -37,7 +38,7 @@ local function async_update()
       status = {}
       for _, line in ipairs(vim.split(status_tmp, '\n')) do
         local striped_line = line:match("^%s*(.-)%s*$")
-        local line_status = striped_line:sub(0, 3)
+        local line_status = striped_line:sub(0, 2)
         local line_filename = striped_line:sub(3, -1):match("^%s*(.-)%s*$")
         table.insert(status, line_status .. " " .. line_filename)
 
@@ -100,7 +101,10 @@ return {
     -- { MyHLGroup = { gui=<color>, fg=<color>, bg=<color> } }
     groups = {},
     -- { MyHLGroupLink = <string> }
-    links = {},
+    links = {
+      SidebarNvimGitStatusState = "Keyword",
+      SidebarNvimGitStatusFilename = "Normal",
+    },
   },
   bindings = {
     ["e"] = function(line)
