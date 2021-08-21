@@ -12,6 +12,7 @@ M.sections = {
   "datetime",
   "git-status",
   "lsp-diagnostics",
+  "todos",
 }
 
 return M

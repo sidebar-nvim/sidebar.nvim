@@ -40,5 +40,38 @@ function M.resolve_section(index, section)
   return nil
 end
 
+function M.is_instance(o, class)
+  while o do
+    o = getmetatable(o)
+    if class == o then return true end
+  end
+  return false
+end
+
+-- Reference: https://github.com/hoob3rt/lualine.nvim/blob/master/lua/lualine/components/filename.lua#L9
+
+local function count(base, pattern)
+  return select(2, string.gsub(base, pattern, ''))
+end
+
+function M.shorten_path(path, min_len)
+  if #path <= min_len then
+    return path
+  end
+
+  local sep = package.config:sub(1, 1)
+
+  for _ = 0, count(path, sep) do
+    if #path <= min_len then
+      return path
+    end
+
+    -- ('([^/])[^/]+%/', '%1/', 1)
+    path = path:gsub(
+               string.format('([^%s])[^%s]+%%%s', sep, sep, sep), '%1' .. sep, 1)
+  end
+
+  return path
+end
 
 return M

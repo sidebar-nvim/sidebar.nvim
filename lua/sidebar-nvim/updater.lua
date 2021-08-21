@@ -41,7 +41,8 @@ function M.update()
     local section = utils.resolve_section(section_index, section_data)
 
     if section ~= nil then
-      local data = { lines = section.draw(draw_ctx), section = section }
+      local section_lines = section.draw(draw_ctx)
+      local data = { lines = section_lines, section = section }
       table.insert(M.sections_data, data)
     end
   end

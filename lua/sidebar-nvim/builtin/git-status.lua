@@ -1,25 +1,18 @@
 local utils = require("sidebar-nvim.utils")
+local Loclist = require("sidebar-nvim.components.loclist")
 local luv = vim.loop
 
-local status = {}
-local hl = {}
-local filenames = {}
+local loclist = Loclist:new({
+  show_location = false,
+  ommit_single_group = true,
+  highlights = {
+   item_text = "SidebarNvimGitStatusFileName",
+  }
+})
 
 local status_tmp = ""
-local hl_tmp = {}
 
-local function build_hl()
-  hl_tmp = {}
-
-  for i, _ in ipairs(status) do
-    table.insert(hl_tmp, { 'SidebarNvimGitStatusState', i, 0, 2 })
-    table.insert(hl_tmp, { 'SidebarNvimGitStatusFileName', i, 3, -1 })
-  end
-
-  hl = hl_tmp
-end
-
-local function async_update()
+local function async_update(ctx)
   local stdout = luv.new_pipe(false)
   local stderr = luv.new_pipe(false)
 
@@ -30,25 +23,23 @@ local function async_update()
     cwd = luv.cwd(),
   }, function(_, _)
 
-    filenames = {}
-    if status_tmp == "" then
-      status = "<no changes>"
-      hl = {}
-    else
-      status = {}
+    loclist:clear()
+    if status_tmp ~= "" then
       for _, line in ipairs(vim.split(status_tmp, '\n')) do
         local striped_line = line:match("^%s*(.-)%s*$")
         local line_status = striped_line:sub(0, 2)
         local line_filename = striped_line:sub(3, -1):match("^%s*(.-)%s*$")
-        table.insert(status, line_status .. " " .. line_filename)
 
         if line_filename ~= "" then
-          table.insert(filenames, line_filename)
+          loclist:add_item({
+            group = "git",
+            text = utils.shorten_path(line_filename, ctx.width - 4),
+            icon = { hl = "SidebarNvimGitStatusState", text = line_status },
+          })
         end
-      end
-      build_hl()
-    end
 
+      end
+    end
 
     luv.read_stop(stdout)
     luv.read_stop(stderr)
@@ -90,10 +81,20 @@ end
 return {
   title = "Git Status",
   icon = "📄",
-  draw = function()
-    async_update()
+  draw = function(ctx)
+    async_update(ctx)
+
+    local lines = {}
+    local hl = {}
+
+    loclist:draw(ctx, lines, hl)
+
+    if #lines == 0 then
+      lines = {"<no changes>"}
+    end
+
     return {
-      lines = status,
+      lines = lines,
       hl = hl,
     }
   end,
@@ -108,12 +109,12 @@ return {
   },
   bindings = {
     ["e"] = function(line)
-      local filename = filenames[line]
-      if filename == nil then
+      local location = loclist:get_location_at(line)
+      if location == nil then
         return
       end
       vim.cmd("wincmd p")
-      vim.cmd("e "..filename)
+      vim.cmd("e "..location)
     end,
   },
 }

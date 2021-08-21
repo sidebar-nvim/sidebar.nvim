@@ -13,7 +13,7 @@ local function expand_section_lines(section_lines, lines_offset)
     return section_lines, nil
   end
 
-  -- we probably have here section_lines = { lines = string|table of strings, hl = table }
+  -- we have here section_lines = { lines = string|table of strings, hl = table }
 
   local section_hl = section_lines.hl or {}
   section_lines = section_lines.lines
@@ -24,7 +24,7 @@ local function expand_section_lines(section_lines, lines_offset)
 
   -- we must offset the hl lines so it matches the current section position
   for _, hl_entry in ipairs(section_hl) do
-    hl_entry[2] = hl_entry[2] + lines_offset - 1
+    hl_entry[2] = hl_entry[2] + lines_offset
   end
 
   return section_lines, section_hl

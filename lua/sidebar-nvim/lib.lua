@@ -117,7 +117,7 @@ function M.find_section_at_cursor(opts)
     if cursor_line >= start_line and cursor_line <= end_line then
       return {
         section_index = section_index,
-        section_content_current_line = cursor_line - section_line_index.content_start + 1,
+        section_content_current_line = cursor_line - section_line_index.content_start,
         cursor_line = cursor_line,
         cursor_col= cursor_col,
       }
