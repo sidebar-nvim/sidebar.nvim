@@ -228,7 +228,7 @@ local section = {
 
 ## Builtin components
 
-Builtin components abstracts ui elements that can be reused within sections.
+Builtin components abstract ui elements that can be reused within sections.
 
 #### Loclist
 
