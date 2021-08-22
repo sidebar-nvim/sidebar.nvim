@@ -6,25 +6,25 @@ on:
   pull_request:
 
 jobs:
-  build:
-    name: Luacheck
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install luarocks
-        run: |
-          sudo apt-get update
-          sudo apt-get install luarocks
+      - uses: leafo/gh-actions-lua@master
+        with:
+          luaVersion: "luajit-2.1.0-beta3"
+
+      - uses: leafo/gh-actions-luarocks@v4.0.0
 
       - name: Install linter
-        run: sudo luarocks install luacheck
+        run: luarocks install luacheck
 
       - name: Lint
         run: luacheck lua
 
       - name: Install formatter
-        run: sudo luarocks install --server=https://luarocks.org/dev luaformatter
+        run: luarocks install --server=https://luarocks.org/dev luaformatter
 
       - name: Check formatting
         run: lua-format -c .lua-format.yaml --check lua/**/*
