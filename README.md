@@ -4,6 +4,8 @@ A generic and module lua sidebar inspired by [lualine](https://github.com/hoob3r
 
 Development status: Alpha - bugs are expected
 
+![screenshot](./docs/screenshot.png)
+
 ## Quick start
 
 ```lua
