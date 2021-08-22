@@ -25,7 +25,13 @@ local function do_search()
         loclist:clear()
 
         for _, item in pairs(results) do
-            loclist:add_item({group = item.tag, lnum = item.lnum, col = item.col, text = vim.fn.fnamemodify(item.filename, ":t"), filepath = item.filename})
+            loclist:add_item({
+                group = item.tag,
+                lnum = item.lnum,
+                col = item.col,
+                text = vim.fn.fnamemodify(item.filename, ":t"),
+                filepath = item.filename
+            })
         end
     end, opts)
 end

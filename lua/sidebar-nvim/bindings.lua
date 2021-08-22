@@ -38,11 +38,13 @@ end
 
 function M.inject(bufnr)
     for key, _ in pairs(M.State.view_bindings) do
-        api.nvim_buf_set_keymap(bufnr, 'n', key, utils.sidebar_nvim_callback(key), {noremap = true, silent = true, nowait = true})
+        api.nvim_buf_set_keymap(bufnr, 'n', key, utils.sidebar_nvim_callback(key),
+                                {noremap = true, silent = true, nowait = true})
     end
 
     for key, _ in pairs(M.State.section_bindings) do
-        api.nvim_buf_set_keymap(bufnr, 'n', key, utils.sidebar_nvim_callback(key), {noremap = true, silent = true, nowait = true})
+        api.nvim_buf_set_keymap(bufnr, 'n', key, utils.sidebar_nvim_callback(key),
+                                {noremap = true, silent = true, nowait = true})
     end
 end
 

@@ -11,7 +11,9 @@ function M.escape_keycode(key) return key:gsub("<", "["):gsub(">", "]") end
 
 function M.unescape_keycode(key) return key:gsub("%[", "<"):gsub("%]", ">") end
 
-function M.sidebar_nvim_callback(key) return string.format(":lua require('sidebar-nvim').on_keypress('%s')<CR>", M.escape_keycode(key)) end
+function M.sidebar_nvim_callback(key)
+    return string.format(":lua require('sidebar-nvim').on_keypress('%s')<CR>", M.escape_keycode(key))
+end
 
 local function get_builtin_section(name)
     local ret, section = pcall(require, "sidebar-nvim.builtin." .. name)

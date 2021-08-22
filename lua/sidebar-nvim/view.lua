@@ -25,8 +25,8 @@ M.View = {
         colorcolumn = '0'
     },
     bufopts = {
-        {name = 'swapfile', val = false}, {name = 'buftype', val = 'nofile'}, {name = 'modifiable', val = false}, {name = 'filetype', val = 'SidebarNvim'},
-        {name = 'bufhidden', val = 'hide'}
+        {name = 'swapfile', val = false}, {name = 'buftype', val = 'nofile'}, {name = 'modifiable', val = false},
+        {name = 'filetype', val = 'SidebarNvim'}, {name = 'bufhidden', val = 'hide'}
     }
 }
 
@@ -47,7 +47,9 @@ function M._wipe_rogue_buffer()
     local bn = find_rogue_buffer()
     if bn then
         local win_ids = vim.fn.win_findbuf(bn)
-        for _, id in ipairs(win_ids) do if vim.fn.win_gettype(id) ~= "autocmd" then a.nvim_win_close(id, true) end end
+        for _, id in ipairs(win_ids) do
+            if vim.fn.win_gettype(id) ~= "autocmd" then a.nvim_win_close(id, true) end
+        end
 
         a.nvim_buf_set_name(bn, "")
         vim.schedule(function() pcall(a.nvim_buf_delete, bn, {}) end)
@@ -170,7 +172,8 @@ end
 function M.close()
     if not M.win_open() then return end
     if #a.nvim_list_wins() == 1 then
-        local ans = vim.fn.input('[SidebarNvim] this is the last open window, are you sure you want to quit nvim ? y/n: ')
+        local ans = vim.fn.input(
+                        '[SidebarNvim] this is the last open window, are you sure you want to quit nvim ? y/n: ')
         if ans == 'y' then vim.cmd "q!" end
         return
     end

@@ -8,7 +8,14 @@ Loclist.DEFAULT_OPTIONS = {
     show_group_count = true,
     show_location = true,
     ommit_single_group = false,
-    highlights = {group = "Label", group_count = "Normal", item_icon = "Normal", item_lnum = "LineNr", item_col = "LineNr", item_text = "Normal"}
+    highlights = {
+        group = "Label",
+        group_count = "Normal",
+        item_icon = "Normal",
+        item_lnum = "LineNr",
+        item_col = "LineNr",
+        item_text = "Normal"
+    }
 }
 
 setmetatable(Loclist, {__index = Component})
@@ -112,7 +119,8 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
         if with_label then line = "│ " end
 
         if item.icon then
-            table.insert(section_hl, {item.icon.hl or self.highlights.item_icon, #section_lines, #line, #line + #item.icon.text})
+            table.insert(section_hl,
+                         {item.icon.hl or self.highlights.item_icon, #section_lines, #line, #line + #item.icon.text})
             line = line .. item.icon.text .. " "
         end
 
@@ -145,7 +153,9 @@ function Loclist:draw(ctx, section_lines, section_hl)
         return
     end
 
-    for _, group_name in ipairs(self._group_keys) do self:draw_group(ctx, group_name, true, section_lines, section_hl) end
+    for _, group_name in ipairs(self._group_keys) do
+        self:draw_group(ctx, group_name, true, section_lines, section_hl)
+    end
 
 end
 

@@ -2,7 +2,11 @@ local utils = require("sidebar-nvim.utils")
 local Loclist = require("sidebar-nvim.components.loclist")
 local luv = vim.loop
 
-local loclist = Loclist:new({show_location = false, ommit_single_group = true, highlights = {item_text = "SidebarNvimGitStatusFileName"}})
+local loclist = Loclist:new({
+    show_location = false,
+    ommit_single_group = true,
+    highlights = {item_text = "SidebarNvimGitStatusFileName"}
+})
 
 local status_tmp = ""
 
@@ -11,7 +15,8 @@ local function async_update(ctx)
     local stderr = luv.new_pipe(false)
 
     local handle
-    handle = luv.spawn("git", {args = {"status", "--porcelain"}, stdio = {nil, stdout, stderr}, cwd = luv.cwd()}, function()
+    handle = luv.spawn("git", {args = {"status", "--porcelain"}, stdio = {nil, stdout, stderr}, cwd = luv.cwd()},
+                       function()
 
         loclist:clear()
         if status_tmp ~= "" then

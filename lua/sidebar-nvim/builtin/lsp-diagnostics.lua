@@ -60,7 +60,9 @@ local function get_diagnostics(ctx)
     loclist:set_items(loclist_items)
     loclist:close_all_groups()
 
-    for group_name, is_closed in pairs(previous_state) do if loclist.groups[group_name] ~= nil then loclist.groups[group_name].is_closed = is_closed end end
+    for group_name, is_closed in pairs(previous_state) do
+        if loclist.groups[group_name] ~= nil then loclist.groups[group_name].is_closed = is_closed end
+    end
 
     if loclist.groups[current_buf_filename] ~= nil then loclist.groups[current_buf_filename].is_closed = false end
 

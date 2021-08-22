@@ -17,9 +17,13 @@ function M.setup()
 
         local hl_def = section.highlights or {}
 
-        for hl_group, hl_group_data in pairs(hl_def.groups or {}) do colors.def_hl_group(hl_group, hl_group_data.gui, hl_group_data.fg, hl_group_data.bg) end
+        for hl_group, hl_group_data in pairs(hl_def.groups or {}) do
+            colors.def_hl_group(hl_group, hl_group_data.gui, hl_group_data.fg, hl_group_data.bg)
+        end
 
-        for hl_group, hl_group_link_to in pairs(hl_def.links or {}) do colors.def_hl_link(hl_group, hl_group_link_to) end
+        for hl_group, hl_group_link_to in pairs(hl_def.links or {}) do
+            colors.def_hl_link(hl_group, hl_group_link_to)
+        end
     end
 end
 

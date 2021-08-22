@@ -62,7 +62,11 @@ function M.open()
     vim.defer_fn(function() M._internal_open() end, 200)
 end
 
-function M.tab_change() vim.schedule(function() if not view.win_open() and view.win_open({any_tabpage = true}) then view.open({focus = false}) end end) end
+function M.tab_change()
+    vim.schedule(function()
+        if not view.win_open() and view.win_open({any_tabpage = true}) then view.open({focus = false}) end
+    end)
+end
 
 function M.on_keypress(key) lib.on_keypress(key) end
 
