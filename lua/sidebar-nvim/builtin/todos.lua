@@ -82,6 +82,9 @@ return {
     },
   },
   bindings = {
+    ["t"] = function(line)
+      loclist:toggle_group_at(line)
+    end,
     ["e"] = function(line)
       local location = loclist:get_location_at(line)
       if not location then

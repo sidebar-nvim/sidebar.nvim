@@ -87,11 +87,33 @@ Prints the current date and time using `vim.fn.strftime("%c")`
 
 Prints the status of the repo as returned by `git status --porcelain`
 
-#### diagnostics
+##### keybindings
 
-Prints the current status of the builtin lsp
+| key | when | action |
+|-----|------|--------|
+| `e` | hovering filename | open file in the previous window
 
-TODO
+#### lsp-diagnostics
+
+Prints the current status of the builtin lsp grouper by file. It shows only loaded buffers
+
+##### keybindings
+
+| key | when | action |
+|-----|------|--------|
+| `e` | hovering diagnostic message | open file in the previous window at the diagnostic position
+| `t` | hovering filename | toggle collapse on the group
+
+#### todos
+
+Shows the TODOs in source. Provided by [todo-comments](https://github.com/folke/todo-comments.nvim)
+
+##### keybindings
+
+| key | when | action |
+|-----|------|--------|
+| `e` | hovering todo location | open file in the previous window at the todo position
+| `t` | hovering the group | toggle collapse on the group
 
 ## Custom Sections
 
@@ -204,6 +226,33 @@ local section = {
 }
 ```
 
+## Builtin components
+
+Builtin components abstracts ui elements that can be reused within sections.
+
+#### Loclist
+
+Create a location list with collapsable groups.
+
+Sections using it: [git-status](#git-status), [lsp-diagnostics](#lsp-diagnostics) and [todos](#todos)
+
+Example:
+```lua
+local Loclist = require("sidebar-nvim.components.loclist")
+local loclist = Loclist:new()
+loclist:add_item({ group = "my_group", lnum = 1, col = 2, text = "my cool location", icon = { text = "#", hl = "MyCustomHighlightGroup" } })
+
+-- inside the section draw function
+local lines, hl = {}, {}
+
+table.insert(lines, "Here's the location list you asked:")
+
+loclist:draw(ctx, lines, hl)
+
+return { lines = lines, hl = hl }
+
+```
+
 ## Colors
 
 | Highlight Group | Defaults To |
@@ -217,8 +266,15 @@ local section = {
 | *SidebarNvimLspDiagnosticsInfo* | LspDiagnosticsDefaultInformation |
 | *SidebarNvimLspDiagnosticsHint* | LspDiagnosticsDefaultHint |
 | *SidebarNvimLspDiagnosticsLineNumber* | LineNr |
-| *SidebarNvimLspDiagnosticsFileName* | Label |
+| *SidebarNvimLspDiagnosticsColNumber* | LineNr |
+| *SidebarNvimLspDiagnosticsFilename* | Label |
 | *SidebarNvimLspDiagnosticsTotalNumber* | LspTroubleCount |
+| *SidebarNvimLspDiagnosticsMessage* | Normal |
+| *SidebarNvimTodoTag* | Label |
+| *SidebarNvimTodoTotalNumber* | Normal |
+| *SidebarNvimTodoFilename* | Normal |
+| *SidebarNvimTodoLineNumber* | LineNr |
+| *SidebarNvimTodoColNumber* | LineNr |
 
 ## References
 
