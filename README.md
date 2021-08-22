@@ -1,6 +1,6 @@
 # sidebar.nvim
 
-A generic and module lua sidebar inspired by [lualine](https://github.com/hoob3rt/lualine.nvim)
+A generic and modular lua sidebar inspired by [lualine](https://github.com/hoob3rt/lualine.nvim)
 
 Development status: Alpha - bugs are expected
 
