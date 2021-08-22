@@ -1,4 +1,3 @@
-
 local M = {}
 
 M.disable_default_keybindings = 0
@@ -8,11 +7,6 @@ M.initial_width = 50
 
 M.update_interval = 1000
 
-M.sections = {
-  "datetime",
-  "git-status",
-  "lsp-diagnostics",
-  "todos",
-}
+M.sections = {"datetime", "git-status", "lsp-diagnostics", "todos"}
 
 return M

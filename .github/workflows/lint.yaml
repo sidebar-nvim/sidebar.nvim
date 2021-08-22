@@ -1,0 +1,31 @@
+name: Linting & Formatting
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    name: Luacheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install luarocks
+        run: |
+          sudo apt-get update
+          sudo apt-get install luarocks
+
+      - name: Install linter
+        run: sudo luarocks install luacheck
+
+      - name: Lint
+        run: luacheck lua
+
+      - name: Install formatter
+        run: sudo luarocks install --server=https://luarocks.org/dev luaformatter
+
+      - name: Check formatting
+        run: lua-format -c .lua-format.yaml --check lua/**/*
+
