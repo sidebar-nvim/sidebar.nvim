@@ -126,6 +126,9 @@ sidebar.nvim accepts user defined sections. The minimal section definition is a 
 local section = {
     title = "Section Title",
     icon = "->",
+    setup = function()
+        -- called only once and if the section is being used
+    end,
     draw = function(ctx)
         return "> string here\n> multiline"
     end,
@@ -136,6 +139,11 @@ local section = {
 }
 
 ```
+
+#### `setup`
+
+This function is called only once *and* only if the section is being used
+You can use this function to create timers, background jobs etc
 
 #### `draw`
 

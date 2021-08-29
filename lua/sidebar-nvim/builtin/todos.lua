@@ -11,8 +11,31 @@ local loclist = Loclist:new({
     }
 })
 
-local function do_search()
+local search_controller = {}
+
+-- todo-comments config is async, so we need to wait for it to be ready in order to use its functions
+function search_controller.wait_for_todo_config()
+    local timer = vim.loop.new_timer()
+
+    timer:start(200, 0, function()
+        vim.schedule(function() search_controller.do_search() end)
+        timer:close()
+    end)
+end
+
+local is_searching = false
+
+function search_controller.do_search()
     if not has_todos then return end
+
+    local _, todo_config = pcall(require, "todo-comments.config")
+    if not todo_config.loaded then
+        search_controller.wait_for_todo_config()
+        return
+    end
+
+    if is_searching then return end
+    is_searching = true
 
     local opts = nil
     todos.search(function(results)
@@ -33,6 +56,7 @@ local function do_search()
                 filepath = item.filename
             })
         end
+        is_searching = false
     end, opts)
 end
 
@@ -44,8 +68,6 @@ return {
             local lines = {"provider 'todo-comments' not installed"}
             return {lines = lines, hl = {}}
         end
-
-        do_search(ctx)
 
         local lines = {}
         local hl = {}
@@ -77,6 +99,16 @@ return {
             vim.cmd("e " .. location.filename)
             vim.fn.cursor(location.lnum, location.col)
         end
-    }
+    },
+    setup = function()
+        vim.api.nvim_exec([[
+augroup sidebar_nvim_todos_update
+    autocmd!
+    autocmd BufWritePost * lua require'sidebar-nvim.builtin.todos'.update()
+augroup END
+]], false)
+        search_controller.do_search()
+    end,
+    update = function() search_controller.do_search() end
 }
 

@@ -24,6 +24,8 @@ function M.setup()
         for hl_group, hl_group_link_to in pairs(hl_def.links or {}) do
             colors.def_hl_link(hl_group, hl_group_link_to)
         end
+
+        if section.setup then section.setup() end
     end
 end
 
