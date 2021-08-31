@@ -61,7 +61,7 @@ local function generate_buffer_name() return "SidebarNvim_" .. math.random(10000
 -- set user options and create tree buffer (should never be wiped)
 function M.setup()
     M.View.side = config.side or M.View.side
-    M.View.width = config.width or M.View.width
+    M.View.width = config.initial_width or M.View.width
 
     M.View.bufnr = a.nvim_create_buf(false, false)
     bindings.inject(M.View.bufnr)
