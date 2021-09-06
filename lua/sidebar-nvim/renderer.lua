@@ -98,7 +98,14 @@ end
 function M.render_hl(bufnr, hl)
     if not api.nvim_buf_is_loaded(bufnr) then return end
     api.nvim_buf_clear_namespace(bufnr, namespace_id, 0, -1)
-    for _, data in ipairs(hl) do api.nvim_buf_add_highlight(bufnr, namespace_id, data[1], data[2], data[3], data[4]) end
+    -- for _, data in ipairs(hl) do api.nvim_buf_add_highlight(bufnr, namespace_id, data[1], data[2], data[3], data[4]) end
+    for _, data in ipairs(hl) do
+        local ret, err = pcall(api.nvim_buf_add_highlight, bufnr, namespace_id, data[1], data[2], data[3], data[4])
+        if not ret then
+            print(err)
+            print(vim.inspect(data))
+        end
+    end
 end
 
 return M
