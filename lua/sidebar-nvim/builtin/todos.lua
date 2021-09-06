@@ -37,7 +37,7 @@ function search_controller.do_search()
     if is_searching then return end
     is_searching = true
 
-    local opts = nil
+    local opts = {disable_not_found_warnings = true}
     todos.search(function(results)
         table.sort(results, function(a, b) return a.tag < b.tag end)
 
