@@ -91,7 +91,7 @@ end
 function M.find_section_at_cursor(opts)
     opts = opts or {content_only = true}
 
-    local cursor = api.nvim_win_get_cursor(0)
+    local cursor = opts.cursor or api.nvim_win_get_cursor(0)
     local cursor_line = cursor[1]
     local cursor_col = cursor[2]
 
@@ -105,7 +105,8 @@ function M.find_section_at_cursor(opts)
                 section_index = section_index,
                 section_content_current_line = cursor_line - section_line_index.content_start,
                 cursor_line = cursor_line,
-                cursor_col = cursor_col
+                cursor_col = cursor_col,
+                line_index = section_line_index
             }
         end
     end
@@ -116,6 +117,41 @@ end
 function M.on_keypress(key)
     local section_match = M.find_section_at_cursor()
     bindings.on_keypress(utils.unescape_keycode(key), section_match)
+end
+
+function M.on_cursor_move(direction)
+    local cursor = api.nvim_win_get_cursor(0)
+    local line = cursor[1]
+
+    local current_section = M.find_section_at_cursor({content_only = false})
+
+    if not current_section then current_section = M.find_section_at_cursor({content_only = false, cursor = {1, 1}}) end
+
+    local current_section_index = current_section.section_index
+    local current_line_index = current_section.line_index
+
+    local next_line = line + 1
+    if direction == "up" then next_line = line - 1 end
+
+    if direction == "down" then
+        if next_line > current_line_index.section_start and next_line < current_line_index.content_start then
+            next_line = current_line_index.content_start
+        elseif next_line >= current_line_index.content_start + current_line_index.content_length then
+            local next_section = M.State.section_line_indexes[current_section_index + 1]
+            if not next_section then return end
+            next_line = next_section.section_start
+        end
+    else
+        if next_line < current_line_index.section_start then
+            local next_section = M.State.section_line_indexes[current_section_index - 1]
+            if not next_section then return end
+            next_line = next_section.content_start + next_section.content_length - 1
+        elseif next_line < current_line_index.content_start and next_line > current_line_index.section_start then
+            next_line = current_line_index.section_start
+        end
+    end
+
+    api.nvim_win_set_cursor(0, {next_line, 1})
 end
 
 return M

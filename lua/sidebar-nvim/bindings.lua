@@ -37,6 +37,14 @@ function M.update_section_bindings(index, bindings)
 end
 
 function M.inject(bufnr)
+    for direction, keys in pairs({down = {"<Down>", "j"}, up = {"<Up>", "k"}}) do
+        for _, key in ipairs(keys) do
+            api.nvim_buf_set_keymap(bufnr, 'n', key, utils.sidebar_nvim_cursor_move_callback(direction),
+                                    {noremap = true, silent = true, nowait = true})
+
+        end
+    end
+
     for key, _ in pairs(M.State.view_bindings) do
         api.nvim_buf_set_keymap(bufnr, 'n', key, utils.sidebar_nvim_callback(key),
                                 {noremap = true, silent = true, nowait = true})

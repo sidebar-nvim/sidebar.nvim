@@ -97,12 +97,14 @@ function M.reset_highlight()
     renderer.render_hl(view.View.bufnr)
 end
 
-function M.place_cursor_on_section()
-    local section = lib.get_section_at_cursor()
-    local line = api.nvim_get_current_line()
-    local cursor = api.nvim_win_get_cursor(0)
-    local idx = vim.fn.stridx(line, section.name)
-    api.nvim_win_set_cursor(0, {cursor[1], idx})
-end
+-- function M.place_cursor_on_section()
+-- local section = lib.get_section_at_cursor()
+-- local line = api.nvim_get_current_line()
+-- local cursor = api.nvim_win_get_cursor(0)
+-- local idx = vim.fn.stridx(line, section.name)
+-- api.nvim_win_set_cursor(0, {cursor[1], idx})
+-- end
+
+function M.on_cursor_move(direction) lib.on_cursor_move(direction) end
 
 return M

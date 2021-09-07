@@ -15,6 +15,10 @@ function M.sidebar_nvim_callback(key)
     return string.format(":lua require('sidebar-nvim').on_keypress('%s')<CR>", M.escape_keycode(key))
 end
 
+function M.sidebar_nvim_cursor_move_callback(direction)
+    return string.format(":lua require('sidebar-nvim').on_cursor_move('%s')<CR>", direction)
+end
+
 local function get_builtin_section(name)
     local ret, section = pcall(require, "sidebar-nvim.builtin." .. name)
     if not ret then
