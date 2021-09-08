@@ -9,4 +9,6 @@ M.update_interval = 1000
 
 M.sections = {"datetime", "git-status", "lsp-diagnostics", "todos"}
 
+M.section_separator = "-----"
+
 return M

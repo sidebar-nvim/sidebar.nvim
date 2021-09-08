@@ -1,4 +1,6 @@
 local view = require('sidebar-nvim.view')
+local config = require('sidebar-nvim.config')
+local utils = require('sidebar-nvim.utils')
 
 local api = vim.api
 
@@ -34,7 +36,16 @@ local function build_section_title(section)
 end
 
 -- luacheck: push ignore section
-local function build_section_separator(section) return "-----" end
+local function build_section_separator(section)
+    if type(config.section_separator) == "string" then return config.section_separator end
+
+    if type(config.section_separator) ~= "function" then
+        utils.echo_warning("'section_separator' must be string or function")
+        return
+    end
+
+    return config.section_separator(section)
+end
 -- luacheck: pop
 
 local function get_lines_and_hl(sections_data)

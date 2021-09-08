@@ -30,7 +30,8 @@ require("sidebar-nvim").setup({
     side = "left",
     initial_width = 50,
     update_interval = 1000,
-    sections = { "datetime", "git-status", "diagnostics" }
+    sections = { "datetime", "git-status", "diagnostics" },
+    section_separator = "-----"
 })
 ```
 
@@ -78,6 +79,19 @@ Which sections should the sidebar render
 
 See [Bultin Sections](##builtin-sections) and [Custom Sections](##custom-sections)
 
+#### `section_separator`
+
+Default: `-----`
+
+Can be a string or a function with like the following:
+
+```lua
+function section_separator(section)
+    return "-----"
+end
+```
+
+`section` is the section definition. See [Custom Sections](##custom-sections) for more info
 
 ## Builtin Sections
 
