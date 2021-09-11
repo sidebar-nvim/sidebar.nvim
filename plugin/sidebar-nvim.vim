@@ -4,9 +4,10 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 augroup SidebarNvim
+au!
 au ColorScheme * lua require'sidebar-nvim'.reset_highlight()
 "au TabEnter * lua require'sidebar-nvim'.tab_change()
-au SessionLoadPost * lua require'sidebar-nvim'._session_post()
+au VimEnter * lua require'sidebar-nvim'._vim_enter()
 au VimLeavePre * lua require'sidebar-nvim'._vim_leave()
 augroup end
 

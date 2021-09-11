@@ -10,9 +10,8 @@ Development status: Alpha - bugs are expected
 
 ```lua
 local sidebar = require("sidebar-nvim")
-local opts = {}
+local opts = {open = true}
 sidebar.setup(opts)
-sidebar.open()
 ```
 
 See [options](##options) for a full list of setup options
@@ -27,8 +26,9 @@ Defaults:
 require("sidebar-nvim").setup({
     disable_default_keybindings = 0,
     bindings = nil,
+    open = false,
     side = "left",
-    initial_width = 50,
+    initial_width = 35,
     update_interval = 1000,
     sections = { "datetime", "git-status", "diagnostics" },
     section_separator = "-----"

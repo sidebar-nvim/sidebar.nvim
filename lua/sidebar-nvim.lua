@@ -8,15 +8,23 @@ local bindings = require("sidebar-nvim.bindings")
 
 local api = vim.api
 
-local M = {}
-
-local open_after_session = false
+local M = {open_on_start = false}
 
 function M.setup(opts)
     opts = opts or {}
 
-    for key, value in pairs(opts) do config[key] = value end
+    for key, value in pairs(opts) do
+        if key == 'open' then
+            M.open_on_start = value
+        else
+            config[key] = value
+        end
+    end
+end
 
+function M._vim_leave() lib.destroy() end
+
+function M._vim_enter()
     view._wipe_rogue_buffer()
 
     colors.setup()
@@ -25,18 +33,9 @@ function M.setup(opts)
 
     updater.setup()
     lib.setup()
+
+    if M.open_on_start then M._internal_open() end
 end
-
-function M._session_post()
-    view._wipe_rogue_buffer()
-
-    if open_after_session then
-        open_after_session = false
-        M._internal_open()
-    end
-end
-
-function M._vim_leave() lib.destroy() end
 
 function M.toggle()
     if view.win_open() then
@@ -55,12 +54,7 @@ end
 
 function M._internal_open(opts) if not view.win_open() then lib.open(opts) end end
 
-function M.open()
-    open_after_session = true
-
-    -- open with whatever finishes first, this timeout or session post au
-    vim.defer_fn(function() M._internal_open() end, 200)
-end
+function M.open() M._internal_open() end
 
 function M.tab_change()
     vim.schedule(function()
@@ -96,14 +90,6 @@ function M.reset_highlight()
     colors.setup()
     renderer.render_hl(view.View.bufnr)
 end
-
--- function M.place_cursor_on_section()
--- local section = lib.get_section_at_cursor()
--- local line = api.nvim_get_current_line()
--- local cursor = api.nvim_win_get_cursor(0)
--- local idx = vim.fn.stridx(line, section.name)
--- api.nvim_win_set_cursor(0, {cursor[1], idx})
--- end
 
 function M.on_cursor_move(direction) lib.on_cursor_move(direction) end
 
