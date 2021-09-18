@@ -75,7 +75,12 @@ function M.setup()
 
     for _, opt in ipairs(M.View.bufopts) do vim.bo[M.View.bufnr][opt.name] = opt.val end
 
-    vim.cmd("au! BufWinEnter * lua require('sidebar-nvim.view')._prevent_buffer_override()")
+    vim.api.nvim_exec([[
+augroup sidebar_nvim_prevent_buffer_override
+    autocmd!
+    autocmd BufWinEnter * lua require('sidebar-nvim.view')._prevent_buffer_override()
+augroup END
+]], false)
 end
 
 local goto_tbl = {right = 'h', left = 'l', top = 'j', bottom = 'k'}
@@ -93,7 +98,17 @@ function M._prevent_buffer_override()
         else
             vim.cmd("wincmd " .. goto_tbl[M.View.side])
         end
+
+        -- copy target window options
+        local winopts_target = vim.deepcopy(M.View.winopts)
+        for key, _ in pairs(winopts_target) do winopts_target[key] = a.nvim_win_get_option(0, key) end
+
+        -- change the buffer will override the target window with the sidebar window opts
         vim.cmd("buffer " .. curbuf)
+
+        -- revert the changes made when changing buffer
+        for key, value in pairs(winopts_target) do a.nvim_win_set_option(0, key, value) end
+
         M.resize()
     end)
 end
@@ -138,18 +153,7 @@ end
 
 local move_tbl = {left = 'H', right = 'L', bottom = 'J', top = 'K'}
 
--- TODO: remove this once they fix https://github.com/neovim/neovim/issues/14670
-local function set_local(opt, value)
-    local cmd
-    if value == true then
-        cmd = string.format('setlocal %s', opt)
-    elseif value == false then
-        cmd = string.format('setlocal no%s', opt)
-    else
-        cmd = string.format('setlocal %s=%s', opt, value)
-    end
-    vim.cmd(cmd)
-end
+local function set_local(opt, value) a.nvim_win_set_option(0, opt, value) end
 
 function M.open(options)
     options = options or {focus = false}

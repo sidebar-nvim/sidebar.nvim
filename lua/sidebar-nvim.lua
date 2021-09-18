@@ -56,7 +56,7 @@ function M._internal_open(opts) if not view.win_open() then lib.open(opts) end e
 
 function M.open() M._internal_open() end
 
-function M.tab_change()
+function M._on_tab_change()
     vim.schedule(function()
         if not view.win_open() and view.win_open({any_tabpage = true}) then view.open({focus = false}) end
     end)
@@ -71,7 +71,7 @@ function M.resize(size)
     view.resize()
 end
 
-function M.on_leave()
+function M._on_win_leave()
     vim.defer_fn(function()
         if not view.win_open() then return end
 
@@ -91,6 +91,6 @@ function M.reset_highlight()
     renderer.render_hl(view.View.bufnr)
 end
 
-function M.on_cursor_move(direction) lib.on_cursor_move(direction) end
+function M._on_cursor_move(direction) lib.on_cursor_move(direction) end
 
 return M

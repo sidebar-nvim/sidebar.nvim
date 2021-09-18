@@ -16,7 +16,7 @@ function M.sidebar_nvim_callback(key)
 end
 
 function M.sidebar_nvim_cursor_move_callback(direction)
-    return string.format(":lua require('sidebar-nvim').on_cursor_move('%s')<CR>", direction)
+    return string.format(":lua require('sidebar-nvim')._on_cursor_move('%s')<CR>", direction)
 end
 
 local function get_builtin_section(name)
