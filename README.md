@@ -124,12 +124,39 @@ Prints the current status of the builtin lsp grouper by file. It shows only load
 
 Shows the TODOs in source. Provided by [todo-comments](https://github.com/folke/todo-comments.nvim)
 
+There are some small issues using this section see https://github.com/folke/todo-comments.nvim/pull/63
+So you might want to consider using my fork instead https://github.com/GustavoKatel/todo-comments.nvim
+
 ##### keybindings
 
 | key | when | action |
 |-----|------|--------|
 | `e` | hovering todo location | open file in the previous window at the todo position
 | `t` | hovering the group | toggle collapse on the group
+
+#### containers
+
+Shows the system docker containers. Collected from `docker ps -a --format='{{json .}}'`
+
+##### config
+
+```lua
+require("sidebar-nvim").setup({
+    ...
+    docker = {
+        use_podman = false,
+        attach_shell = "/bin/sh",
+        show_all = true, -- whether to run `docker ps` or `docker ps -a`
+    }
+    ...
+})
+```
+
+##### keybindings
+
+| key | when | action |
+|-----|------|--------|
+| `e` | hovering a container location | open a new terminal and attach to the container with `docker exec -it <container id> ${config.docker.attach_shell}`
 
 ## Custom Sections
 
@@ -299,6 +326,9 @@ return { lines = lines, hl = hl }
 | *SidebarNvimTodoFilename* | Normal |
 | *SidebarNvimTodoLineNumber* | LineNr |
 | *SidebarNvimTodoColNumber* | LineNr |
+| *SidebarNvimDockerContainerStatusRunning* | LspDiagnosticsDefaultInformation |
+| *SidebarNvimDockerContainerStatusExited* | LspDiagnosticsDefaultError |
+| *SidebarNvimDockerContainerName* | Normal |
 
 ## References
 

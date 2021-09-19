@@ -49,6 +49,7 @@ end
 -- |- (number) item.col the col number of this item
 -- |- (string) item.text
 -- |- (string) item.icon
+-- |- (number) item.order items are sorted based on order within each group
 function Loclist:add_item(item)
     if not self.groups[item.group] then self.groups[item.group] = {} end
 
@@ -56,8 +57,10 @@ function Loclist:add_item(item)
 
     item.lnum = item.lnum or 0
     item.col = item.col or 0
+    item.order = item.order or 0
 
     table.insert(self.groups[item.group], item)
+    table.sort(self.groups[item.group], function(a, b) return a.order < b.order end)
 end
 
 -- replace all the items with the new list

@@ -11,6 +11,8 @@ local loclist = Loclist:new({
 
 local status_tmp = ""
 
+local state_order_mapping = {M = 1, AM = 2, ["??"] = 3}
+
 local function async_update(ctx)
     local stdout = luv.new_pipe(false)
     local stderr = luv.new_pipe(false)
@@ -27,10 +29,18 @@ local function async_update(ctx)
                 local line_filename = striped_line:sub(3, -1):match("^%s*(.-)%s*$")
 
                 if line_filename ~= "" then
+
+                    local order = state_order_mapping[line_status]
+                    if order == nil then
+                        state_order_mapping[line_status] = #state_order_mapping
+                        order = state_order_mapping[line_status]
+                    end
+
                     loclist:add_item({
                         group = "git",
                         text = utils.shorten_path(line_filename, ctx.width - 4),
-                        icon = {hl = "SidebarNvimGitStatusState", text = line_status}
+                        icon = {hl = "SidebarNvimGitStatusState", text = line_status},
+                        order = order
                     })
                 end
 

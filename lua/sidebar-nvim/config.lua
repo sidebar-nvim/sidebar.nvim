@@ -7,8 +7,10 @@ M.initial_width = 35
 
 M.update_interval = 1000
 
-M.sections = {"datetime", "git-status", "lsp-diagnostics", "todos"}
+M.sections = {"datetime", "git-status", "lsp-diagnostics", "containers"}
 
 M.section_separator = "-----"
+
+M.docker = {use_podman = false, attach_shell = "/bin/sh", show_all = true}
 
 return M
