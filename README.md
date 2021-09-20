@@ -16,6 +16,12 @@ sidebar.setup(opts)
 
 See [options](##options) for a full list of setup options
 
+## TODOs (Need help)
+
+- [ ] Better section icons
+- [ ] Improve docs + write vim help files
+- [ ] See repo issues, any contribution is really appreciated
+
 ## Options
 
 Sidebar setup options.
