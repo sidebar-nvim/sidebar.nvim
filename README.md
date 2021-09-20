@@ -36,7 +36,7 @@ require("sidebar-nvim").setup({
     side = "left",
     initial_width = 35,
     update_interval = 1000,
-    sections = { "datetime", "git-status", "diagnostics" },
+    sections = { "datetime", "git-status", "lsp-diagnostics" },
     section_separator = "-----"
 })
 ```
