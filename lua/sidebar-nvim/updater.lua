@@ -14,18 +14,19 @@ function M.setup()
 
     for section_index, section_data in ipairs(config.sections) do
         local section = utils.resolve_section(section_index, section_data)
+        if section then
+            local hl_def = section.highlights or {}
 
-        local hl_def = section.highlights or {}
+            for hl_group, hl_group_data in pairs(hl_def.groups or {}) do
+                colors.def_hl_group(hl_group, hl_group_data.gui, hl_group_data.fg, hl_group_data.bg)
+            end
 
-        for hl_group, hl_group_data in pairs(hl_def.groups or {}) do
-            colors.def_hl_group(hl_group, hl_group_data.gui, hl_group_data.fg, hl_group_data.bg)
+            for hl_group, hl_group_link_to in pairs(hl_def.links or {}) do
+                colors.def_hl_link(hl_group, hl_group_link_to)
+            end
+
+            if section.setup then section.setup() end
         end
-
-        for hl_group, hl_group_link_to in pairs(hl_def.links or {}) do
-            colors.def_hl_link(hl_group, hl_group_link_to)
-        end
-
-        if section.setup then section.setup() end
     end
 end
 

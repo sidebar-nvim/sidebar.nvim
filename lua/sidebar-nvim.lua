@@ -8,7 +8,7 @@ local bindings = require("sidebar-nvim.bindings")
 
 local api = vim.api
 
-local M = {open_on_start = false}
+local M = {open_on_start = false, setup_called = false, vim_enter_called = false}
 
 function M.setup(opts)
     opts = opts or {}
@@ -20,11 +20,15 @@ function M.setup(opts)
             config[key] = value
         end
     end
+
+    M.setup_called = true
+    -- check if vim enter has already been called, if so, do initialize
+    if M.vim_enter_called then M._internal_setup() end
 end
 
 function M._vim_leave() lib.destroy() end
 
-function M._vim_enter()
+function M._internal_setup()
     view._wipe_rogue_buffer()
 
     colors.setup()
@@ -35,6 +39,12 @@ function M._vim_enter()
     lib.setup()
 
     if M.open_on_start then M._internal_open() end
+end
+
+function M._vim_enter()
+    M.vim_enter_called = true
+
+    if M.setup_called then M._internal_setup() end
 end
 
 function M.toggle()

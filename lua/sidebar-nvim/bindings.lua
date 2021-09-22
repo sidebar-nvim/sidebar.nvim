@@ -25,7 +25,7 @@ function M.setup()
 
     for section_index, section_data in ipairs(config.sections) do
         local section = utils.resolve_section(section_index, section_data)
-        if section.bindings ~= nil then M.update_section_bindings(section_index, section.bindings) end
+        if section and section.bindings ~= nil then M.update_section_bindings(section_index, section.bindings) end
     end
 end
 

@@ -22,7 +22,7 @@ end
 local function get_builtin_section(name)
     local ret, section = pcall(require, "sidebar-nvim.builtin." .. name)
     if not ret then
-        M.echo_warning("invalid builtin section: " .. name)
+        M.echo_warning("error trying to load section: " .. name)
         return nil
     end
 
