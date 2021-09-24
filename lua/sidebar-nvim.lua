@@ -17,7 +17,15 @@ function M.setup(opts)
         if key == 'open' then
             M.open_on_start = value
         else
-            config[key] = value
+            if type(value) == 'table' then
+                if type(config[key]) == 'table' then
+                    config[key] = vim.tbl_deep_extend('force', config[key], value)
+                else
+                    config[key] = value
+                end
+            else
+                config[key] = value
+            end
         end
     end
 

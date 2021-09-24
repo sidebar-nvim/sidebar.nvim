@@ -103,7 +103,41 @@ end
 
 #### datetime
 
-Prints the current date and time using `vim.fn.strftime("%c")`
+Prints the current date and time using. You can define multiple clocks with different timezones or offsets.
+
+NOTE: In order to use timezones you need to install `luatz` from luarocks, like the following if using `packer`:
+```lua
+use {
+    "GustavoKatel/sidebar.nvim",
+    rocks = {'luatz'}
+}
+```
+
+Example configuration:
+
+```lua
+require("sidebar-nvim").setup({
+    ...
+    datetime = {
+        format = "%a %b %d, %H:%M",
+        clocks = {
+            { name = "local" }
+        }
+    }
+    ...
+})
+```
+
+Clock options:
+```lua
+{
+    name = "clock name", -- defaults to `tz`
+    tz = "America/Los_Angeles", -- only works if using `luatz`, defaults to current timezone
+    offset = -8, -- this is ignored if tz is present, defaults to 0
+}
+```
+
+You can see a list of all [available timezones here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
 
 #### git-status
 
