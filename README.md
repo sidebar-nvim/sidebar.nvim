@@ -113,6 +113,8 @@ use {
 }
 ```
 
+This dependency is optional, you can use the `offset` parameter to change the clock, which does not require extra dependencies.
+
 Example configuration:
 
 ```lua
