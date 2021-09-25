@@ -115,6 +115,8 @@ use {
 
 This dependency is optional, you can use the `offset` parameter to change the clock, which does not require extra dependencies.
 
+##### config
+
 Example configuration:
 
 ```lua
@@ -168,6 +170,18 @@ Shows the TODOs in source. Provided by [todo-comments](https://github.com/folke/
 
 There are some small issues using this section see https://github.com/folke/todo-comments.nvim/pull/63
 So you might want to consider using my fork instead https://github.com/GustavoKatel/todo-comments.nvim
+
+##### config
+
+```lua
+require("sidebar-nvim").setup({
+    ...
+    todos = {
+        ignored_paths = {'~'}, -- ignore certain paths, this will prevent huge folders like $HOME to hog Neovim with TODO searching
+    }
+    ...
+})
+```
 
 ##### keybindings
 

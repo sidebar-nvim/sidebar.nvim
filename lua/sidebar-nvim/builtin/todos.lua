@@ -1,5 +1,6 @@
 local has_todos, todos = pcall(require, "todo-comments.search")
 local Loclist = require("sidebar-nvim.components.loclist")
+local config = require("sidebar-nvim.config")
 
 local loclist = Loclist:new({
     highlights = {
@@ -27,6 +28,8 @@ local is_searching = false
 
 function search_controller.do_search()
     if not has_todos then return end
+
+    if search_controller.is_current_path_ignored() then return end
 
     local _, todo_config = pcall(require, "todo-comments.config")
     if not todo_config.loaded then
@@ -60,6 +63,13 @@ function search_controller.do_search()
     end, opts)
 end
 
+function search_controller.is_current_path_ignored()
+    local cwd = vim.loop.cwd()
+    for _, path in pairs(config.todos.ignored_paths or {}) do if vim.fn.expand(path) == cwd then return true end end
+
+    return false
+end
+
 return {
     title = "TODOs",
     icon = "📄",
@@ -75,6 +85,8 @@ return {
         loclist:draw(ctx, lines, hl)
 
         if #lines == 0 then lines = {"<no TODOs>"} end
+
+        if search_controller.is_current_path_ignored() then lines = {"<path ignored>"} end
 
         return {lines = lines, hl = hl}
     end,
