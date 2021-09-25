@@ -385,6 +385,8 @@ return { lines = lines, hl = hl }
 | *SidebarNvimDockerContainerStatusRunning* | LspDiagnosticsDefaultInformation |
 | *SidebarNvimDockerContainerStatusExited* | LspDiagnosticsDefaultError |
 | *SidebarNvimDockerContainerName* | Normal |
+| *SidebarNvimDatetimeClockName* | Comment |
+| *SidebarNvimDatetimeClockValue* | Normal |
 
 ## References
 
