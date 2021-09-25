@@ -8,22 +8,22 @@ local luv = vim.loop
 local loclist = Loclist:new({
     show_location = false,
     ommit_single_group = true,
-    highlights = {item_text = "SidebarNvimDockerContainerName"}
+    highlights = { item_text = "SidebarNvimDockerContainerName" },
 })
 
 local output_tmp = ""
 
 local function get_container_icon(container)
-    local default = {hl = "SidebarNvimDockerContainerStatusRunning", text = "✓"}
+    local default = { hl = "SidebarNvimDockerContainerStatusRunning", text = "✓" }
 
-    local mapping = {running = default, exited = {hl = "SidebarNvimDockerContainerStatusExited", text = "☒"}}
+    local mapping = { running = default, exited = { hl = "SidebarNvimDockerContainerStatusExited", text = "☒" } }
 
     local icon = mapping[container.State] or default
 
     return icon
 end
 
-local state_order_mapping = {running = 0, exited = 1}
+local state_order_mapping = { running = 0, exited = 1 }
 
 local function async_update(_)
     local stdout = luv.new_pipe(false)
@@ -31,16 +31,17 @@ local function async_update(_)
 
     local handle
 
-    local args = {"ps"}
-    if config.docker.show_all then args = {"ps", "-a"} end
+    local args = { "ps" }
+    if config.docker.show_all then
+        args = { "ps", "-a" }
+    end
 
     local cmd = docker_utils.build_docker_command(args, stdout, stderr)
     handle = luv.spawn(cmd.bin, cmd.opts, function()
-
         vim.schedule(function()
             loclist:clear()
             if output_tmp ~= "" then
-                for _, line in ipairs(vim.split(output_tmp, '\n')) do
+                for _, line in ipairs(vim.split(output_tmp, "\n")) do
                     line = string.sub(line, 2, #line - 1)
                     if line ~= "" then
                         local ret, container = pcall(vim.fn.json_decode, line)
@@ -50,7 +51,7 @@ local function async_update(_)
                                 text = container.Names,
                                 icon = get_container_icon(container),
                                 order = state_order_mapping[container.State] or 999,
-                                id = container.ID
+                                id = container.ID,
                             })
                         else
                             vim.schedule(function()
@@ -72,23 +73,34 @@ local function async_update(_)
     output_tmp = ""
 
     luv.read_start(stdout, function(err, data)
-        if data == nil then return end
+        if data == nil then
+            return
+        end
 
         output_tmp = output_tmp .. data
 
-        if err ~= nil then vim.schedule(function() utils.echo_warning(err) end) end
+        if err ~= nil then
+            vim.schedule(function()
+                utils.echo_warning(err)
+            end)
+        end
     end)
 
     luv.read_start(stderr, function(err, data)
-        if data == nil then return end
+        if data == nil then
+            return
+        end
 
-        if err ~= nil then vim.schedule(function() utils.echo_warning(err) end) end
+        if err ~= nil then
+            vim.schedule(function()
+                utils.echo_warning(err)
+            end)
+        end
 
         -- vim.schedule(function()
         -- utils.echo_warning(data)
         -- end)
     end)
-
 end
 
 local async_update_debounced = Debouncer:new(async_update, 2000)
@@ -96,7 +108,9 @@ local async_update_debounced = Debouncer:new(async_update, 2000)
 return {
     title = "Containers",
     icon = "📄",
-    setup = function() async_update_debounced:call() end,
+    setup = function()
+        async_update_debounced:call()
+    end,
     draw = function(ctx)
         async_update_debounced:call(ctx)
 
@@ -105,9 +119,11 @@ return {
 
         loclist:draw(ctx, lines, hl)
 
-        if #lines == 0 then lines = {"<no containers>"} end
+        if #lines == 0 then
+            lines = { "<no containers>" }
+        end
 
-        return {lines = lines, hl = hl}
+        return { lines = lines, hl = hl }
     end,
     highlights = {
         -- { MyHLGroup = { gui=<color>, fg=<color>, bg=<color> } }
@@ -116,16 +132,17 @@ return {
         links = {
             SidebarNvimDockerContainerStatusRunning = "LspDiagnosticsDefaultInformation",
             SidebarNvimDockerContainerStatusExited = "LspDiagnosticsDefaultError",
-            SidebarNvimDockerContainerName = "Normal"
-        }
+            SidebarNvimDockerContainerName = "Normal",
+        },
     },
     bindings = {
         ["e"] = function(line)
             local location = loclist:get_location_at(line)
-            if location == nil then return end
+            if location == nil then
+                return
+            end
             vim.cmd("wincmd p")
             vim.cmd("terminal " .. docker_utils.build_docker_attach_command(location.id))
-        end
-    }
+        end,
+    },
 }
-

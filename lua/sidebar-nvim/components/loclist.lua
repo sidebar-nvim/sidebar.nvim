@@ -4,7 +4,7 @@ local Loclist = {}
 
 Loclist.DEFAULT_OPTIONS = {
     groups = {},
-    group_icon = {closed = "", opened = ""},
+    group_icon = { closed = "", opened = "" },
     show_group_count = true,
     show_location = true,
     ommit_single_group = false,
@@ -14,11 +14,11 @@ Loclist.DEFAULT_OPTIONS = {
         item_icon = "Normal",
         item_lnum = "LineNr",
         item_col = "LineNr",
-        item_text = "Normal"
-    }
+        item_text = "Normal",
+    },
 }
 
-setmetatable(Loclist, {__index = Component})
+setmetatable(Loclist, { __index = Component })
 
 -- creates a new loclist component
 -- @param (table) o
@@ -32,7 +32,7 @@ function Loclist:new(o)
         -- table(line__number -> item ref)
         _location_indexes = {},
         -- used to keep the group list stable
-        _group_keys = {}
+        _group_keys = {},
     })
 
     o._group_keys = vim.tbl_keys(o.groups or {})
@@ -51,16 +51,22 @@ end
 -- |- (string) item.icon
 -- |- (number) item.order items are sorted based on order within each group
 function Loclist:add_item(item)
-    if not self.groups[item.group] then self.groups[item.group] = {} end
+    if not self.groups[item.group] then
+        self.groups[item.group] = {}
+    end
 
-    if not vim.tbl_contains(self._group_keys, item.group) then table.insert(self._group_keys, item.group) end
+    if not vim.tbl_contains(self._group_keys, item.group) then
+        table.insert(self._group_keys, item.group)
+    end
 
     item.lnum = item.lnum or 0
     item.col = item.col or 0
     item.order = item.order or 0
 
     table.insert(self.groups[item.group], item)
-    table.sort(self.groups[item.group], function(a, b) return a.order < b.order end)
+    table.sort(self.groups[item.group], function(a, b)
+        return a.order < b.order
+    end)
 end
 
 -- replace all the items with the new list
@@ -75,7 +81,9 @@ function Loclist:set_items(items)
     self:clear()
 
     self.groups = {}
-    for _, item in pairs(items) do self:add_item(item) end
+    for _, item in pairs(items) do
+        self:add_item(item)
+    end
     self._group_keys = vim.tbl_keys(self.groups)
 end
 
@@ -89,23 +97,29 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
 
     if with_label then
         local icon = self.group_icon.opened
-        if group.is_closed then icon = self.group_icon.closed end
+        if group.is_closed then
+            icon = self.group_icon.closed
+        end
 
         local group_title = icon .. " " .. group_name
 
         local line = group_title
 
-        if line:len() > ctx.width - 1 then line = line:sub(1, ctx.width - 5) .. "..." end
+        if line:len() > ctx.width - 1 then
+            line = line:sub(1, ctx.width - 5) .. "..."
+        end
 
         local offset = ctx.width - #line - 2
         line = line .. string.rep(" ", offset)
 
-        table.insert(section_hl, {self.highlights.group, #section_lines, 0, #line - offset})
+        table.insert(section_hl, { self.highlights.group, #section_lines, 0, #line - offset })
 
         if self.show_group_count then
-            table.insert(section_hl, {self.highlights.group_count, #section_lines, #line, -1})
+            table.insert(section_hl, { self.highlights.group_count, #section_lines, #line, -1 })
             local total = #group
-            if total > 99 then total = "++" end
+            if total > 99 then
+                total = "++"
+            end
             line = line .. total
         end
 
@@ -113,31 +127,37 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
         table.insert(section_lines, line)
     end
 
-    if group.is_closed then return end
+    if group.is_closed then
+        return
+    end
 
     for _, item in ipairs(group) do
         self._location_indexes[#section_lines] = item
         local line = ""
 
-        if with_label then line = "│ " end
+        if with_label then
+            line = "│ "
+        end
 
         if item.icon then
-            table.insert(section_hl,
-                         {item.icon.hl or self.highlights.item_icon, #section_lines, #line, #line + #item.icon.text})
+            table.insert(
+                section_hl,
+                { item.icon.hl or self.highlights.item_icon, #section_lines, #line, #line + #item.icon.text }
+            )
             line = line .. item.icon.text .. " "
         end
 
         if self.show_location then
             local lnum = "" .. item.lnum
-            table.insert(section_hl, {self.highlights.item_lnum, #section_lines, #line + 1, #line + #lnum + 1})
+            table.insert(section_hl, { self.highlights.item_lnum, #section_lines, #line + 1, #line + #lnum + 1 })
             line = line .. " " .. lnum .. ":"
 
             local col = "" .. item.col
-            table.insert(section_hl, {self.highlights.item_col, #section_lines, #line, #line + #col})
+            table.insert(section_hl, { self.highlights.item_col, #section_lines, #line, #line + #col })
             line = line .. col .. " "
         end
 
-        table.insert(section_hl, {self.highlights.item_text, #section_lines, #line, -1})
+        table.insert(section_hl, { self.highlights.item_text, #section_lines, #line, -1 })
         line = line .. item.text
 
         table.insert(section_lines, line)
@@ -159,7 +179,6 @@ function Loclist:draw(ctx, section_lines, section_hl)
     for _, group_name in ipairs(self._group_keys) do
         self:draw_group(ctx, group_name, true, section_lines, section_hl)
     end
-
 end
 
 -- returns the location specified in the location printed on line `line`
@@ -175,15 +194,25 @@ end
 -- @param (number) line
 function Loclist:toggle_group_at(line)
     local group = self._group_indexes[line]
-    if not group then return end
+    if not group then
+        return
+    end
 
     group.is_closed = not group.is_closed
 end
 
 -- opens all groups
-function Loclist:open_all_groups() for _, group in pairs(self.groups) do group.is_closed = false end end
+function Loclist:open_all_groups()
+    for _, group in pairs(self.groups) do
+        group.is_closed = false
+    end
+end
 
 -- closes all groups
-function Loclist:close_all_groups() for _, group in pairs(self.groups) do group.is_closed = true end end
+function Loclist:close_all_groups()
+    for _, group in pairs(self.groups) do
+        group.is_closed = true
+    end
+end
 
 return Loclist

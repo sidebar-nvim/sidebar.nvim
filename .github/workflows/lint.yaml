@@ -2,7 +2,7 @@ name: Linting & Formatting
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
 
 concurrency: 
@@ -27,10 +27,8 @@ jobs:
       - name: Lint
         run: luacheck lua
 
-      #  TODO: this is not working :/
-      #- name: Install formatter
-        #run: luarocks install --server=https://luarocks.org/dev luaformatter
-
-      #- name: Check formatting
-        #run: lua-format -c .lua-format.yaml --check --verbose lua/**/*
-
+      - uses: JohnnyMorganz/stylua-action@1.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # CLI arguments
+          args: --check lua

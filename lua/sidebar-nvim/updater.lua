@@ -10,7 +10,9 @@ local M = {}
 M.sections_data = {}
 
 function M.setup()
-    if config.sections == nil then return end
+    if config.sections == nil then
+        return
+    end
 
     for section_index, section_data in ipairs(config.sections) do
         local section = utils.resolve_section(section_index, section_data)
@@ -25,28 +27,31 @@ function M.setup()
                 colors.def_hl_link(hl_group, hl_group_link_to)
             end
 
-            if section.setup then section.setup() end
+            if section.setup then
+                section.setup()
+            end
         end
     end
 end
 
 function M.update()
-    if vim.v.exiting ~= vim.NIL then return end
+    if vim.v.exiting ~= vim.NIL then
+        return
+    end
 
     M.sections_data = {}
 
-    local draw_ctx = {width = view.View.width}
+    local draw_ctx = { width = view.View.width }
 
     for section_index, section_data in pairs(config.sections) do
         local section = utils.resolve_section(section_index, section_data)
 
         if section ~= nil then
             local section_lines = section.draw(draw_ctx)
-            local data = {lines = section_lines, section = section}
+            local data = { lines = section_lines, section = section }
             table.insert(M.sections_data, data)
         end
     end
-
 end
 
 return M

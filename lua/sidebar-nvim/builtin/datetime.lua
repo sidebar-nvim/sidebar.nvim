@@ -1,5 +1,5 @@
-local config = require('sidebar-nvim.config')
-local utils = require('sidebar-nvim.utils')
+local config = require("sidebar-nvim.config")
+local utils = require("sidebar-nvim.utils")
 local has_luatz, luatz = pcall(require, "luatz")
 local _, timetable = pcall(require, "luatz.timetable")
 
@@ -25,7 +25,7 @@ return {
 
         if not config.datetime or not config.datetime.clocks or #config.datetime.clocks == 0 then
             table.insert(lines, "<no clocks>")
-            return {lines = lines, hl = hl}
+            return { lines = lines, hl = hl }
         end
 
         local clocks_num = #config.datetime.clocks
@@ -46,19 +46,21 @@ return {
                 clock_value = os.date(format, os.time() + offset * 60 * 60)
             end
 
-            table.insert(hl, {"SidebarNvimDatetimeClockName", #lines, 0, -1})
+            table.insert(hl, { "SidebarNvimDatetimeClockName", #lines, 0, -1 })
             table.insert(lines, "# " .. (clock.name or clock.offset or clock.tz))
 
-            table.insert(hl, {"SidebarNvimDatetimeClockValue", #lines, 0, -1})
+            table.insert(hl, { "SidebarNvimDatetimeClockValue", #lines, 0, -1 })
             table.insert(lines, clock_value)
 
-            if i < clocks_num then table.insert(lines, "") end
+            if i < clocks_num then
+                table.insert(lines, "")
+            end
         end
 
-        return {lines = lines, hl = hl}
+        return { lines = lines, hl = hl }
     end,
     highlights = {
         groups = {},
-        links = {SidebarNvimDatetimeClockName = "Comment", SidebarNvimDatetimeClockValue = "Normal"}
-    }
+        links = { SidebarNvimDatetimeClockName = "Comment", SidebarNvimDatetimeClockValue = "Normal" },
+    },
 }

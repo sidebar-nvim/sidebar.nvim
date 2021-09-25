@@ -7,14 +7,14 @@ M.initial_width = 35
 
 M.update_interval = 1000
 
-M.sections = {"datetime", "git-status", "lsp-diagnostics", "containers"}
+M.sections = { "datetime", "git-status", "lsp-diagnostics", "containers" }
 
 M.section_separator = "-----"
 
-M.docker = {use_podman = false, attach_shell = "/bin/sh", show_all = true}
+M.docker = { use_podman = false, attach_shell = "/bin/sh", show_all = true }
 
-M.datetime = {format = "%a %b %d, %H:%M", clocks = {{name = "local"}}}
+M.datetime = { format = "%a %b %d, %H:%M", clocks = { { name = "local" } } }
 
-M.todos = {ignored_paths = {'~'}}
+M.todos = { ignored_paths = { "~" } }
 
 return M

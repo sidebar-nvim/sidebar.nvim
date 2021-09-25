@@ -6,7 +6,9 @@ local M = {}
 function M.get_docker_bin()
     local bin = "docker"
 
-    if config.docker.use_podman then bin = "podman" end
+    if config.docker.use_podman then
+        bin = "podman"
+    end
 
     return bin
 end
@@ -17,7 +19,7 @@ function M.build_docker_command(args, stdout, stderr)
     args = args or {}
     table.insert(args, "--format='{{json .}}'")
 
-    return {bin = bin, opts = {args = args, stdio = {nil, stdout, stderr}, cwd = luv.cwd()}}
+    return { bin = bin, opts = { args = args, stdio = { nil, stdout, stderr }, cwd = luv.cwd() } }
 end
 
 function M.build_docker_attach_command(container_id)
