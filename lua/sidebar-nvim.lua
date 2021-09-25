@@ -130,7 +130,7 @@ end
 
 function M.reset_highlight()
     colors.setup()
-    renderer.render_hl(view.View.bufnr)
+    renderer.render_hl(view.View.bufnr, {})
 end
 
 function M._on_cursor_move(direction)
