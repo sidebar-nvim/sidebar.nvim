@@ -79,7 +79,7 @@ Update frequency in milliseconds
 
 #### `sections`
 
-Default: `{ "datetime", "git-status", "diagnostics" }`
+Default: `{ "datetime", "git-status", "lsp-diagnostics" }`
 
 Which sections should the sidebar render
 
