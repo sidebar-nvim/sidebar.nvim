@@ -22,9 +22,7 @@ local function _redraw()
         return
     end
 
-    if view.win_open() then
-        M.State.section_line_indexes = renderer.draw(updater.sections_data)
-    end
+    M.State.section_line_indexes = renderer.draw(updater.sections_data)
 end
 
 local function loop()
