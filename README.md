@@ -194,6 +194,8 @@ require("sidebar-nvim").setup({
 
 Shows the system docker containers. Collected from `docker ps -a --format='{{json .}}'`
 
+NOTE: in some environments this can be a very intensive command to run. You may see increased cpu usage when this section is enabled.
+
 ##### config
 
 ```lua
@@ -203,6 +205,7 @@ require("sidebar-nvim").setup({
         use_podman = false,
         attach_shell = "/bin/sh",
         show_all = true, -- whether to run `docker ps` or `docker ps -a`
+        interval = 5000, -- container update interval. The fetch command will run every 5s
     }
     ...
 })
@@ -359,6 +362,10 @@ loclist:draw(ctx, lines, hl)
 return { lines = lines, hl = hl }
 
 ```
+
+## Third party sections
+
+- [dap-sidebar.nvim](https://github.com/GustavoKatel/dap-sidebar.nvim) - Show Dap breakpoints in the sidebar
 
 ## Colors
 

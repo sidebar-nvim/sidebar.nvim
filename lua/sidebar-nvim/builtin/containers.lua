@@ -103,12 +103,14 @@ local function async_update(_)
     end)
 end
 
-local async_update_debounced = Debouncer:new(async_update, 2000)
+local async_update_debounced
 
 return {
     title = "Containers",
     icon = "📄",
     setup = function()
+        local interval = config.docker.interval or 2000
+        async_update_debounced = Debouncer:new(async_update, interval)
         async_update_debounced:call()
     end,
     draw = function(ctx)
