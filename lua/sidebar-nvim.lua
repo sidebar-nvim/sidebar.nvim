@@ -100,13 +100,26 @@ function M.on_keypress(key)
     lib.on_keypress(key)
 end
 
+-- Force immediate update
 function M.update()
     lib.update()
 end
 
+-- Resize the sidebar to the requested size
+-- @param size number
 function M.resize(size)
     view.View.width = size
     view.resize()
+end
+
+-- Focus or open the sidebar
+function M.focus()
+    if not view.win_open() then
+        view.open({ focus = true })
+    end
+
+    local winnr = view.get_winnr()
+    view.focus(winnr)
 end
 
 function M._on_win_leave()
