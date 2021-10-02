@@ -145,7 +145,25 @@ Sections using it: [git-status](./builtin-sections.md#git-status), [lsp-diagnost
 Example:
 ```lua
 local Loclist = require("sidebar-nvim.components.loclist")
-local loclist = Loclist:new()
+local loclist = Loclist:new({
+    -- line and col numbers
+    show_location = true,
+    -- badge showing the number of items in each group
+    show_group_count = true,
+    -- if there's a single group, skip rendering the group controls
+    ommit_single_group = false,
+    -- initial state of the groups
+    groups_initially_closed = false,
+    -- highlight groups for each control element
+    highlights = {
+        group = "SidebarNvimLabel",
+        group_count = "SidebarNvimNormal",
+        item_icon = "SidebarNvimNormal",
+        item_lnum = "SidebarNvimLineNr",
+        item_col = "SidebarNvimLineNr",
+        item_text = "SidebarNvimNormal",
+    },
+})
 loclist:add_item({ group = "my_group", lnum = 1, col = 2, text = "my cool location", icon = { text = "#", hl = "MyCustomHighlightGroup" } })
 
 -- inside the section draw function

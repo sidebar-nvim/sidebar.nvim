@@ -83,6 +83,50 @@ function M.open(opts)
     M.update()
 end
 
+function M.close()
+    if view.win_open() then
+        view.close()
+    end
+end
+
+function M.toggle(opts)
+    if view.win_open() then
+        M.close()
+        return
+    end
+
+    M.open(opts)
+end
+
+-- Resize the sidebar to the requested size
+-- @param size number
+function M.resize(size)
+    view.View.width = size
+    view.resize()
+end
+
+function M.is_open(opts)
+    return view.win_open(opts)
+end
+--
+-- Focus or open the sidebar
+function M.focus()
+    if not view.win_open() then
+        M.open({ focus = true })
+        return
+    end
+
+    local winnr = view.get_winnr()
+    view.focus(winnr)
+end
+
+--- Returns the window width for sidebar-nvim within the tabpage specified
+---@param tabpage number: (optional) the number of the chosen tabpage. Defaults to current tabpage.
+---@return number
+function M.get_width(tabpage)
+    return view.get_width(tabpage)
+end
+
 function M.destroy()
     view.close()
 
@@ -184,6 +228,37 @@ function M.on_cursor_move(direction)
     end
 
     api.nvim_win_set_cursor(0, { next_line, 1 })
+end
+
+function M.on_tab_change()
+    vim.schedule(function()
+        if not view.win_open() and view.win_open({ any_tabpage = true }) then
+            view.open({ focus = false })
+        end
+    end)
+end
+
+function M.on_win_leave()
+    vim.defer_fn(function()
+        if not view.win_open() then
+            return
+        end
+
+        local windows = api.nvim_list_wins()
+        local curtab = api.nvim_get_current_tabpage()
+        local wins_in_tabpage = vim.tbl_filter(function(w)
+            return api.nvim_win_get_tabpage(w) == curtab
+        end, windows)
+        if #windows == 1 then
+            api.nvim_command(":silent qa!")
+        elseif #wins_in_tabpage == 1 then
+            api.nvim_command(":tabclose")
+        end
+    end, 50)
+end
+
+function M.on_vim_leave()
+    M.destroy()
 end
 
 return M

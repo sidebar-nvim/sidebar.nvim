@@ -6,13 +6,13 @@ set cpo&vim
 augroup SidebarNvim
 au!
 au ColorScheme * lua require'sidebar-nvim'.reset_highlight()
-au TabEnter * lua require'sidebar-nvim'._on_tab_change()
-au WinClosed * lua require'sidebar-nvim'._on_win_leave()
 au VimEnter * lua require'sidebar-nvim'._vim_enter()
-au VimLeavePre * lua require'sidebar-nvim'._vim_leave()
-au BufWritePost * lua require'sidebar-nvim'.update()
-au VimResume * lua require'sidebar-nvim'.update()
-au FocusGained * lua require'sidebar-nvim'.update()
+au VimLeavePre * lua require'sidebar-nvim.lib'.on_vim_leave()
+au TabEnter * lua require'sidebar-nvim.lib'.on_tab_change()
+au WinClosed * lua require'sidebar-nvim.lib'.on_win_leave()
+au BufWritePost * lua require'sidebar-nvim.lib'.update()
+au VimResume * lua require'sidebar-nvim.lib'.update()
+au FocusGained * lua require'sidebar-nvim.lib'.update()
 augroup end
 
 command! SidebarNvimOpen lua require'sidebar-nvim'.open()

@@ -10,6 +10,7 @@ local loclist = Loclist:new({
         item_lnum = "SidebarNvimTodoLineNumber",
         item_col = "SidebarNvimTodoColNumber",
     },
+    groups_initially_closed = config.todos.initially_closed,
 })
 
 local search_controller = {}
@@ -143,5 +144,23 @@ return {
     end,
     update = function()
         search_controller.do_search()
+    end,
+    toggle_all = function()
+        loclist:toggle_all_groups()
+    end,
+    close_all = function()
+        loclist:close_all_groups()
+    end,
+    open_all = function()
+        loclist:open_all_groups()
+    end,
+    open = function(group)
+        loclist:open_group(group)
+    end,
+    close = function(group)
+        loclist:close_group(group)
+    end,
+    toggle = function(group)
+        loclist:toggle_group(group)
     end,
 }

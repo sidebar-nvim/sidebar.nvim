@@ -5,16 +5,21 @@ local Loclist = {}
 Loclist.DEFAULT_OPTIONS = {
     groups = {},
     group_icon = { closed = "", opened = "" },
+    -- badge showing the number of items in each group
     show_group_count = true,
+    -- line and col numbers
     show_location = true,
+    -- if there's a single group, skip rendering the group controls
     ommit_single_group = false,
+    -- initial state of the groups
+    groups_initially_closed = false,
     highlights = {
-        group = "Label",
-        group_count = "Normal",
-        item_icon = "Normal",
-        item_lnum = "LineNr",
-        item_col = "LineNr",
-        item_text = "Normal",
+        group = "SidebarNvimLabel",
+        group_count = "SidebarNvimNormal",
+        item_icon = "SidebarNvimNormal",
+        item_lnum = "SidebarNvimLineNr",
+        item_col = "SidebarNvimLineNr",
+        item_text = "SidebarNvimNormal",
     },
 }
 
@@ -48,11 +53,13 @@ end
 -- |- (number) item.lnum the line number of this item
 -- |- (number) item.col the col number of this item
 -- |- (string) item.text
--- |- (string) item.icon
+-- |- (table) item.icon
+-- |--|- (string) item.icon.text
+-- |--|- (string) item.icon.hl override the default icon highlight group
 -- |- (number) item.order items are sorted based on order within each group
 function Loclist:add_item(item)
     if not self.groups[item.group] then
-        self.groups[item.group] = {}
+        self.groups[item.group] = { is_closed = self.groups_initially_closed or false }
     end
 
     if not vim.tbl_contains(self._group_keys, item.group) then
@@ -199,6 +206,46 @@ function Loclist:toggle_group_at(line)
     end
 
     group.is_closed = not group.is_closed
+end
+
+-- Toggle group with name `group_name`
+-- @param group_name string: the name of group to toggle
+function Loclist:toggle_group(group_name)
+    local group = self.groups[group_name]
+    if not group then
+        return
+    end
+
+    group.is_closed = not group.is_closed
+end
+
+-- Open group with name `group_name`
+-- @param group_name string: the name of group to open
+function Loclist:open_group(group_name)
+    local group = self.groups[group_name]
+    if not group then
+        return
+    end
+
+    group.is_closed = false
+end
+
+-- Close group with name `group_name`
+-- @param group_name string: the name of group to close
+function Loclist:close_group(group_name)
+    local group = self.groups[group_name]
+    if not group then
+        return
+    end
+
+    group.is_closed = true
+end
+
+-- toggle all groups
+function Loclist:toggle_all_groups()
+    for _, group in pairs(self.groups) do
+        group.is_closed = not group.is_closed
+    end
 end
 
 -- opens all groups

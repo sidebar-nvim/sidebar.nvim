@@ -17,6 +17,6 @@ M.docker = { use_podman = false, attach_shell = "/bin/sh", show_all = true, inte
 
 M.datetime = { format = "%a %b %d, %H:%M", clocks = { { name = "local" } } }
 
-M.todos = { ignored_paths = { "~" } }
+M.todos = { ignored_paths = { "~" }, initially_closed = false }
 
 return M

@@ -16,7 +16,7 @@ function M.unescape_keycode(key)
 end
 
 function M.sidebar_nvim_callback(key)
-    return string.format(":lua require('sidebar-nvim').on_keypress('%s')<CR>", M.escape_keycode(key))
+    return string.format(":lua require('sidebar-nvim.lib').on_keypress('%s')<CR>", M.escape_keycode(key))
 end
 
 function M.sidebar_nvim_cursor_move_callback(direction)

@@ -77,6 +77,7 @@ require("sidebar-nvim").setup({
     ...
     todos = {
         ignored_paths = {'~'}, -- ignore certain paths, this will prevent huge folders like $HOME to hog Neovim with TODO searching
+        initially_closed = false, -- whether the groups should be initially closed on start. You can manually open/close groups later.
     }
     ...
 })
@@ -88,6 +89,36 @@ require("sidebar-nvim").setup({
 |-----|------|--------|
 | `e` | hovering todo location | open file in the previous window at the todo position
 | `t` | hovering the group | toggle collapse on the group
+
+#### functions {#todos-functions}
+
+The following functions are available to the user to control this specific section elements.
+
+##### toggle_all()
+
+Toggle all groups, i.e.: NOTE, TODO, FIXME etc.
+
+Call like the following: `require("sidebar-nvim.builtin.todos").<function>`
+
+##### close_all()
+
+Close all groups.
+
+##### open_all()
+
+Open all groups.
+
+##### open(group_name)
+
+Opens the group with name `group_name`. Example `require("sidebar-nvim.builtin.todos").open("NOTE")`
+
+##### close(group_name)
+
+Closes the group with name `group_name`. Example `require("sidebar-nvim.builtin.todos").close("NOTE")`
+
+##### toggle(group_name)
+
+Toggle the group with name `group_name`. Example `require("sidebar-nvim.builtin.todos").toggle("NOTE")`
 
 ### containers
 
