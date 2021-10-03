@@ -9,7 +9,7 @@ Development status: Alpha - bugs are expected
 ## Quick start
 
 ```lua
-local sidebar = require("sidebar-nvim")
+ocal sidebar = require("sidebar-nvim")
 local opts = {open = true}
 sidebar.setup(opts)
 ```
@@ -47,7 +47,7 @@ Default: 0
 
 Enable/disable the default keybindings
 
-#### `bindings`
+#### `bindings` {#bindings}
 
 Default: nil
 
@@ -115,7 +115,7 @@ use {
 
 This dependency is optional, you can use the `offset` parameter to change the clock, which does not require extra dependencies.
 
-##### config
+##### config #{datetime-config}
 
 Example configuration:
 
@@ -147,7 +147,7 @@ You can see a list of all [available timezones here](https://en.wikipedia.org/wi
 
 Prints the status of the repo as returned by `git status --porcelain`
 
-##### keybindings
+##### keybindings {#git-status-keybindings}
 
 | key | when | action |
 |-----|------|--------|
@@ -157,7 +157,7 @@ Prints the status of the repo as returned by `git status --porcelain`
 
 Prints the current status of the builtin lsp grouper by file. It shows only loaded buffers
 
-##### keybindings
+##### keybindings {#lsp-diagnostics-keybindings}
 
 | key | when | action |
 |-----|------|--------|
@@ -171,7 +171,7 @@ Shows the TODOs in source. Provided by [todo-comments](https://github.com/folke/
 There are some small issues using this section see https://github.com/folke/todo-comments.nvim/pull/63
 So you might want to consider using my fork instead https://github.com/GustavoKatel/todo-comments.nvim
 
-##### config
+##### config {#todos-config}
 
 ```lua
 require("sidebar-nvim").setup({
@@ -183,7 +183,7 @@ require("sidebar-nvim").setup({
 })
 ```
 
-##### keybindings
+##### keybindings {#todos-keybindings}
 
 | key | when | action |
 |-----|------|--------|
@@ -196,7 +196,7 @@ Shows the system docker containers. Collected from `docker ps -a --format='{{jso
 
 NOTE: in some environments this can be a very intensive command to run. You may see increased cpu usage when this section is enabled.
 
-##### config
+##### config {#containers-config}
 
 ```lua
 require("sidebar-nvim").setup({
@@ -211,7 +211,7 @@ require("sidebar-nvim").setup({
 })
 ```
 
-##### keybindings
+##### keybindings {#containers-keybindings}
 
 | key | when | action |
 |-----|------|--------|
@@ -300,7 +300,7 @@ local section = {
                 -- more info see `:h nvim_buf_add_highlight()`
                 { "CustomHighlightGroupHello", 0, 0, 5 }, -- adds `CustomHighlightGroupHello` to the word "hello"
                 { "CustomHighlightGroupWorld", 0, 6, -1 }, -- adds `CustomHighlightGroupWorld` to the word "world"
-            }, 
+            },
         }
     end,
     highlights = {
@@ -312,7 +312,7 @@ local section = {
 
 more info see: [:h nvim_buf_add_highlight](https://neovim.io/doc/user/api.html#nvim_buf_add_highlight())
 
-#### `bindings`
+#### `bindings` {#custom-bindings}
 
 Custom sections can define custom bindings. Bindings are dispatched to the section that the cursor is currently over.
 
