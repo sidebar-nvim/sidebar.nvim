@@ -1,0 +1,438 @@
+sidebar-nvim.txt                    A generic and modular lua sidebar for Neovim
+
+
+================================================================================
+CONTENTS                                                   *sidebar-nvim-contents*
+
+1. sidebar.nvim........................................|sidebar-nvim-sidebar.nvim|
+    1.1. Quick start....................................|sidebar-nvim-quick_start|
+    1.2. TODOs (Need help)........................|sidebar-nvim-todos_(need_help)|
+    1.3. Options............................................|sidebar-nvim-options|
+            1.3.1. `disable_default_keybindings`.|sidebar-nvim-`disable_default_keybindings`|
+            1.3.2. `bindings`............................|sidebar-nvim-`bindings`|
+            1.3.3. `side`....................................|sidebar-nvim-`side`|
+            1.3.4. `initial_width`..................|sidebar-nvim-`initial_width`|
+            1.3.5. `update_interval`..............|sidebar-nvim-`update_interval`|
+            1.3.6. `sections`............................|sidebar-nvim-`sections`|
+            1.3.7. `section_separator`..........|sidebar-nvim-`section_separator`|
+    1.4. Builtin Sections..........................|sidebar-nvim-builtin_sections|
+            1.4.1. datetime................................|sidebar-nvim-datetime|
+                1.4.1.1. config..............................|sidebar-nvim-datetime-config|
+            1.4.2. git-status............................|sidebar-nvim-git-status|
+                1.4.2.1. keybindings....................|sidebar-nvim-git-status-keybindings|
+            1.4.3. lsp-diagnostics..................|sidebar-nvim-lsp-diagnostics|
+                1.4.3.1. keybindings....................|sidebar-nvim-lsp-diagnostics-keybindings|
+            1.4.4. todos......................................|sidebar-nvim-todos|
+                1.4.4.1. config..............................|sidebar-nvim-todos-config|
+                1.4.4.2. keybindings....................|sidebar-nvim-todos-keybindings|
+            1.4.5. containers............................|sidebar-nvim-containers|
+                1.4.5.1. config..............................|sidebar-nvim-containers-config|
+                1.4.5.2. keybindings....................|sidebar-nvim-containers-keybindings|
+    1.5. Custom Sections............................|sidebar-nvim-custom_sections|
+            1.5.1. `setup`..................................|sidebar-nvim-`setup`|
+            1.5.2. `draw`....................................|sidebar-nvim-`draw`|
+            1.5.3. `highlights`........................|sidebar-nvim-`highlights`|
+            1.5.4. `bindings`............................|sidebar-nvim-custom-`bindings`|
+    1.6. Builtin components......................|sidebar-nvim-builtin_components|
+            1.6.1. Loclist..................................|sidebar-nvim-loclist|
+    1.7. Third party sections..................|sidebar-nvim-third_party_sections|
+    1.8. Colors..............................................|sidebar-nvim-colors|
+    1.9. References......................................|sidebar-nvim-references|
+    1.10. Contributors.................................|sidebar-nvim-contributors|
+
+================================================================================
+SIDEBAR.NVIM                                           *sidebar-nvim-sidebar.nvim*
+
+A generic and modular lua sidebar inspired by lualine (https://github.com/hoob3rt/lualine.nvim)
+
+Development status: Alpha - bugs are expected
+
+
+
+--------------------------------------------------------------------------------
+QUICK START                                             *sidebar-nvim-quick_start*
+>
+    local sidebar = require("sidebar-nvim")
+    local opts = {open = true}
+    sidebar.setup(opts)
+<
+
+See options (#options) for a full list of setup options
+
+--------------------------------------------------------------------------------
+TODOS (NEED HELP)                                 *sidebar-nvim-todos_(need_help)*
+
+*   [ ] Better section icons
+*   [ ] Improve docs + write vim help files
+*   [ ] See repo issues, any contribution is really appreciated
+
+--------------------------------------------------------------------------------
+OPTIONS                                                     *sidebar-nvim-options*
+
+Sidebar setup options.
+
+Defaults:
+>
+    require("sidebar-nvim").setup({
+        disable_default_keybindings = 0,
+        bindings = nil,
+        open = false,
+        side = "left",
+        initial_width = 35,
+        update_interval = 1000,
+        sections = { "datetime", "git-status", "lsp-diagnostics" },
+        section_separator = "-----"
+    })
+<
+
+`DISABLE_DEFAULT_KEYBINDINGS`         *sidebar-nvim-`disable_default_keybindings`*
+
+Default: 0
+
+Enable/disable the default keybindings
+
+`BINDINGS`                                               *sidebar-nvim-`bindings`*
+
+Default: nil
+
+Attach custom bindings to the sidebar buffer.
+
+Example:
+>
+    require("sidebar-nvim").setup({
+        bindings = { ["q"] = function() require("sidebar-nvim").close() end }
+    })
+<
+
+Note sections can override these bindings, please see Section Bindings (#bindings-1)
+
+`SIDE`                                                       *sidebar-nvim-`side`*
+
+Default: `left`
+
+`INITIAL_WIDTH`                                     *sidebar-nvim-`initial_width`*
+
+Default: 50
+
+`UPDATE_INTERVAL`                                 *sidebar-nvim-`update_interval`*
+
+Default: 1000
+
+Update frequency in milliseconds
+
+`SECTIONS`                                               *sidebar-nvim-`sections`*
+
+Default: `{ "datetime", "git-status", "lsp-diagnostics" }`
+
+Which sections should the sidebar render
+
+See Bultin Sections (##builtin-sections) and Custom Sections (##custom-sections)
+
+`SECTION_SEPARATOR`                             *sidebar-nvim-`section_separator`*
+
+Default: `-----`
+
+Can be a string or a function with like the following:
+>
+    function section_separator(section)
+        return "-----"
+    end
+<
+
+`section` is the section definition. See Custom Sections (##custom-sections) for more info
+
+--------------------------------------------------------------------------------
+BUILTIN SECTIONS                                   *sidebar-nvim-builtin_sections*
+
+DATETIME                                                   *sidebar-nvim-datetime*
+
+Prints the current date and time using. You can define multiple clocks with different timezones or offsets.
+
+NOTE: In order to use timezones you need to install `luatz` from luarocks, like the following if using `packer`:
+>
+    use {
+        "GustavoKatel/sidebar.nvim",
+        rocks = {'luatz'}
+    }
+<
+
+This dependency is optional, you can use the `offset` parameter to change the clock, which does not require extra dependencies.
+
+CONFIG                                                       *sidebar-nvim-datetime-config*
+
+Example configuration:
+>
+    require("sidebar-nvim").setup({
+        ...
+        datetime = {
+            format = "%a %b %d, %H:%M",
+            clocks = {
+                { name = "local" }
+            }
+        }
+        ...
+    })
+<
+
+Clock options:
+>
+    {
+        name = "clock name", -- defaults to `tz`
+        tz = "America/Los_Angeles", -- only works if using `luatz`, defaults to current timezone
+        offset = -8, -- this is ignored if tz is present, defaults to 0
+    }
+<
+
+You can see a list of all available timezones here (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+
+GIT-STATUS                                               *sidebar-nvim-git-status*
+
+Prints the status of the repo as returned by `git status --porcelain`
+
+KEYBINDINGS                                             *sidebar-nvim-git-status-keybindings*
+
+| key | when | action |
+|-----|------|--------|
+| `e` | hovering filename | open file in the previous window
+
+LSP-DIAGNOSTICS                                     *sidebar-nvim-lsp-diagnostics*
+
+Prints the current status of the builtin lsp grouper by file. It shows only loaded buffers
+
+KEYBINDINGS                                             *sidebar-nvim-lsp-diagnostics-keybindings*
+
+| key | when | action |
+|-----|------|--------|
+| `e` | hovering diagnostic message | open file in the previous window at the diagnostic position
+| `t` | hovering filename | toggle collapse on the group
+
+TODOS                                                         *sidebar-nvim-todos*
+
+Shows the TODOs in source. Provided by todo-comments (https://github.com/folke/todo-comments.nvim)
+
+There are some small issues using this section see https://github.com/folke/todo-comments.nvim/pull/63
+So you might want to consider using my fork instead https://github.com/GustavoKatel/todo-comments.nvim
+
+CONFIG                                                       *sidebar-nvim-todos-config*
+>
+    require("sidebar-nvim").setup({
+        ...
+        todos = {
+            ignored_paths = {'~'}, -- ignore certain paths, this will prevent huge folders like $HOME to hog Neovim with TODO searching
+        }
+        ...
+    })
+<
+
+KEYBINDINGS                                             *sidebar-nvim-todos-keybindings*
+
+| key | when | action |
+|-----|------|--------|
+| `e` | hovering todo location | open file in the previous window at the todo position
+| `t` | hovering the group | toggle collapse on the group
+
+CONTAINERS                                               *sidebar-nvim-containers*
+
+Shows the system docker containers. Collected from `docker ps -a --format='{{json .}}'`
+
+NOTE: in some environments this can be a very intensive command to run. You may see increased cpu usage when this section is enabled.
+
+CONFIG                                                       *sidebar-nvim-containers-config*
+>
+    require("sidebar-nvim").setup({
+        ...
+        docker = {
+            use_podman = false,
+            attach_shell = "/bin/sh",
+            show_all = true, -- whether to run `docker ps` or `docker ps -a`
+            interval = 5000, -- container update interval. The fetch command will run every 5s
+        }
+        ...
+    })
+<
+
+KEYBINDINGS                                             *sidebar-nvim-containers-keybindings*
+
+| key | when | action |
+|-----|------|--------|
+| `e` | hovering a container location | open a new terminal and attach to the container with `docker exec -it <container id> ${config.docker.attach_shell}`
+
+--------------------------------------------------------------------------------
+CUSTOM SECTIONS                                     *sidebar-nvim-custom_sections*
+
+sidebar.nvim accepts user defined sections. The minimal section definition is a table with a `draw` function that returns the string ready to render in the sidebar and a title. See below the list of available properties
+>
+    local section = {
+        title = "Section Title",
+        icon = "->",
+        setup = function()
+            -- called only once and if the section is being used
+        end,
+        draw = function(ctx)
+            return "> string here\n> multiline"
+        end,
+        highlights = {
+            groups = { MyHighlightGroup = { gui="#C792EA", fg="#ff0000", bg="#00ff00" } },
+            links = { MyHighlightGroupLink = "Keyword" }
+        }
+    }
+<
+
+`SETUP`                                                     *sidebar-nvim-`setup`*
+
+This function is called only once and only if the section is being used
+You can use this function to create timers, background jobs etc
+
+`DRAW`                                                       *sidebar-nvim-`draw`*
+
+The function accepts a single parameter `ctx` containing the current width of the sidebar:
+>
+    { width = 90 }
+<
+
+The draw function may appear in three forms:
+
+*   Returning a string
+*   Returning a table of strings
+*   Returning a table like `{ lines = "", hl = {} }`
+
+The later is used to specify the highlight groups related to the lines returned
+
+Example:
+>
+    local section = {
+        title = "test",
+        draw = function()
+            return {
+                lines = {"> item1", "> item2"},
+                hl = {
+                    -- { <group name>, <line index relative to the returned lines>, <column start>, <column end, -1 means end of the line> }
+                    { "SectionMarker", 0, 0, 1 },
+                }
+            }
+        end
+    }
+<
+
+`HIGHLIGHTS`                                           *sidebar-nvim-`highlights`*
+
+Specify the highlight groups associated with this section. This table contains two properties: `groups` and `links`
+
+*   `groups` define new highlight groups
+*   `links` link highlight groups to another
+
+Example:
+>
+    local section = {
+        title = "Custom Section",
+        icon = "->",
+        draw = function()
+            return {
+                lines = {"hello world"},
+                hl = {
+                    -- more info see `:h nvim_buf_add_highlight()`
+                    { "CustomHighlightGroupHello", 0, 0, 5 }, -- adds `CustomHighlightGroupHello` to the word "hello"
+                    { "CustomHighlightGroupWorld", 0, 6, -1 }, -- adds `CustomHighlightGroupWorld` to the word "world"
+                }, 
+            }
+        end,
+        highlights = {
+            groups = { CustomHighlightGroupHello = { gui="#ff0000", fg="#00ff00", bg="#0000ff" } },
+            links = { CustomHighlightGroupWorld = "Keyword" }
+        }
+    }
+<
+
+more info see: :h nvim_buf_add_highlight (https://neovim.io/doc/user/api.html#nvim_buf_add_highlight())
+
+`BINDINGS`                                               *sidebar-nvim-custom-`bindings`*
+
+Custom sections can define custom bindings. Bindings are dispatched to the section that the cursor is currently over.
+
+This means that multiple sections can define the same bindings and SidebarNvim will dispatch to the correct section depending on the cursor position.
+
+Example:
+>
+    local lines = {"hello", "world"}
+    local section = {
+        title = "Custom Section",
+        icon = "->",
+        draw = function()
+            return lines
+        end,
+        bindings = {
+            ["e"] = function(line, col)
+                print("current word: "..lines[line])
+            end,
+        },
+    }
+<
+
+--------------------------------------------------------------------------------
+BUILTIN COMPONENTS                               *sidebar-nvim-builtin_components*
+
+Builtin components abstract ui elements that can be reused within sections.
+
+LOCLIST                                                     *sidebar-nvim-loclist*
+
+Create a location list with collapsable groups.
+
+Sections using it: git-status (#git-status), lsp-diagnostics (#lsp-diagnostics) and todos (#todos)
+
+Example:
+>
+    local Loclist = require("sidebar-nvim.components.loclist")
+    local loclist = Loclist:new()
+    loclist:add_item({ group = "my_group", lnum = 1, col = 2, text = "my cool location", icon = { text = "#", hl = "MyCustomHighlightGroup" } })
+    -- inside the section draw function
+    local lines, hl = {}, {}
+    table.insert(lines, "Here's the location list you asked:")
+    loclist:draw(ctx, lines, hl)
+    return { lines = lines, hl = hl }
+<
+
+--------------------------------------------------------------------------------
+THIRD PARTY SECTIONS                           *sidebar-nvim-third_party_sections*
+
+*   dap-sidebar.nvim (https://github.com/GustavoKatel/dap-sidebar.nvim) - Show Dap breakpoints in the sidebar
+
+--------------------------------------------------------------------------------
+COLORS                                                       *sidebar-nvim-colors*
+
+| Highlight Group | Defaults To |
+| --------------- | ----------- |
+| SidebarNvimSectionTitle | Directory |
+| SidebarNvimSectionSeparator | Comment |
+| SidebarNvimGitStatusState | Keyword |
+| SidebarNvimGitStatusFileName | Normal |
+| SidebarNvimLspDiagnosticsError | LspDiagnosticsDefaultError |
+| SidebarNvimLspDiagnosticsWarn | LspDiagnosticsDefaultWarning |
+| SidebarNvimLspDiagnosticsInfo | LspDiagnosticsDefaultInformation |
+| SidebarNvimLspDiagnosticsHint | LspDiagnosticsDefaultHint |
+| SidebarNvimLspDiagnosticsLineNumber | LineNr |
+| SidebarNvimLspDiagnosticsColNumber | LineNr |
+| SidebarNvimLspDiagnosticsFilename | Label |
+| SidebarNvimLspDiagnosticsTotalNumber | LspTroubleCount |
+| SidebarNvimLspDiagnosticsMessage | Normal |
+| SidebarNvimTodoTag | Label |
+| SidebarNvimTodoTotalNumber | Normal |
+| SidebarNvimTodoFilename | Normal |
+| SidebarNvimTodoLineNumber | LineNr |
+| SidebarNvimTodoColNumber | LineNr |
+| SidebarNvimDockerContainerStatusRunning | LspDiagnosticsDefaultInformation |
+| SidebarNvimDockerContainerStatusExited | LspDiagnosticsDefaultError |
+| SidebarNvimDockerContainerName | Normal |
+| SidebarNvimDatetimeClockName | Comment |
+| SidebarNvimDatetimeClockValue | Normal |
+
+--------------------------------------------------------------------------------
+REFERENCES                                               *sidebar-nvim-references*
+
+We based most of the code from the awesome work of @kyazdani42 in nvim-tree (https://github.com/kyazdani42/nvim-tree.lua)
+
+--------------------------------------------------------------------------------
+CONTRIBUTORS                                           *sidebar-nvim-contributors*
+
+@GustavoKatel (https://github.com/GustavoKatel/)
+@davysson (https://github.com/davysson/)
+
