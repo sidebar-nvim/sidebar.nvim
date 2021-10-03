@@ -10,6 +10,7 @@ au TabEnter * lua require'sidebar-nvim'._on_tab_change()
 au WinClosed * lua require'sidebar-nvim'._on_win_leave()
 au VimEnter * lua require'sidebar-nvim'._vim_enter()
 au VimLeavePre * lua require'sidebar-nvim'._vim_leave()
+au BufWritePost * lua require'sidebar-nvim'.update()
 augroup end
 
 command! SidebarNvimOpen lua require'sidebar-nvim'.open()

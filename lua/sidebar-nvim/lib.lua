@@ -26,7 +26,7 @@ local function _redraw()
 end
 
 local function loop()
-    updater.update()
+    updater.draw()
     _redraw()
 end
 
@@ -66,6 +66,7 @@ function M.update()
         M.timer = nil
     end
 
+    updater.update()
     loop()
 
     _start_timer(true)

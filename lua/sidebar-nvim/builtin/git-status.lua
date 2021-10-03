@@ -92,9 +92,13 @@ local async_update_debounced = Debouncer:new(async_update, 1000)
 return {
     title = "Git Status",
     icon = "📄",
-    draw = function(ctx)
+    setup = function(ctx)
         async_update_debounced:call(ctx)
-
+    end,
+    update = function(ctx)
+        async_update_debounced:call(ctx)
+    end,
+    draw = function(ctx)
         local lines = {}
         local hl = {}
 

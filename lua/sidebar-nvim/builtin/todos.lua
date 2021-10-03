@@ -139,15 +139,6 @@ return {
         end,
     },
     setup = function()
-        vim.api.nvim_exec(
-            [[
-augroup sidebar_nvim_todos_update
-    autocmd!
-    autocmd BufWritePost * lua require'sidebar-nvim.builtin.todos'.update()
-augroup END
-]],
-            false
-        )
         search_controller.do_search()
     end,
     update = function()

@@ -14,6 +14,8 @@ function M.setup()
         return
     end
 
+    local ctx = { width = view.View.width }
+
     for section_index, section_data in ipairs(config.sections) do
         local section = utils.resolve_section(section_index, section_data)
         if section then
@@ -28,13 +30,29 @@ function M.setup()
             end
 
             if section.setup then
-                section.setup()
+                section.setup(ctx)
             end
         end
     end
 end
 
 function M.update()
+    if vim.v.exiting ~= vim.NIL then
+        return
+    end
+
+    local ctx = { width = view.View.width }
+
+    for section_index, section_data in pairs(config.sections) do
+        local section = utils.resolve_section(section_index, section_data)
+
+        if section ~= nil and section.update ~= nil then
+            section.update(ctx)
+        end
+    end
+end
+
+function M.draw()
     if vim.v.exiting ~= vim.NIL then
         return
     end
