@@ -7,6 +7,8 @@ M.initial_width = 35
 
 M.update_interval = 1000
 
+M.enable_profile = false
+
 M.sections = { "datetime", "git-status", "lsp-diagnostics" }
 
 M.section_separator = "-----"

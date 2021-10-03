@@ -1,6 +1,7 @@
 local view = require("sidebar-nvim.view")
 local config = require("sidebar-nvim.config")
 local utils = require("sidebar-nvim.utils")
+local profile = require("sidebar-nvim.profile")
 
 local api = vim.api
 
@@ -100,30 +101,32 @@ local function get_lines_and_hl(sections_data)
 end
 
 function M.draw(sections_data)
-    if not api.nvim_buf_is_loaded(view.View.bufnr) then
-        return
-    end
+    return profile.run("view.render", function()
+        if not api.nvim_buf_is_loaded(view.View.bufnr) then
+            return
+        end
 
-    local cursor
-    if view.win_open() then
-        cursor = api.nvim_win_get_cursor(view.get_winnr())
-    end
+        local cursor
+        if view.win_open() then
+            cursor = api.nvim_win_get_cursor(view.get_winnr())
+        end
 
-    local lines, hl, section_line_indexes = get_lines_and_hl(sections_data)
+        local lines, hl, section_line_indexes = get_lines_and_hl(sections_data)
 
-    api.nvim_buf_set_option(view.View.bufnr, "modifiable", true)
-    api.nvim_buf_set_lines(view.View.bufnr, 0, -1, false, lines)
-    M.render_hl(view.View.bufnr, hl)
-    api.nvim_buf_set_option(view.View.bufnr, "modifiable", false)
+        api.nvim_buf_set_option(view.View.bufnr, "modifiable", true)
+        api.nvim_buf_set_lines(view.View.bufnr, 0, -1, false, lines)
+        M.render_hl(view.View.bufnr, hl)
+        api.nvim_buf_set_option(view.View.bufnr, "modifiable", false)
 
-    if cursor and #lines >= cursor[1] then
-        api.nvim_win_set_cursor(view.get_winnr(), cursor)
-    end
-    if cursor then
-        api.nvim_win_set_option(view.get_winnr(), "wrap", false)
-    end
+        if cursor and #lines >= cursor[1] then
+            api.nvim_win_set_cursor(view.get_winnr(), cursor)
+        end
+        if cursor then
+            api.nvim_win_set_option(view.get_winnr(), "wrap", false)
+        end
 
-    return section_line_indexes
+        return section_line_indexes
+    end)
 end
 
 function M.render_hl(bufnr, hl)

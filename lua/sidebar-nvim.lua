@@ -5,6 +5,8 @@ local view = require("sidebar-nvim.view")
 local updater = require("sidebar-nvim.updater")
 local config = require("sidebar-nvim.config")
 local bindings = require("sidebar-nvim.bindings")
+local profile = require("sidebar-nvim.profile")
+local utils = require("sidebar-nvim.utils")
 
 local api = vim.api
 
@@ -148,6 +150,15 @@ end
 
 function M._on_cursor_move(direction)
     lib.on_cursor_move(direction)
+end
+
+function M.print_profile_summary()
+    if not config.enable_profile then
+        utils.echo_warning("Profile not enabled")
+        return
+    end
+
+    profile.print_summary()
 end
 
 return M

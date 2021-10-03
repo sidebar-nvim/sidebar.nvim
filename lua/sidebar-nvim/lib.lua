@@ -26,6 +26,10 @@ local function _redraw()
 end
 
 local function loop()
+    if not view.win_open({ any_tabpage = true }) then
+        return
+    end
+
     updater.draw()
     _redraw()
 end
@@ -66,7 +70,9 @@ function M.update()
         M.timer = nil
     end
 
-    updater.update()
+    if view.win_open({ any_tabpage = true }) then
+        updater.update()
+    end
     loop()
 
     _start_timer(true)
@@ -74,6 +80,7 @@ end
 
 function M.open(opts)
     view.open(opts or { focus = false })
+    M.update()
 end
 
 function M.destroy()
