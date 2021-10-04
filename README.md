@@ -115,7 +115,7 @@ use {
 
 This dependency is optional, you can use the `offset` parameter to change the clock, which does not require extra dependencies.
 
-##### config #{datetime-config}
+##### config {#datetime-config}
 
 Example configuration:
 
