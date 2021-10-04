@@ -240,7 +240,7 @@ local section = {
 
 ```
 
-#### `setup`
+#### `setup` {#sidebar.setup()}
 
 This function is called only once *and* only if the section is being used
 You can use this function to create timers, background jobs etc
