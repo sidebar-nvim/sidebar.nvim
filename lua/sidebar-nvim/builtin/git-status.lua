@@ -98,6 +98,7 @@ return {
             [[
           augroup sidebar_nvim_todos_update
               autocmd!
+              autocmd ShellCmdPost * lua require'sidebar-nvim.builtin.git-status'.update()
               autocmd BufLeave term://* lua require'sidebar-nvim.builtin.git-status'.update()
           augroup END
           ]],

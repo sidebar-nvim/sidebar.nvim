@@ -113,6 +113,9 @@ return {
         async_update_debounced = Debouncer:new(async_update, interval)
         async_update_debounced:call()
     end,
+    update = function(ctx)
+        async_update_debounced:call(ctx)
+    end,
     draw = function(ctx)
         async_update_debounced:call(ctx)
 
