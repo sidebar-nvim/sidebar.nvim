@@ -172,7 +172,7 @@ function M.focus(winnr, open_if_closed)
     a.nvim_set_current_win(wnr)
 end
 
-local function get_width()
+local function get_defined_width()
     if type(M.View.width) == "number" then
         return M.View.width
     end
@@ -186,7 +186,7 @@ function M.resize()
         return
     end
 
-    a.nvim_win_set_width(M.get_winnr(), get_width())
+    a.nvim_win_set_width(M.get_winnr(), get_defined_width())
 end
 
 local move_tbl = { left = "H", right = "L", bottom = "J", top = "K" }
@@ -205,7 +205,7 @@ function M.open(options)
 
     local move_to = move_tbl[M.View.side]
     a.nvim_command("wincmd " .. move_to)
-    a.nvim_command("vertical resize " .. get_width())
+    a.nvim_command("vertical resize " .. get_defined_width())
     local winnr = a.nvim_get_current_win()
     local tabpage = a.nvim_get_current_tabpage()
     M.View.tabpages[tabpage] = vim.tbl_extend("force", M.View.tabpages[tabpage] or {}, { winnr = winnr })
@@ -244,6 +244,14 @@ function M.get_winnr(tabpage)
     if tabinfo ~= nil then
         return tabinfo.winnr
     end
+end
+
+--- Returns the window width for sidebar-nvim within the tabpage specified
+---@param tabpage number: (optional) the number of the chosen tabpage. Defaults to current tabpage.
+---@return number
+function M.get_width(tabpage)
+    local winnr = M.get_winnr(tabpage)
+    return vim.fn.winwidth(winnr)
 end
 
 return M

@@ -15,7 +15,7 @@ function M.setup()
         return
     end
 
-    local ctx = { width = view.View.width }
+    local ctx = { width = view.get_width() }
 
     for section_index, section_data in ipairs(config.sections) do
         local section = utils.resolve_section(section_index, section_data)

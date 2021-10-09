@@ -1,4 +1,5 @@
 local utils = require("sidebar-nvim.utils")
+local sidebar = require("sidebar-nvim")
 local Loclist = require("sidebar-nvim.components.loclist")
 local Debouncer = require("sidebar-nvim.debouncer")
 local luv = vim.loop
@@ -93,9 +94,21 @@ return {
     title = "Git Status",
     icon = "📄",
     setup = function(ctx)
+        vim.api.nvim_exec(
+            [[
+          augroup sidebar_nvim_todos_update
+              autocmd!
+              autocmd BufLeave term://* lua require'sidebar-nvim.builtin.git-status'.update()
+          augroup END
+          ]],
+            false
+        )
         async_update_debounced:call(ctx)
     end,
     update = function(ctx)
+        if not ctx then
+            ctx = { width = sidebar.get_width() }
+        end
         async_update_debounced:call(ctx)
     end,
     draw = function(ctx)

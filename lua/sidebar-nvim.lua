@@ -114,6 +114,13 @@ function M.resize(size)
     view.resize()
 end
 
+--- Returns the window width for sidebar-nvim within the tabpage specified
+---@param tabpage number: (optional) the number of the chosen tabpage. Defaults to current tabpage.
+---@return number
+function M.get_width(tabpage)
+    return view.get_width(tabpage)
+end
+
 -- Focus or open the sidebar
 function M.focus()
     if not view.win_open() then
