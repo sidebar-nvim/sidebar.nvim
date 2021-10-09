@@ -44,6 +44,7 @@ local function async_update(_)
                 for _, line in ipairs(vim.split(output_tmp, "\n")) do
                     line = string.sub(line, 2, #line - 1)
                     if line ~= "" then
+                        -- TODO: on nightly change `vim.fn.json_*` to `vim.json_decode`, which is way faster and no need for schedule wrap
                         local ret, container = pcall(vim.fn.json_decode, line)
                         if ret then
                             loclist:add_item({

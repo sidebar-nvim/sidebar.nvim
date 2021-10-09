@@ -94,6 +94,8 @@ return {
     title = "Git Status",
     icon = "📄",
     setup = function(ctx)
+        -- ShellCmdPost triggered after ":!<cmd>"
+        -- BufLeave triggered only after leaving terminal buffers
         vim.api.nvim_exec(
             [[
           augroup sidebar_nvim_todos_update
