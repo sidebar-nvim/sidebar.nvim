@@ -5,6 +5,8 @@ local view = require("sidebar-nvim.view")
 local updater = require("sidebar-nvim.updater")
 local config = require("sidebar-nvim.config")
 local bindings = require("sidebar-nvim.bindings")
+local profile = require("sidebar-nvim.profile")
+local utils = require("sidebar-nvim.utils")
 
 local api = vim.api
 
@@ -100,13 +102,33 @@ function M.on_keypress(key)
     lib.on_keypress(key)
 end
 
+-- Force immediate update
 function M.update()
     lib.update()
 end
 
+-- Resize the sidebar to the requested size
+-- @param size number
 function M.resize(size)
     view.View.width = size
     view.resize()
+end
+
+--- Returns the window width for sidebar-nvim within the tabpage specified
+---@param tabpage number: (optional) the number of the chosen tabpage. Defaults to current tabpage.
+---@return number
+function M.get_width(tabpage)
+    return view.get_width(tabpage)
+end
+
+-- Focus or open the sidebar
+function M.focus()
+    if not view.win_open() then
+        view.open({ focus = true })
+    end
+
+    local winnr = view.get_winnr()
+    view.focus(winnr)
 end
 
 function M._on_win_leave()
@@ -135,6 +157,15 @@ end
 
 function M._on_cursor_move(direction)
     lib.on_cursor_move(direction)
+end
+
+function M.print_profile_summary()
+    if not config.enable_profile then
+        utils.echo_warning("Profile not enabled")
+        return
+    end
+
+    profile.print_summary()
 end
 
 return M

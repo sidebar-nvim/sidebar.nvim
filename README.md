@@ -26,6 +26,12 @@ See [options](#options) for a full list of setup options
 
 Sidebar setup options.
 
+Minimal configuration
+
+```lua
+require("sidebar-nvim").setup()
+```
+
 Defaults:
 
 ```lua
@@ -37,7 +43,12 @@ require("sidebar-nvim").setup({
     initial_width = 35,
     update_interval = 1000,
     sections = { "datetime", "git-status", "lsp-diagnostics" },
-    section_separator = "-----"
+    section_separator = "-----",
+    docker = {
+        attach_shell = "/bin/sh", show_all = true, interval = 5000,
+    },
+    datetime = { format = "%a %b %d, %H:%M", clocks = { { name = "local" } } },
+    todos = { ignored_paths = { "~" } }
 })
 ```
 
@@ -192,7 +203,7 @@ require("sidebar-nvim").setup({
 
 #### containers
 
-Shows the system docker containers. Collected from `docker ps -a --format='{{json .}}'`
+Shows the system docker containers. Collected from `docker ps -a '--format=\'{"Names": {{json .Names}}, "State": {{json .State}}, "ID": {{json .ID}} }\''`
 
 NOTE: in some environments this can be a very intensive command to run. You may see increased cpu usage when this section is enabled.
 
@@ -217,6 +228,23 @@ require("sidebar-nvim").setup({
 |-----|------|--------|
 | `e` | hovering a container location | open a new terminal and attach to the container with `docker exec -it <container id> ${config.docker.attach_shell}`
 
+## Api
+
+Public api is available as:
+
+`require("sidebar-nvim").<function>`
+
+| Function | Vim command | Description |
+|----------|-------------|-------------|
+| toggle() | `SidebarNvimToggle` | Open/close the view |
+| close() | `SidebarNvimClose` | Close if open, otherwise no-op |
+| open() | `SidebarNvimOpen` | Open if closed, otherwise no-op |
+| update() | `SidebarNvimUpdate` | Immediately update the view and the sections |
+| resize(size) | `SidebarNvimResize <size>` | Resize the view width to `size`. `size` is a number. 
+| focus() | `SidebarNvimFocus` | Move the cursor to the sidebar window |
+| get_width(tabpage) | - | Get the current width of the view from the current `tabpage`. `tabpage` is the tab page number, if null it will return the width in the current tab page |
+| reset_highlight | - | Use in case of errors. Clear the current highlighting so it can be re-rendered |
+
 ## Custom Sections
 
 sidebar.nvim accepts user defined sections. The minimal section definition is a table with a `draw` function that returns the string ready to render in the sidebar and a title. See below the list of available properties
@@ -226,8 +254,11 @@ sidebar.nvim accepts user defined sections. The minimal section definition is a 
 local section = {
     title = "Section Title",
     icon = "->",
-    setup = function()
+    setup = function(ctx)
         -- called only once and if the section is being used
+    end,
+    update = function(ctx)
+        -- hook callback, called when an update was requested by either the user of external events (using autocommands)
     end,
     draw = function(ctx)
         return "> string here\n> multiline"
@@ -244,6 +275,18 @@ local section = {
 
 This function is called only once *and* only if the section is being used
 You can use this function to create timers, background jobs etc
+
+#### `update`
+
+This plugin can request the section to update its internal state by calling this function. You may use this to avoid calling expensive functions during draw.
+
+NOTE: This does not have any debouncing and it may be called multiples times, you may want to use a [debouncer](#debouncer)
+
+Events that trigger section updates:
+
+- `BufWritePost *`
+- `VimResume *`
+- `FocusGained *`
 
 #### `draw`
 
@@ -340,7 +383,7 @@ local section = {
 
 Builtin components abstract ui elements that can be reused within sections.
 
-#### Loclist
+### Loclist
 
 Create a location list with collapsable groups.
 
@@ -361,6 +404,32 @@ loclist:draw(ctx, lines, hl)
 
 return { lines = lines, hl = hl }
 
+```
+
+## Utils
+
+### Debouncer
+
+This can be used to avoid multiple calls within a certain time frame. It's useful if you want to avoid multiple expensive computations in sequence.
+
+Example:
+
+```lua
+local Debouncer = require("sidebar-nvim.debouncer")
+
+local function expensive_computation(n)
+    print(n + 1)
+end
+
+local expensive_computation_debounced = Debouncer:new(expensive_computation, 1000)
+
+expensive_computation_debounced:call(42) -- print(43)
+expensive_computation_debounced:call(42) -- does nothing
+
+vim.defer_fn(function()
+    expensive_computation_debounced:call(43) -- print(44)
+    expensive_computation_debounced:call(43) -- does nothing
+end, 1500)
 ```
 
 ## Third party sections

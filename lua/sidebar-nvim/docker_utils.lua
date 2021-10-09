@@ -17,7 +17,11 @@ function M.build_docker_command(args, stdout, stderr)
     local bin = M.get_docker_bin()
 
     args = args or {}
-    table.insert(args, "--format='{{json .}}'")
+    -- make sure the command only fetches the bare minimum fields to work
+    -- otherwise docker goes crazy with high load. See https://github.com/sidebar-nvim/sidebar.nvim/issues/3
+    -- we also need to make sure that each line has valid json syntax so the parser can understand
+    -- the formatting string below is to make sure we reconstruct the json object with only the fields we want
+    table.insert(args, '--format=\'{"Names": {{json .Names}}, "State": {{json .State}}, "ID": {{json .ID}} }\'')
 
     return { bin = bin, opts = { args = args, stdio = { nil, stdout, stderr }, cwd = luv.cwd() } }
 end

@@ -1,6 +1,7 @@
 local utils = require("sidebar-nvim.utils")
 local view = require("sidebar-nvim.view")
 local config = require("sidebar-nvim.config")
+local profile = require("sidebar-nvim.profile")
 local colors = require("sidebar-nvim.colors")
 
 local M = {}
@@ -13,6 +14,8 @@ function M.setup()
     if config.sections == nil then
         return
     end
+
+    local ctx = { width = view.get_width() }
 
     for section_index, section_data in ipairs(config.sections) do
         local section = utils.resolve_section(section_index, section_data)
@@ -28,30 +31,50 @@ function M.setup()
             end
 
             if section.setup then
-                section.setup()
+                section.setup(ctx)
             end
         end
     end
 end
 
 function M.update()
-    if vim.v.exiting ~= vim.NIL then
-        return
-    end
-
-    M.sections_data = {}
-
-    local draw_ctx = { width = view.View.width }
-
-    for section_index, section_data in pairs(config.sections) do
-        local section = utils.resolve_section(section_index, section_data)
-
-        if section ~= nil then
-            local section_lines = section.draw(draw_ctx)
-            local data = { lines = section_lines, section = section }
-            table.insert(M.sections_data, data)
+    return profile.run("update.sections.total", function()
+        if vim.v.exiting ~= vim.NIL then
+            return
         end
-    end
+
+        local ctx = { width = view.View.width }
+
+        for section_index, section_data in pairs(config.sections) do
+            local section = utils.resolve_section(section_index, section_data)
+
+            if section ~= nil and section.update ~= nil then
+                profile.run("update.sections." .. section_index, section.update, ctx)
+            end
+        end
+    end)
+end
+
+function M.draw()
+    return profile.run("draw.sections.total", function()
+        if vim.v.exiting ~= vim.NIL then
+            return
+        end
+
+        M.sections_data = {}
+
+        local draw_ctx = { width = view.View.width }
+
+        for section_index, section_data in pairs(config.sections) do
+            local section = utils.resolve_section(section_index, section_data)
+
+            if section ~= nil then
+                local section_lines = profile.run("draw.sections." .. section_index, section.draw, draw_ctx)
+                local data = { lines = section_lines, section = section }
+                table.insert(M.sections_data, data)
+            end
+        end
+    end)
 end
 
 return M
