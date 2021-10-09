@@ -9,7 +9,7 @@ Development status: Alpha - bugs are expected
 ## Quick start
 
 ```lua
-ocal sidebar = require("sidebar-nvim")
+local sidebar = require("sidebar-nvim")
 local opts = {open = true}
 sidebar.setup(opts)
 ```
