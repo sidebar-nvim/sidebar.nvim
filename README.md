@@ -442,27 +442,32 @@ end, 1500)
 | --------------- | ----------- |
 | *SidebarNvimSectionTitle* | Directory |
 | *SidebarNvimSectionSeparator* | Comment |
-| *SidebarNvimGitStatusState* | Keyword |
-| *SidebarNvimGitStatusFileName* | Normal |
+| *SidebarNvimNormal* | Normal |
+| *SidebarNvimLabel* | Label |
+| *SidebarNvimComment* | Comment |
+| *SidebarNvimLineNr* | LineNr |
+| *SidebarNvimKeyword* | Keyword |
+| *SidebarNvimGitStatusState* | SidebarNvimKeyword |
+| *SidebarNvimGitStatusFileName* | SidebarNvimNormal |
 | *SidebarNvimLspDiagnosticsError* | LspDiagnosticsDefaultError |
 | *SidebarNvimLspDiagnosticsWarn* | LspDiagnosticsDefaultWarning |
 | *SidebarNvimLspDiagnosticsInfo* | LspDiagnosticsDefaultInformation |
 | *SidebarNvimLspDiagnosticsHint* | LspDiagnosticsDefaultHint |
-| *SidebarNvimLspDiagnosticsLineNumber* | LineNr |
-| *SidebarNvimLspDiagnosticsColNumber* | LineNr |
-| *SidebarNvimLspDiagnosticsFilename* | Label |
+| *SidebarNvimLspDiagnosticsLineNumber* | SidebarNvimLineNr |
+| *SidebarNvimLspDiagnosticsColNumber* | SidebarNvimLineNr |
+| *SidebarNvimLspDiagnosticsFilename* | SidebarNvimLabel |
 | *SidebarNvimLspDiagnosticsTotalNumber* | LspTroubleCount |
-| *SidebarNvimLspDiagnosticsMessage* | Normal |
-| *SidebarNvimTodoTag* | Label |
-| *SidebarNvimTodoTotalNumber* | Normal |
-| *SidebarNvimTodoFilename* | Normal |
-| *SidebarNvimTodoLineNumber* | LineNr |
-| *SidebarNvimTodoColNumber* | LineNr |
+| *SidebarNvimLspDiagnosticsMessage* | SidebarNvimNormal |
+| *SidebarNvimTodoTag* | SidebarNvimLabel |
+| *SidebarNvimTodoTotalNumber* | SidebarNvimNormal |
+| *SidebarNvimTodoFilename* | SidebarNvimNormal |
+| *SidebarNvimTodoLineNumber* | SidebarNvimLineNr |
+| *SidebarNvimTodoColNumber* | SidebarNvimLineNr |
 | *SidebarNvimDockerContainerStatusRunning* | LspDiagnosticsDefaultInformation |
 | *SidebarNvimDockerContainerStatusExited* | LspDiagnosticsDefaultError |
-| *SidebarNvimDockerContainerName* | Normal |
-| *SidebarNvimDatetimeClockName* | Comment |
-| *SidebarNvimDatetimeClockValue* | Normal |
+| *SidebarNvimDockerContainerName* | SidebarNvimNormal |
+| *SidebarNvimDatetimeClockName* | SidebarNvimComment |
+| *SidebarNvimDatetimeClockValue* | SidebarNvimNormal |
 
 ## References
 

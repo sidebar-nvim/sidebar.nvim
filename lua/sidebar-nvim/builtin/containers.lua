@@ -138,7 +138,7 @@ return {
         links = {
             SidebarNvimDockerContainerStatusRunning = "LspDiagnosticsDefaultInformation",
             SidebarNvimDockerContainerStatusExited = "LspDiagnosticsDefaultError",
-            SidebarNvimDockerContainerName = "Normal",
+            SidebarNvimDockerContainerName = "SidebarNvimNormal",
         },
     },
     bindings = {

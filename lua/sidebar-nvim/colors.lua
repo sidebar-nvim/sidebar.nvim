@@ -7,7 +7,15 @@ local function get_hl_groups()
 end
 
 local function get_links()
-    return { SidebarNvimSectionTitle = "Directory", SidebarNvimSectionSeperator = "Comment" }
+    return {
+        SidebarNvimSectionTitle = "Directory",
+        SidebarNvimSectionSeperator = "Comment",
+        SidebarNvimNormal = "Normal",
+        SidebarNvimLabel = "Label",
+        SidebarNvimComment = "Comment",
+        SidebarNvimLineNr = "LineNr",
+        SidebarNvimKeyword = "Keyword",
+    }
 end
 
 function M.def_hl_group(group, gui, fg, bg)

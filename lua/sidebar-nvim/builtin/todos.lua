@@ -117,11 +117,11 @@ return {
         groups = {},
         -- { MyHLGroupLink = <string> }
         links = {
-            SidebarNvimTodoTag = "Label",
-            SidebarNvimTodoTotalNumber = "Normal",
-            SidebarNvimTodoFilename = "Normal",
-            SidebarNvimTodoLineNumber = "LineNr",
-            SidebarNvimTodoColNumber = "LineNr",
+            SidebarNvimTodoTag = "SidebarNvimLabel",
+            SidebarNvimTodoTotalNumber = "SidebarNvimNormal",
+            SidebarNvimTodoFilename = "SidebarNvimNormal",
+            SidebarNvimTodoLineNumber = "SidebarNvimLineNr",
+            SidebarNvimTodoColNumber = "SidebarNvimLineNr",
         },
     },
     bindings = {

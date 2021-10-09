@@ -61,6 +61,9 @@ return {
     end,
     highlights = {
         groups = {},
-        links = { SidebarNvimDatetimeClockName = "Comment", SidebarNvimDatetimeClockValue = "Normal" },
+        links = {
+            SidebarNvimDatetimeClockName = "SidebarNvimComment",
+            SidebarNvimDatetimeClockValue = "SidebarNvimNormal",
+        },
     },
 }

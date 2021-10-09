@@ -130,7 +130,10 @@ return {
         -- { MyHLGroup = { gui=<color>, fg=<color>, bg=<color> } }
         groups = {},
         -- { MyHLGroupLink = <string> }
-        links = { SidebarNvimGitStatusState = "Keyword", SidebarNvimGitStatusFileName = "Normal" },
+        links = {
+            SidebarNvimGitStatusState = "SidebarNvimKeyword",
+            SidebarNvimGitStatusFileName = "SidebarNvimNormal",
+        },
     },
     bindings = {
         ["e"] = function(line)
