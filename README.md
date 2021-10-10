@@ -16,17 +16,19 @@ sidebar.setup(opts)
 
 See [options](#options) for a full list of setup options
 
+## Quick links
+
+- [Options, commands, api and colors](./doc/general.md)
+- [Builtin sections](./doc/builtin-sections.md)
+- [Custom sections](./doc/custom-sections.md)
+
+
 ## TODOs (Need help)
 
 - [ ] Better section icons
 - [ ] Improve docs + write vim help files
 - [ ] See repo issues, any contribution is really appreciated
 
-## Quick links
-
-- [Options, commands, api and colors](./doc/general.md)
-- [Builtin sections](./doc/builtin-sections.md)
-- [Custom sections](./doc/custom-sections.md)
 
 ## Third party sections
 
