@@ -92,35 +92,35 @@ Public api is available as:
 
 `require("sidebar-nvim").<function>`
 
-### `toggle()` (`SidebarNvimToggle`)
+#### `toggle()` (`SidebarNvimToggle`)
 
 Open/close the view
 
-### `close()` (`SidebarNvimClose`)
+#### `close()` (`SidebarNvimClose`)
 
 Close if open, otherwise no-op
 
-### `open()` (`SidebarNvimOpen`)
+#### `open()` (`SidebarNvimOpen`)
 
 Open if closed, otherwise no-op
 
-### `update()` (`SidebarNvimUpdate`)
+#### `update()` (`SidebarNvimUpdate`)
 
 Immediately update the view and the sections
 
-### `resize(size)` (`SidebarNvimResize <size>`)
+#### `resize(size)` (`SidebarNvimResize <size>`)
 
 Resize the view width to `size`. `size` is a number
 
-### `focus()` (`SidebarNvimFocus`)
+#### `focus()` (`SidebarNvimFocus`)
 
 Move the cursor to the sidebar window
 
-### `get_width(tabpage)`
+#### `get_width(tabpage)`
 
 Get the current width of the view from the current `tabpage`. `tabpage` is the tab page number, if null it will return the width in the current tab page
 
-### `reset_highlight`
+#### `reset_highlight`
 
 Use in case of errors. Clear the current highlighting so it can be re-rendered
 
