@@ -35,6 +35,14 @@ See [options](#options) for a full list of setup options
 
 - [dap-sidebar.nvim](https://github.com/GustavoKatel/dap-sidebar.nvim) - Show Dap breakpoints in the sidebar
 
+## Development
+
+We are trying to limit the frequency of merges to the default branch, therefore less noise during plugin update and possible less bugs.
+
+If you don't mind frequent updates and/or want to test new features, you might want to check the `dev` branch.
+
+Before reporting a bug, please check if the bug still exists in the `dev` branch.
+
 ## References
 
 We based most of the code from the awesome work of @kyazdani42 in [nvim-tree](https://github.com/kyazdani42/nvim-tree.lua)
