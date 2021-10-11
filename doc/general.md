@@ -20,7 +20,7 @@ require("sidebar-nvim").setup({
     update_interval = 1000,
     sections = { "datetime", "git-status", "lsp-diagnostics" },
     section_separator = "-----",
-    docker = {
+    containers = {
         attach_shell = "/bin/sh", show_all = true, interval = 5000,
     },
     datetime = { format = "%a %b %d, %H:%M", clocks = { { name = "local" } } },
