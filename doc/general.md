@@ -48,7 +48,7 @@ require("sidebar-nvim").setup({
 })
 ```
 
-Note sections can override these bindings, please see [Section Bindings](./doc/custom-sections.md#bindings)
+Note sections can override these bindings, please see [Section Bindings](./custom-sections.md#bindings)
 
 #### `side`
 
@@ -70,7 +70,7 @@ Default: `{ "datetime", "git-status", "lsp-diagnostics" }`
 
 Which sections should the sidebar render
 
-See [Bultin Sections](./doc/builtin-sections.md) and [Custom Sections](./doc/custom-sections.md)
+See [Bultin Sections](./builtin-sections.md) and [Custom Sections](./custom-sections.md)
 
 #### `section_separator`
 
@@ -84,7 +84,7 @@ function section_separator(section)
 end
 ```
 
-`section` is the section definition. See [Custom Sections](./doc/custom-sections.md) for more info
+`section` is the section definition. See [Custom Sections](./custom-sections.md) for more info
 
 ## Api
 
