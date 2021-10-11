@@ -1,4 +1,5 @@
 local Loclist = require("sidebar-nvim.components.loclist")
+local config = require("sidebar-nvim.config")
 
 local loclist = Loclist:new({
     highlights = {
@@ -83,7 +84,7 @@ end
 
 return {
     title = "Diagnostics",
-    icon = "📄",
+    icon = config["lsp-diagnostics"].icon,
     draw = function(ctx)
         return get_diagnostics(ctx)
     end,

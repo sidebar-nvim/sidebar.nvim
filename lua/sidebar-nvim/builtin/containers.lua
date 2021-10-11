@@ -32,7 +32,7 @@ local function async_update(_)
     local handle
 
     local args = { "ps" }
-    if config.docker.show_all then
+    if config.containers.show_all then
         args = { "ps", "-a" }
     end
 
@@ -108,9 +108,9 @@ local async_update_debounced
 
 return {
     title = "Containers",
-    icon = "📄",
+    icon = config.containers.icon,
     setup = function()
-        local interval = config.docker.interval or 2000
+        local interval = config.containers.interval or 2000
         async_update_debounced = Debouncer:new(async_update, interval)
         async_update_debounced:call()
     end,

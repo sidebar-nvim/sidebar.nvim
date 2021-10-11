@@ -13,10 +13,14 @@ M.sections = { "datetime", "git-status", "lsp-diagnostics" }
 
 M.section_separator = "-----"
 
-M.docker = { use_podman = false, attach_shell = "/bin/sh", show_all = true, interval = 5000 }
+M["git-status"] = { icon = "📄" }
 
-M.datetime = { format = "%a %b %d, %H:%M", clocks = { { name = "local" } } }
+M["lsp-diagnostics"] = { icon = "☑️" }
 
-M.todos = { ignored_paths = { "~" }, initially_closed = false }
+M.containers = { icon = "🐳", use_podman = false, attach_shell = "/bin/sh", show_all = true, interval = 5000 }
+
+M.datetime = { icon = "📅", format = "%a %b %d, %H:%M", clocks = { { name = "local" } } }
+
+M.todos = { icon = "📝", ignored_paths = { "~" }, initially_closed = false }
 
 return M

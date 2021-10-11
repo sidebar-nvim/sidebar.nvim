@@ -22,6 +22,7 @@ Example configuration:
 require("sidebar-nvim").setup({
     ...
     datetime = {
+        icon = "📅",
         format = "%a %b %d, %H:%M",
         clocks = {
             { name = "local" }
@@ -46,6 +47,20 @@ You can see a list of all [available timezones here](https://en.wikipedia.org/wi
 
 Prints the status of the repo as returned by `git status --porcelain`
 
+#### config {#git-status-config}
+
+Example configuration:
+
+```lua
+require("sidebar-nvim").setup({
+    ...
+    ["git-status"] = {
+        icon = "📄",
+    }
+    ...
+})
+```
+
 #### keybindings {#git-status-keybindings}
 
 | key | when | action |
@@ -55,6 +70,19 @@ Prints the status of the repo as returned by `git status --porcelain`
 ### lsp-diagnostics
 
 Prints the current status of the builtin lsp grouper by file. It shows only loaded buffers
+
+#### config {#lsp-diagnostics-config}
+
+```lua
+require("sidebar-nvim").setup({
+    ...
+    ["lsp-diagnostics"] = {
+        icon = "📝",
+    }
+    ...
+})
+```
+
 
 #### keybindings {#lsp-diagnostics-keybindings}
 
@@ -76,6 +104,7 @@ So you might want to consider using my fork instead https://github.com/GustavoKa
 require("sidebar-nvim").setup({
     ...
     todos = {
+        icon = "📝",
         ignored_paths = {'~'}, -- ignore certain paths, this will prevent huge folders like $HOME to hog Neovim with TODO searching
         initially_closed = false, -- whether the groups should be initially closed on start. You can manually open/close groups later.
     }
@@ -131,11 +160,12 @@ NOTE: in some environments this can be a very intensive command to run. You may 
 ```lua
 require("sidebar-nvim").setup({
     ...
-    docker = {
+    containers = {
+        icon = "🐳",
         use_podman = false,
         attach_shell = "/bin/sh",
         show_all = true, -- whether to run `docker ps` or `docker ps -a`
-        interval = 5000, -- container update interval. The fetch command will run every 5s
+        interval = 5000, -- the debouncer time frame to limit requests to the docker daemon
     }
     ...
 })
@@ -145,5 +175,5 @@ require("sidebar-nvim").setup({
 
 | key | when | action |
 |-----|------|--------|
-| `e` | hovering a container location | open a new terminal and attach to the container with `docker exec -it <container id> ${config.docker.attach_shell}`
+| `e` | hovering a container location | open a new terminal and attach to the container with `docker exec -it <container id> ${config.containers.attach_shell}`
 

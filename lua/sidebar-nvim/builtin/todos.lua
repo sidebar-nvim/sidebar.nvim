@@ -91,7 +91,7 @@ end
 
 return {
     title = "TODOs",
-    icon = "📄",
+    icon = config.todos.icon,
     draw = function(ctx)
         if not has_todos then
             local lines = { "provider 'todo-comments' not installed" }

@@ -18,7 +18,7 @@ end
 
 return {
     title = "Current datetime",
-    icon = "🕒",
+    icon = config.datetime.icon,
     draw = function()
         local lines = {}
         local hl = {}

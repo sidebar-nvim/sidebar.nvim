@@ -2,6 +2,7 @@ local utils = require("sidebar-nvim.utils")
 local sidebar = require("sidebar-nvim")
 local Loclist = require("sidebar-nvim.components.loclist")
 local Debouncer = require("sidebar-nvim.debouncer")
+local config = require("sidebar-nvim.config")
 local luv = vim.loop
 
 local loclist = Loclist:new({
@@ -92,7 +93,7 @@ local async_update_debounced = Debouncer:new(async_update, 1000)
 
 return {
     title = "Git Status",
-    icon = "📄",
+    icon = config["git-status"].icon,
     setup = function(ctx)
         -- ShellCmdPost triggered after ":!<cmd>"
         -- BufLeave triggered only after leaving terminal buffers

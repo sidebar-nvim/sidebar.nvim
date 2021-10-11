@@ -10,10 +10,22 @@ local utils = require("sidebar-nvim.utils")
 
 local M = { open_on_start = false, setup_called = false, vim_enter_called = false }
 
+local deprecated_config_map = { docker = "containers" }
+local function check_deprecated_field(key)
+    if not vim.tbl_contains(vim.tbl_keys(deprecated_config_map), key) then
+        return
+    end
+
+    local new_key = deprecated_config_map[key]
+    utils.echo_warning("config '" .. key .. "' is deprecated. Please use '" .. new_key .. "' instead")
+end
+
 function M.setup(opts)
     opts = opts or {}
 
     for key, value in pairs(opts) do
+        check_deprecated_field(key)
+
         if key == "open" then
             M.open_on_start = value
         else

@@ -6,7 +6,7 @@ local M = {}
 function M.get_docker_bin()
     local bin = "docker"
 
-    if config.docker.use_podman then
+    if config.containers.use_podman then
         bin = "podman"
     end
 
@@ -29,7 +29,7 @@ end
 function M.build_docker_attach_command(container_id)
     local bin = M.get_docker_bin()
 
-    return bin .. " exec -it " .. container_id .. " " .. config.docker.attach_shell
+    return bin .. " exec -it " .. container_id .. " " .. config.containers.attach_shell
 end
 
 return M
