@@ -15,10 +15,7 @@ local severity_level = { "Error", "Warning", "Info", "Hint" }
 local icons = { "", "", "", "" }
 local use_icons = true
 
-local function get_diagnostics(ctx)
-    local lines = {}
-    local hl = {}
-
+local function update_diagnostics(_)
     local current_buf = vim.api.nvim_get_current_buf()
     local current_buf_filepath = vim.api.nvim_buf_get_name(current_buf)
     local current_buf_filename = vim.fn.fnamemodify(current_buf_filepath, ":t")
@@ -72,21 +69,35 @@ local function get_diagnostics(ctx)
     if loclist.groups[current_buf_filename] ~= nil then
         loclist.groups[current_buf_filename].is_closed = false
     end
-
-    loclist:draw(ctx, lines, hl)
-
-    if lines == nil or #lines == 0 then
-        return "<no diagnostics>"
-    else
-        return { lines = lines, hl = hl }
-    end
 end
 
 return {
     title = "Diagnostics",
     icon = config["lsp-diagnostics"].icon,
+    setup = function(ctx)
+        vim.api.nvim_exec(
+            [[
+          augroup sidebar_nvim_lsp-diagnostics_update
+              autocmd!
+              autocmd User LspDiagnosticsChanged lua require'sidebar-nvim.builtin.lsp-diagnostics'.update()
+          augroup END
+          ]],
+            false
+        )
+    end,
+    update = function(ctx)
+        update_diagnostics(ctx)
+    end,
     draw = function(ctx)
-        return get_diagnostics(ctx)
+        local lines, hl = {}, {}
+
+        loclist:draw(ctx, lines, hl)
+
+        if lines == nil or #lines == 0 then
+            return "<no diagnostics>"
+        end
+
+        return { lines = lines, hl = hl }
     end,
     highlights = {
         -- { MyHLGroup = { gui=<color>, fg=<color>, bg=<color> } }
