@@ -22,7 +22,7 @@ Example configuration:
 require("sidebar-nvim").setup({
     ...
     datetime = {
-        icon = "📅",
+        icon = "",
         format = "%a %b %d, %H:%M",
         clocks = {
             { name = "local" }
@@ -55,7 +55,7 @@ Example configuration:
 require("sidebar-nvim").setup({
     ...
     ["git-status"] = {
-        icon = "📄",
+        icon = "",
     }
     ...
 })
@@ -77,7 +77,7 @@ Prints the current status of the builtin lsp grouper by file. It shows only load
 require("sidebar-nvim").setup({
     ...
     ["lsp-diagnostics"] = {
-        icon = "📝",
+        icon = "",
     }
     ...
 })
@@ -104,7 +104,7 @@ So you might want to consider using my fork instead https://github.com/GustavoKa
 require("sidebar-nvim").setup({
     ...
     todos = {
-        icon = "📝",
+        icon = "",
         ignored_paths = {'~'}, -- ignore certain paths, this will prevent huge folders like $HOME to hog Neovim with TODO searching
         initially_closed = false, -- whether the groups should be initially closed on start. You can manually open/close groups later.
     }
@@ -161,7 +161,7 @@ NOTE: in some environments this can be a very intensive command to run. You may 
 require("sidebar-nvim").setup({
     ...
     containers = {
-        icon = "🐳",
+        icon = "",
         use_podman = false,
         attach_shell = "/bin/sh",
         show_all = true, -- whether to run `docker ps` or `docker ps -a`
