@@ -25,7 +25,7 @@ local function validate_config()
         return
     end
 
-    for i, clock in ipairs(config.datetime.clocks) do
+    for _, clock in ipairs(config.datetime.clocks) do
         if clock.tz then
             if not has_luatz then
                 utils.echo_warning("luatz not installed. Cannot use 'tz' option without luatz")
