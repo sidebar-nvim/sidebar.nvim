@@ -16,6 +16,11 @@ sidebar.setup(opts)
 
 See [options](#options) for a full list of setup options
 
+## Requirements
+
+- Neovim 0.5+
+- Nerdfonts (requirement by the default icons, you can change the icons to remove this requirement)
+
 ## Quick links
 
 - [Options, commands, api and colors](./doc/general.md)
