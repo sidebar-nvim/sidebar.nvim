@@ -24,6 +24,20 @@ local section = {
 
 ```
 
+### `icon` {#sidebar.icon()}
+
+String with the icon or a function that returns a string
+
+```lua
+local section = {
+    icon = function()
+        return "#"
+    end,
+    -- or
+    -- icon = "#"
+}    
+```
+
 ### `setup` {#sidebar.setup()}
 
 This function is called only once *and* only if the section is being used

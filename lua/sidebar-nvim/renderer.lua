@@ -39,6 +39,10 @@ local function build_section_title(section)
         icon = section.icon
     end
 
+    if type(icon) == "function" then
+        icon = icon()
+    end
+
     return icon .. " " .. section.title
 end
 
