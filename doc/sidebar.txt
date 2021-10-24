@@ -15,6 +15,7 @@ CONTENTS                                                        *sidebar.content
             1.3.5. update_interval.......................|sidebar.update_interval|
             1.3.6. sections.....................................|sidebar.sections|
             1.3.7. section_separator...................|sidebar.section_separator|
+            1.3.8. disable_closing_prompt.........|sidebar.disable_closing_prompt|
     1.4. Builtin Sections...............................|sidebar.builtin_sections|
             1.4.1. datetime.....................................|sidebar.datetime|
                 1.4.1.1. datetime-config.................|sidebar.datetime-config|
@@ -95,7 +96,8 @@ Defaults:
             attach_shell = "/bin/sh", show_all = true, interval = 5000,
         },
         datetime = { format = "%a %b %d, %H:%M", clocks = { { name = "local" } } },
-        todos = { ignored_paths = { "~" } }
+        todos = { ignored_paths = { "~" } },
+        disable_closing_prompt = false
     })
 <
 
@@ -154,6 +156,12 @@ Can be a string or a function with like the following:
 <
 
 `section` is the section definition. See Custom Sections (##custom-sections) for more info
+
+DISABLE_CLOSING_PROMPT                            *sidebar.disable_closing_prompt*
+
+Default: false
+
+Enable/disable the closing prompt when the sidebar is the last open window
 
 --------------------------------------------------------------------------------
 BUILTIN SECTIONS                                        *sidebar.builtin_sections*

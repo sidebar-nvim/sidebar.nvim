@@ -23,4 +23,6 @@ M.datetime = { icon = "", format = "%a %b %d, %H:%M", clocks = { { name = "lo
 
 M.todos = { icon = "", ignored_paths = { "~" }, initially_closed = false }
 
+M.disable_closing_prompt = false
+
 return M
