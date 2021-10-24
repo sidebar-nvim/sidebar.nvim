@@ -60,7 +60,7 @@ local function get_diagnostics(ctx)
         return group.is_closed
     end, loclist.groups)
 
-    loclist:set_items(loclist_items)
+    loclist:set_items(loclist_items, { remove_groups = true })
     loclist:close_all_groups()
 
     for group_name, is_closed in pairs(previous_state) do
