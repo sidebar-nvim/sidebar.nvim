@@ -129,7 +129,7 @@ function M.draw(sections_data)
             api.nvim_win_set_option(view.get_winnr(), "wrap", false)
         end
 
-        if not config.show_statusline then
+        if config.hide_statusline then
             api.nvim_win_set_option(view.get_winnr(), "statusline", "%#NonText#")
         end
 

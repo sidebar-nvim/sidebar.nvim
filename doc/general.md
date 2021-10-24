@@ -17,7 +17,7 @@ require("sidebar-nvim").setup({
     open = false,
     side = "left",
     initial_width = 35,
-    show_statusline = true,
+    hide_statusline = false,
     update_interval = 1000,
     sections = { "datetime", "git-status", "lsp-diagnostics" },
     section_separator = "-----",
@@ -59,9 +59,9 @@ Default: `left`
 
 Default: 50
 
-#### `show_statusline`
+#### `hide_statusline`
 
-Default: true
+Default: false
 
 Show or hide Sidebar statusline
 
