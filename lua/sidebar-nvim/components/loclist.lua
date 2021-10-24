@@ -164,10 +164,18 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
             line = line .. col .. " "
         end
 
-        table.insert(section_hl, { self.highlights.item_text, #section_lines, #line, -1 })
-        line = line .. item.text
+        if type(item.text) == "table" then
+            for _, i in ipairs(item.text) do
+                table.insert(section_hl, { i.hl, #section_lines, #line, -1 })
+                line = line .. i.text
+            end
+            table.insert(section_lines, line)
+        elseif type(item.text) == "string" then
+            table.insert(section_hl, { self.highlights.item_text, #section_lines, #line, -1 })
+            line = line .. item.text
 
-        table.insert(section_lines, line)
+            table.insert(section_lines, line)
+        end
     end
 end
 

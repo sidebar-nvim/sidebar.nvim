@@ -79,4 +79,15 @@ function M.shorten_path(path, min_len)
     return path
 end
 
+function M.shortest_path(path)
+    local sep = package.config:sub(1, 1)
+
+    for _ = 0, count(path, sep) do
+        -- ('([^/])[^/]+%/', '%1/', 1)
+        path = path:gsub(string.format("([^%s])[^%s]+%%%s", sep, sep, sep), "%1" .. sep, 1)
+    end
+
+    return path
+end
+
 return M
