@@ -5,6 +5,8 @@ M.bindings = nil
 M.side = "left"
 M.initial_width = 35
 
+M.show_statusline = true
+
 M.update_interval = 1000
 
 M.enable_profile = false
