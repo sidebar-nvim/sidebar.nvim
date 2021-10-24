@@ -226,9 +226,7 @@ function M.close()
     if #a.nvim_list_wins() == 1 then
         local ans = "n"
         if not config.disable_closing_prompt then
-          ans = vim.fn.input(
-          "[SidebarNvim] this is the last open window, are you sure you want to quit nvim ? y/n: "
-          )
+            ans = vim.fn.input("[SidebarNvim] this is the last open window, are you sure you want to quit nvim ? y/n: ")
         end
 
         if config.disable_closing_prompt or ans == "y" then
