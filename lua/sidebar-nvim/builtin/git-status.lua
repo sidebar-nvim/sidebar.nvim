@@ -4,57 +4,76 @@ local Loclist = require("sidebar-nvim.components.loclist")
 local Debouncer = require("sidebar-nvim.debouncer")
 local config = require("sidebar-nvim.config")
 local luv = vim.loop
+local has_devicons, devicons = pcall(require, "nvim-web-devicons")
 
 local loclist = Loclist:new({
     show_location = false,
-    ommit_single_group = true,
+    -- ommit_single_group = true,
     highlights = { item_text = "SidebarNvimGitStatusFileName" },
 })
 
-local status_tmp = ""
+local file_status = {}
 
-local state_order_mapping = { M = 1, AM = 2, ["??"] = 3 }
-
-local function async_update(ctx)
+local function async_cmd(group, args)
     local stdout = luv.new_pipe(false)
     local stderr = luv.new_pipe(false)
+    local status_tmp = ""
 
     local handle
-    handle = luv.spawn(
-        "git",
-        { args = { "status", "--porcelain" }, stdio = { nil, stdout, stderr }, cwd = luv.cwd() },
-        function()
-            loclist:clear()
-            if status_tmp ~= "" then
-                for _, line in ipairs(vim.split(status_tmp, "\n")) do
-                    local striped_line = line:match("^%s*(.-)%s*$")
-                    local line_status = striped_line:sub(0, 2)
-                    local line_filename = striped_line:sub(3, -1):match("^%s*(.-)%s*$")
+    handle = luv.spawn("git", { args = args, stdio = { nil, stdout, stderr }, cwd = luv.cwd() }, function()
+        if status_tmp ~= "" then
+            for _, line in ipairs(vim.split(status_tmp, "\n")) do
+                if line ~= "" then
+                    local t = vim.split(line, "\t")
+                    local added, removed, filename = t[1], t[2], t[3]
+                    local extension = filename:match("^.+%.(.+)$")
+                    local fileicon
 
-                    if line_filename ~= "" then
-                        local order = state_order_mapping[line_status]
-                        if order == nil then
-                            state_order_mapping[line_status] = #state_order_mapping
-                            order = state_order_mapping[line_status]
-                        end
+                    if has_devicons and devicons.has_loaded() then
+                        fileicon, _ = devicons.get_icon_color(filename, extension)
+                    end
 
+                    if filename ~= "" then
                         loclist:add_item({
-                            group = "git",
-                            text = utils.shorten_path(line_filename, ctx.width - 4),
-                            icon = { hl = "SidebarNvimGitStatusState", text = line_status },
-                            order = order,
+                            group = group,
+                            left = {
+                                {
+                                    text = fileicon,
+                                    hl = "SidebarNvimGitStatusFileIcon",
+                                },
+                                {
+                                    text = " ",
+                                },
+                                {
+                                    text = utils.shortest_path(filename),
+                                    hl = "SidebarNvimGitStatusFileName",
+                                },
+                            },
+                            right = {
+                                {
+                                    text = added,
+                                    hl = "SidebarNvimGitStatusDiffAdded",
+                                },
+                                {
+                                    text = ", ",
+                                },
+                                {
+                                    text = removed,
+                                    hl = "SidebarNvimGitStatusDiffRemoved",
+                                },
+                            },
                         })
                     end
                 end
             end
-
-            luv.read_stop(stdout)
-            luv.read_stop(stderr)
-            stdout:close()
-            stderr:close()
-            handle:close()
         end
-    )
+
+        luv.read_stop(stdout)
+        luv.read_stop(stderr)
+        stdout:close()
+        stderr:close()
+        handle:close()
+    end)
 
     status_tmp = ""
 
@@ -86,6 +105,67 @@ local function async_update(ctx)
         -- vim.schedule(function()
         -- utils.echo_warning(data)
         -- end)
+    end)
+end
+
+local function async_update(ctx)
+    loclist:clear()
+
+    local stdout = luv.new_pipe(false)
+    local stderr = luv.new_pipe(false)
+
+    local handle
+    handle = luv.spawn(
+        "git",
+        { args = { "status", "--porcelain" }, stdio = { nil, stdout, stderr }, cwd = luv.cwd() },
+        function()
+            luv.read_stop(stdout)
+            stdout:close()
+            handle:close()
+
+            async_cmd("Unstaged", { "diff", "--numstat" })
+            async_cmd("Staged", { "diff", "--numstat", "--staged" })
+        end
+    )
+
+    luv.read_start(stdout, function(err, data)
+        if data == nil then
+            return
+        end
+
+        for _, line in ipairs(vim.split(data, "\n")) do
+            local striped = line:match("^%s*(.-)%s*$")
+            local status = striped:sub(0, 2)
+            local filename = striped:sub(3, -1):match("^%s*(.-)%s*$")
+            local extension = filename:match("^.+%.(.+)$")
+
+            if status ~= "??" then
+                file_status[filename] = status
+            else
+                local fileicon
+
+                if has_devicons and devicons.has_loaded() then
+                    fileicon, _ = devicons.get_icon_color(filename, extension)
+                end
+                loclist:add_item({
+                    group = "Untracked",
+                    left = {
+                        -- {
+                        --     text = "?? ",
+                        --     hl = "SidebarNvimGitStatusState",
+                        -- },
+                        {
+                            text = fileicon .. " ",
+                            hl = "SidebarNvimGitStatusFileIcon",
+                        },
+                        {
+                            text = utils.shortest_path(filename),
+                            hl = "SidebarNvimGitStatusFileName",
+                        },
+                    },
+                })
+            end
+        end
     end)
 end
 
@@ -134,6 +214,9 @@ return {
         links = {
             SidebarNvimGitStatusState = "SidebarNvimKeyword",
             SidebarNvimGitStatusFileName = "SidebarNvimNormal",
+            SidebarNvimGitStatusFileIcon = "SidebarNvimSectionTitle",
+            SidebarNvimGitStatusDiffAdded = "DiffAdded",
+            SidebarNvimGitStatusDiffRemoved = "DiffRemoved",
         },
     },
     bindings = {

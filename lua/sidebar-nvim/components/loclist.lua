@@ -15,7 +15,7 @@ Loclist.DEFAULT_OPTIONS = {
     groups_initially_closed = false,
     highlights = {
         group = "SidebarNvimLabel",
-        group_count = "SidebarNvimNormal",
+        group_count = "SidebarNvimSectionTitle",
         item_icon = "SidebarNvimNormal",
         item_lnum = "SidebarNvimLineNr",
         item_col = "SidebarNvimLineNr",
@@ -120,7 +120,6 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
         line = line .. string.rep(" ", offset)
 
         table.insert(section_hl, { self.highlights.group, #section_lines, 0, #line - offset })
-
         if self.show_group_count then
             table.insert(section_hl, { self.highlights.group_count, #section_lines, #line, -1 })
             local total = #group
@@ -164,18 +163,53 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
             line = line .. col .. " "
         end
 
-        if type(item.text) == "table" then
-            for _, i in ipairs(item.text) do
-                table.insert(section_hl, { i.hl, #section_lines, #line, -1 })
+        if type(item.left) == "table" and #item.left ~= 0 then
+            for _, i in ipairs(item.left) do
+                if i.hl then
+                    table.insert(section_hl, { i.hl, #section_lines, #line, -1 })
+                else
+                    table.insert(section_hl, { "SidebarNvimNormal", #section_lines, #line, -1 })
+                end
                 line = line .. i.text
             end
-            table.insert(section_lines, line)
-        elseif type(item.text) == "string" then
+        end
+
+        if type(item.right) == "table" and #item.right ~= 0 then
+            local temp_line = ""
+            local temp_hl = {}
+
+            for _, i in ipairs(item.right) do
+                -- Break if line will exceed max width
+                if #line + #temp_line + #i.text > ctx.width then
+                    break
+                end
+
+                if i.hl then
+                    table.insert(temp_hl, { i.hl, #section_lines, #line + #temp_line, -1 })
+                else
+                    table.insert(temp_hl, { "SidebarNvimNormal", #section_lines, #line + #temp_line, -1 })
+                end
+
+                temp_line = temp_line .. i.text
+            end
+
+            -- Calculate offset and add empty space in the middle
+            local offset = ctx.width - #temp_line - #line + 1
+            local gap = string.rep(" ", offset)
+            line = line .. gap .. temp_line
+
+            -- Add highlights accounting for offset
+            for _, hl in ipairs(temp_hl) do
+                table.insert(section_hl, { hl[1], hl[2], hl[3] + offset, hl[4] })
+            end
+        end
+
+        if type(item.text) == "string" then
             table.insert(section_hl, { self.highlights.item_text, #section_lines, #line, -1 })
             line = line .. item.text
-
-            table.insert(section_lines, line)
         end
+
+        table.insert(section_lines, line)
     end
 end
 
