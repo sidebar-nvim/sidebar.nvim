@@ -12,8 +12,6 @@ local loclist = Loclist:new({
     highlights = { item_text = "SidebarNvimGitStatusFileName" },
 })
 
-local file_status = {}
-
 local function async_cmd(group, args)
     local stdout = luv.new_pipe(false)
     local stderr = luv.new_pipe(false)
@@ -38,18 +36,13 @@ local function async_cmd(group, args)
                             group = group,
                             left = {
                                 {
-                                    text = fileicon,
+                                    text = fileicon .. " ",
                                     hl = "SidebarNvimGitStatusFileIcon",
                                 },
                                 {
-                                    text = " ",
-                                },
-                                {
-                                    text = utils.shortest_path(filename),
+                                    text = utils.shortest_path(filename) .. " ",
                                     hl = "SidebarNvimGitStatusFileName",
                                 },
-                            },
-                            right = {
                                 {
                                     text = added,
                                     hl = "SidebarNvimGitStatusDiffAdded",
@@ -62,6 +55,7 @@ local function async_cmd(group, args)
                                     hl = "SidebarNvimGitStatusDiffRemoved",
                                 },
                             },
+                            right = {},
                         })
                     end
                 end
@@ -150,10 +144,6 @@ local function async_update(ctx)
                 loclist:add_item({
                     group = "Untracked",
                     left = {
-                        -- {
-                        --     text = "?? ",
-                        --     hl = "SidebarNvimGitStatusState",
-                        -- },
                         {
                             text = fileicon .. " ",
                             hl = "SidebarNvimGitStatusFileIcon",
