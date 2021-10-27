@@ -116,17 +116,14 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
             line = line:sub(1, ctx.width - 5) .. "..."
         end
 
-        local offset = ctx.width - #line - 2
-        line = line .. string.rep(" ", offset)
-
-        table.insert(section_hl, { self.highlights.group, #section_lines, 0, #line - offset })
+        table.insert(section_hl, { self.highlights.group, #section_lines, 0, #line })
         if self.show_group_count then
             table.insert(section_hl, { self.highlights.group_count, #section_lines, #line, -1 })
             local total = #group
             if total > 99 then
                 total = "++"
             end
-            line = line .. total
+            line = line .. " (" .. total .. ")"
         end
 
         self._group_indexes[#section_lines] = group
