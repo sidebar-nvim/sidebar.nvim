@@ -8,58 +8,89 @@ local has_devicons, devicons = pcall(require, "nvim-web-devicons")
 
 local loclist = Loclist:new({
     show_location = false,
-    -- ommit_single_group = true,
-    highlights = { item_text = "SidebarNvimGitStatusFileName" },
 })
 
-local function async_cmd(group, args)
+local loclist_items = {}
+local finished = 0
+
+-- parse line from git diff --numstat into a loclist item
+local function parse_git_diff(group, line)
+    local t = vim.split(line, "\t")
+    local added, removed, filename = t[1], t[2], t[3]
+    local extension = filename:match("^.+%.(.+)$")
+    local fileicon
+
+    if has_devicons and devicons.has_loaded() then
+        fileicon, _ = devicons.get_icon_color(filename, extension)
+    end
+
+    if filename ~= "" then
+        table.insert(loclist_items, {
+            group = group,
+            left = {
+                {
+                    text = fileicon .. " ",
+                    hl = "SidebarNvimGitStatusFileIcon",
+                },
+                {
+                    text = utils.shortest_path(filename) .. " ",
+                    hl = "SidebarNvimGitStatusFileName",
+                },
+                {
+                    text = added,
+                    hl = "SidebarNvimGitStatusDiffAdded",
+                },
+                {
+                    text = ", ",
+                },
+                {
+                    text = removed,
+                    hl = "SidebarNvimGitStatusDiffRemoved",
+                },
+            },
+            right = {},
+        })
+    end
+end
+
+-- parse line from git status --porcelain into a loclist item
+local function parse_git_status(group, line)
+    local striped = line:match("^%s*(.-)%s*$")
+    local status = striped:sub(0, 2)
+    local filename = striped:sub(3, -1):match("^%s*(.-)%s*$")
+    local extension = filename:match("^.+%.(.+)$")
+
+    if status == "??" then
+        local fileicon
+
+        if has_devicons and devicons.has_loaded() then
+            fileicon, _ = devicons.get_icon_color(filename, extension)
+        end
+        table.insert(loclist_items, {
+            group = group,
+            left = {
+                {
+                    text = fileicon .. " ",
+                    hl = "SidebarNvimGitStatusFileIcon",
+                },
+                {
+                    text = utils.shortest_path(filename),
+                    hl = "SidebarNvimGitStatusFileName",
+                },
+            },
+        })
+    end
+end
+
+-- execute async command and parse result into loclist items
+local function async_cmd(group, command, args, parse_fn)
     local stdout = luv.new_pipe(false)
     local stderr = luv.new_pipe(false)
-    local status_tmp = ""
 
     local handle
-    handle = luv.spawn("git", { args = args, stdio = { nil, stdout, stderr }, cwd = luv.cwd() }, function()
-        if status_tmp ~= "" then
-            for _, line in ipairs(vim.split(status_tmp, "\n")) do
-                if line ~= "" then
-                    local t = vim.split(line, "\t")
-                    local added, removed, filename = t[1], t[2], t[3]
-                    local extension = filename:match("^.+%.(.+)$")
-                    local fileicon
-
-                    if has_devicons and devicons.has_loaded() then
-                        fileicon, _ = devicons.get_icon_color(filename, extension)
-                    end
-
-                    if filename ~= "" then
-                        loclist:add_item({
-                            group = group,
-                            left = {
-                                {
-                                    text = fileicon .. " ",
-                                    hl = "SidebarNvimGitStatusFileIcon",
-                                },
-                                {
-                                    text = utils.shortest_path(filename) .. " ",
-                                    hl = "SidebarNvimGitStatusFileName",
-                                },
-                                {
-                                    text = added,
-                                    hl = "SidebarNvimGitStatusDiffAdded",
-                                },
-                                {
-                                    text = ", ",
-                                },
-                                {
-                                    text = removed,
-                                    hl = "SidebarNvimGitStatusDiffRemoved",
-                                },
-                            },
-                            right = {},
-                        })
-                    end
-                end
-            end
+    handle = luv.spawn(command, { args = args, stdio = { nil, stdout, stderr }, cwd = luv.cwd() }, function()
+        if finished == 3 then
+            loclist:set_items(loclist_items)
         end
 
         luv.read_stop(stdout)
@@ -69,14 +100,17 @@ local function async_cmd(group, args)
         handle:close()
     end)
 
-    status_tmp = ""
-
     luv.read_start(stdout, function(err, data)
         if data == nil then
+            finished = finished + 1
             return
         end
 
-        status_tmp = status_tmp .. data
+        for _, line in ipairs(vim.split(data, "\n")) do
+            if line ~= "" then
+                parse_fn(group, line)
+            end
+        end
 
         if err ~= nil then
             vim.schedule(function()
@@ -95,68 +129,17 @@ local function async_cmd(group, args)
                 utils.echo_warning(err)
             end)
         end
-
-        -- vim.schedule(function()
-        -- utils.echo_warning(data)
-        -- end)
     end)
 end
 
 local function async_update(ctx)
     loclist:clear()
+    loclist_items = {}
+    finished = 0
 
-    local stdout = luv.new_pipe(false)
-    local stderr = luv.new_pipe(false)
-
-    local handle
-    handle = luv.spawn(
-        "git",
-        { args = { "status", "--porcelain" }, stdio = { nil, stdout, stderr }, cwd = luv.cwd() },
-        function()
-            luv.read_stop(stdout)
-            stdout:close()
-            handle:close()
-
-            async_cmd("Unstaged", { "diff", "--numstat" })
-            async_cmd("Staged", { "diff", "--numstat", "--staged" })
-        end
-    )
-
-    luv.read_start(stdout, function(err, data)
-        if data == nil then
-            return
-        end
-
-        for _, line in ipairs(vim.split(data, "\n")) do
-            local striped = line:match("^%s*(.-)%s*$")
-            local status = striped:sub(0, 2)
-            local filename = striped:sub(3, -1):match("^%s*(.-)%s*$")
-            local extension = filename:match("^.+%.(.+)$")
-
-            if status ~= "??" then
-                file_status[filename] = status
-            else
-                local fileicon
-
-                if has_devicons and devicons.has_loaded() then
-                    fileicon, _ = devicons.get_icon_color(filename, extension)
-                end
-                loclist:add_item({
-                    group = "Untracked",
-                    left = {
-                        {
-                            text = fileicon .. " ",
-                            hl = "SidebarNvimGitStatusFileIcon",
-                        },
-                        {
-                            text = utils.shortest_path(filename),
-                            hl = "SidebarNvimGitStatusFileName",
-                        },
-                    },
-                })
-            end
-        end
-    end)
+    async_cmd("Staged", "git", { "diff", "--numstat", "--staged" }, parse_git_diff)
+    async_cmd("Unstaged", "git", { "diff", "--numstat" }, parse_git_diff)
+    async_cmd("Untracked", "git", { "status", "--porcelain" }, parse_git_status)
 end
 
 local async_update_debounced = Debouncer:new(async_update, 1000)
