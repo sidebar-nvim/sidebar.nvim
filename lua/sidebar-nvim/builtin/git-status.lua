@@ -91,6 +91,14 @@ local function async_cmd(group, command, args, parse_fn)
     handle = luv.spawn(command, { args = args, stdio = { nil, stdout, stderr }, cwd = luv.cwd() }, function()
         if finished == 3 then
             loclist:set_items(loclist_items)
+
+            -- Make sure all groups exist
+            loclist:add_group("Staged")
+            loclist:add_group("Unstaged")
+            loclist:add_group("Untracked")
+
+            -- Fix group order
+            loclist._group_keys = { "Staged", "Unstaged", "Untracked" }
         end
 
         luv.read_stop(stdout)
