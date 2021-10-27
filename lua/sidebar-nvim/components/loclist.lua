@@ -94,6 +94,15 @@ function Loclist:set_items(items)
     self._group_keys = vim.tbl_keys(self.groups)
 end
 
+-- add an empty group
+-- @param group string: name of the group
+function Loclist:add_group(group)
+    if not self.groups[group] then
+        self.groups[group] = { is_closed = true }
+        table.insert(self._group_keys, group)
+    end
+end
+
 function Loclist:clear()
     self.groups = {}
     self._group_keys = {}
