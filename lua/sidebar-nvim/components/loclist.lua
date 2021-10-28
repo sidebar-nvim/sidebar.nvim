@@ -148,7 +148,7 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
         local line = ""
 
         if with_label then
-            line = "│ "
+            line = "  "
         end
 
         if item.icon then
