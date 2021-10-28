@@ -99,7 +99,7 @@ end
 function Loclist:add_group(group)
     if not self.groups[group] then
         self.groups[group] = { is_closed = true }
-        table.insert(self._group_keys, group)
+        self._group_keys[#self._group_keys + 1] = group
     end
 end
 
