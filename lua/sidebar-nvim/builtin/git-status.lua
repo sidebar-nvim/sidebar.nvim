@@ -10,6 +10,11 @@ local loclist = Loclist:new({
     show_location = false,
 })
 
+-- Make sure all groups exist
+loclist:add_group("Staged")
+loclist:add_group("Unstaged")
+loclist:add_group("Untracked")
+
 local loclist_items = {}
 local finished = 0
 
@@ -25,6 +30,8 @@ local function parse_git_diff(group, line)
     end
 
     if filename ~= "" then
+        loclist:open_group(group)
+
         table.insert(loclist_items, {
             group = group,
             left = {
@@ -66,6 +73,9 @@ local function parse_git_status(group, line)
         if has_devicons and devicons.has_loaded() then
             fileicon, _ = devicons.get_icon_color(filename, extension)
         end
+
+        loclist:open_group(group)
+
         table.insert(loclist_items, {
             group = group,
             left = {
@@ -90,15 +100,10 @@ local function async_cmd(group, command, args, parse_fn)
     local handle
     handle = luv.spawn(command, { args = args, stdio = { nil, stdout, stderr }, cwd = luv.cwd() }, function()
         if finished == 3 then
-            loclist:set_items(loclist_items)
-
-            -- Make sure all groups exist
-            loclist:add_group("Staged")
-            loclist:add_group("Unstaged")
-            loclist:add_group("Untracked")
+            loclist:set_items(loclist_items, { remove_groups = false })
 
             -- Fix group order
-            loclist._group_keys = { "Staged", "Unstaged", "Untracked" }
+            -- loclist._group_keys = { "Staged", "Unstaged", "Untracked" }
         end
 
         luv.read_stop(stdout)
@@ -142,6 +147,7 @@ end
 
 local function async_update(ctx)
     loclist:clear()
+    loclist:close_all_groups({ remove_groups = false })
     loclist_items = {}
     finished = 0
 

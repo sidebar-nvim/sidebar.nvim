@@ -84,10 +84,10 @@ end
 -- |-- (number) item.col the col number of this item
 -- |-- (string) item.text
 -- |-- (string) item.icon
-function Loclist:set_items(items)
-    self:clear()
+-- |- clear_opts (table) see Loclist:clear
+function Loclist:set_items(items, clear_opts)
+    self:clear(clear_opts)
 
-    self.groups = {}
     for _, item in pairs(items) do
         self:add_item(item)
     end
@@ -103,9 +103,21 @@ function Loclist:add_group(group)
     end
 end
 
-function Loclist:clear()
-    self.groups = {}
-    self._group_keys = {}
+-- clear all the groups
+-- @param opts (table)
+-- |- opts.remove_groups (boolean) also remove groups from the list, otherwise only items will be removed, removing groups from the list also means that the state of groups will be cleared
+function Loclist:clear(opts)
+    opts = opts or {}
+
+    if opts.remove_groups then
+        self.groups = {}
+        self._group_keys = {}
+        return
+    end
+
+    for _, key in ipairs(self._group_keys) do
+        self.groups[key] = { is_closed = self.groups[key].is_closed }
+    end
 end
 
 function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_hl)
