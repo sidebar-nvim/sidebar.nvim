@@ -52,6 +52,9 @@ local function get_diagnostics(ctx)
                         },
                         { text = message },
                     },
+                    lnum = diag.range.start.line + 1,
+                    col = diag.range.start.character + 1,
+                    filepath = filepath,
                 })
             end
         end

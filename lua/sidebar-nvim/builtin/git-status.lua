@@ -19,15 +19,15 @@ local finished = 0
 -- parse line from git diff --numstat into a loclist item
 local function parse_git_diff(group, line)
     local t = vim.split(line, "\t")
-    local added, removed, filename = t[1], t[2], t[3]
-    local extension = filename:match("^.+%.(.+)$")
+    local added, removed, filepath = t[1], t[2], t[3]
+    local extension = filepath:match("^.+%.(.+)$")
     local fileicon
 
     if has_devicons and devicons.has_loaded() then
-        fileicon, _ = devicons.get_icon_color(filename, extension)
+        fileicon, _ = devicons.get_icon_color(filepath, extension)
     end
 
-    if filename ~= "" then
+    if filepath ~= "" then
         loclist:open_group(group)
 
         table.insert(loclist_items, {
@@ -38,7 +38,7 @@ local function parse_git_diff(group, line)
                     hl = "SidebarNvimGitStatusFileIcon",
                 },
                 {
-                    text = utils.shortest_path(filename) .. " ",
+                    text = utils.shortest_path(filepath) .. " ",
                     hl = "SidebarNvimGitStatusFileName",
                 },
                 {
@@ -53,7 +53,7 @@ local function parse_git_diff(group, line)
                     hl = "SidebarNvimGitStatusDiffRemoved",
                 },
             },
-            right = {},
+            filepath = filepath,
         })
     end
 end
@@ -62,14 +62,14 @@ end
 local function parse_git_status(group, line)
     local striped = line:match("^%s*(.-)%s*$")
     local status = striped:sub(0, 2)
-    local filename = striped:sub(3, -1):match("^%s*(.-)%s*$")
-    local extension = filename:match("^.+%.(.+)$")
+    local filepath = striped:sub(3, -1):match("^%s*(.-)%s*$")
+    local extension = filepath:match("^.+%.(.+)$")
 
     if status == "??" then
         local fileicon
 
         if has_devicons and devicons.has_loaded() then
-            fileicon, _ = devicons.get_icon_color(filename, extension)
+            fileicon, _ = devicons.get_icon_color(filepath, extension)
         end
 
         loclist:open_group(group)
@@ -82,10 +82,11 @@ local function parse_git_status(group, line)
                     hl = "SidebarNvimGitStatusFileIcon",
                 },
                 {
-                    text = utils.shortest_path(filename),
+                    text = utils.shortest_path(filepath),
                     hl = "SidebarNvimGitStatusFileName",
                 },
             },
+            filepath = filepath,
         })
     end
 end
@@ -211,7 +212,7 @@ return {
                 return
             end
             vim.cmd("wincmd p")
-            vim.cmd("e " .. location)
+            vim.cmd("e " .. location.filepath)
         end,
     },
 }

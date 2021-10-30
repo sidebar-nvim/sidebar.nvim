@@ -6,9 +6,7 @@ local config = require("sidebar-nvim.config")
 local luv = vim.loop
 
 local loclist = Loclist:new({
-    show_location = false,
     ommit_single_group = true,
-    highlights = { item_text = "SidebarNvimDockerContainerName" },
 })
 
 local output_tmp = ""
@@ -47,10 +45,13 @@ local function async_update(_)
                         -- TODO: on nightly change `vim.fn.json_*` to `vim.json_decode`, which is way faster and no need for schedule wrap
                         local ret, container = pcall(vim.fn.json_decode, line)
                         if ret then
+                            local icon = get_container_icon(container)
                             loclist:add_item({
                                 group = "containers",
-                                text = container.Names,
-                                icon = get_container_icon(container),
+                                left = {
+                                    { text = icon.text .. " ", hl = icon.hl },
+                                    { text = container.Names },
+                                },
                                 order = state_order_mapping[container.State] or 999,
                                 id = container.ID,
                             })

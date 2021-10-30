@@ -3,13 +3,6 @@ local Loclist = require("sidebar-nvim.components.loclist")
 local config = require("sidebar-nvim.config")
 
 local loclist = Loclist:new({
-    highlights = {
-        group = "SidebarNvimTodoTag",
-        group_count = "SidebarNvimTodoTotalNumber",
-        item_text = "SidebarNvimTodoFilename",
-        item_lnum = "SidebarNvimTodoLineNumber",
-        item_col = "SidebarNvimTodoColNumber",
-    },
     groups_initially_closed = config.todos.initially_closed,
 })
 
@@ -68,10 +61,17 @@ function search_controller.do_search()
         for _, item in pairs(results) do
             loclist:add_item({
                 group = item.tag,
+                left = {
+                    { text = item.lnum, hl = "SidebarNvimTodoLineNumber" },
+                    { text = ":" },
+                    { text = item.col .. " ", hl = "SidebarNvimTodoColNumber" },
+                    {
+                        text = vim.fn.fnamemodify(item.filename, ":t"),
+                    },
+                },
+                filename = item.filename,
                 lnum = item.lnum,
                 col = item.col,
-                text = vim.fn.fnamemodify(item.filename, ":t"),
-                filepath = item.filename,
             })
         end
         is_searching = false
