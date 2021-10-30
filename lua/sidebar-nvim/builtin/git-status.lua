@@ -6,9 +6,7 @@ local config = require("sidebar-nvim.config")
 local luv = vim.loop
 local has_devicons, devicons = pcall(require, "nvim-web-devicons")
 
-local loclist = Loclist:new({
-    show_location = false,
-})
+local loclist = Loclist:new({})
 
 -- Make sure all groups exist
 loclist:add_group("Staged")

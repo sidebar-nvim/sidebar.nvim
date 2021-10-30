@@ -8,7 +8,7 @@ Loclist.DEFAULT_OPTIONS = {
     -- badge showing the number of items in each group
     show_group_count = true,
     -- line and col numbers
-    show_location = true,
+    show_location = false,
     -- if there's a single group, skip rendering the group controls
     ommit_single_group = false,
     -- initial state of the groups

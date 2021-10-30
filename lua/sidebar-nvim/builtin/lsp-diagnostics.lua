@@ -1,15 +1,7 @@
 local Loclist = require("sidebar-nvim.components.loclist")
 local config = require("sidebar-nvim.config")
 
-local loclist = Loclist:new({
-    highlights = {
-        group = "SidebarNvimLspDiagnosticsFilename",
-        group_count = "SidebarNvimLspDiagnosticsTotalNumber",
-        item_text = "SidebarNvimLspDiagnosticsMessage",
-        item_lnum = "SidebarNvimLspDiagnosticsLineNumber",
-        item_col = "SidebarNvimLspDiagnosticsColNumber",
-    },
-})
+local loclist = Loclist:new({})
 
 local severity_level = { "Error", "Warning", "Info", "Hint" }
 local icons = { "", "", "", "" }
@@ -40,17 +32,26 @@ local function get_diagnostics(ctx)
                 local severity = diag.severity
                 local level = severity_level[severity]
                 local icon = icons[severity]
+
                 if not use_icons then
                     icon = level
                 end
 
                 table.insert(loclist_items, {
                     group = filename,
-                    text = message,
-                    icon = { hl = "SidebarNvimLspDiagnostics" .. level, text = icon },
-                    lnum = diag.range.start.line + 1,
-                    col = diag.range.start.character + 1,
-                    filepath = filepath,
+                    left = {
+                        { text = icon .. " ", hl = "SidebarNvimLspDiagnostics" .. level },
+                        {
+                            text = diag.range.start.line + 1,
+                            hl = "SidebarNvimLspDiagnosticsLineNumber",
+                        },
+                        { text = ":" },
+                        {
+                            text = (diag.range.start.character + 1) .. " ",
+                            hl = "SidebarNvimLspDiagnosticsColNumber",
+                        },
+                        { text = message },
+                    },
                 })
             end
         end
@@ -93,7 +94,7 @@ return {
         groups = {},
         links = {
             SidebarNvimLspDiagnosticsError = "LspDiagnosticsDefaultError",
-            SidebarNvimLspDiagnosticsWarn = "LspDiagnosticsDefaultWarning",
+            SidebarNvimLspDiagnosticsWarning = "LspDiagnosticsDefaultWarning",
             SidebarNvimLspDiagnosticsInfo = "LspDiagnosticsDefaultInformation",
             SidebarNvimLspDiagnosticsHint = "LspDiagnosticsDefaultHint",
             SidebarNvimLspDiagnosticsLineNumber = "SidebarNvimLineNr",
