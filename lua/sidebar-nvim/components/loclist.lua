@@ -14,7 +14,6 @@ Loclist.DEFAULT_OPTIONS = {
     highlights = {
         group = "SidebarNvimLabel",
         group_count = "SidebarNvimSectionTitle",
-        item_icon = "SidebarNvimNormal",
         item_text = "SidebarNvimNormal",
     },
 }
@@ -155,14 +154,6 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
 
         if with_label then
             line = "  "
-        end
-
-        if item.icon then
-            table.insert(
-                section_hl,
-                { item.icon.hl or self.highlights.item_icon, #section_lines, #line, #line + #item.icon.text }
-            )
-            line = line .. item.icon.text .. " "
         end
 
         if type(item.left) == "table" and #item.left ~= 0 then
