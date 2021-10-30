@@ -1,103 +1,108 @@
-local has_todos, todos = pcall(require, "todo-comments.search")
+local utils = require("sidebar-nvim.utils")
 local Loclist = require("sidebar-nvim.components.loclist")
 local config = require("sidebar-nvim.config")
+local luv = vim.loop
 
 local loclist = Loclist:new({
     groups_initially_closed = config.todos.initially_closed,
 })
 
-local search_controller = {}
+local todos = {}
 
--- todo-comments config is async, so we need to wait for it to be ready in order to use its functions
-function search_controller.wait_for_todo_config()
-    local timer = vim.loop.new_timer()
+local function async_update(_)
+    loclist:clear()
+    todos = {}
 
-    timer:start(200, 0, function()
-        vim.schedule(function()
-            search_controller.do_search()
-        end)
-        timer:close()
-    end)
-end
+    local stdout = luv.new_pipe(false)
+    local stderr = luv.new_pipe(false)
+    local handle
 
-local is_searching = false
-
-function search_controller.do_search()
-    if not has_todos then
-        return
-    end
-
-    if search_controller.is_current_path_ignored() then
-        return
-    end
-
-    local _, todo_config = pcall(require, "todo-comments.config")
-    if not todo_config.loaded then
-        search_controller.wait_for_todo_config()
-        return
-    end
-
-    if is_searching then
-        return
-    end
-    is_searching = true
-
-    local opts = { disable_not_found_warnings = true }
-    todos.search(function(results)
-        table.sort(results, function(a, b)
-            return a.tag < b.tag
-        end)
-
-        table.sort(results, function(a, b)
-            return a.filename < b.filename
-        end)
-
-        table.sort(results, function(a, b)
-            return a.lnum < b.lnum
-        end)
-
-        loclist:clear()
-
-        for _, item in pairs(results) do
-            loclist:add_item({
-                group = item.tag,
-                left = {
-                    { text = item.lnum, hl = "SidebarNvimTodoLineNumber" },
-                    { text = ":" },
-                    { text = item.col .. " ", hl = "SidebarNvimTodoColNumber" },
-                    {
-                        text = vim.fn.fnamemodify(item.filename, ":t"),
+    -- PERF: Use rg instead of git grep when it's installed
+    handle = luv.spawn("git", {
+        args = { "grep", "-no", "--column", "-EI", "(TODO|NOTE|FIXME|PERF|HACK) *:.*" },
+        stdio = { nil, stdout, stderr },
+        cmd = luv.cwd(),
+    }, function()
+        for _, items in pairs(todos) do
+            for _, item in ipairs(items) do
+                loclist:add_item({
+                    group = item.tag,
+                    left = {
+                        { text = item.lnum, hl = "SidebarNvimTodoLineNumber" },
+                        { text = ":" },
+                        { text = item.col .. " ", hl = "SidebarNvimTodoColNumber" },
+                        {
+                            text = utils.shortest_path(item.filepath),
+                            -- text = vim.fn.fnamemodify(item.filepath, ":t"),
+                        },
                     },
-                },
-                filename = item.filename,
-                lnum = item.lnum,
-                col = item.col,
-            })
+                    filepath = item.filepath,
+                    lnum = item.lnum,
+                    col = item.col,
+                })
+            end
         end
-        is_searching = false
-    end, opts)
-end
 
-function search_controller.is_current_path_ignored()
-    local cwd = vim.loop.cwd()
-    for _, path in pairs(config.todos.ignored_paths or {}) do
-        if vim.fn.expand(path) == cwd then
-            return true
+        luv.read_stop(stdout)
+        luv.read_stop(stderr)
+        stdout:close()
+        stderr:close()
+        handle:close()
+    end)
+
+    luv.read_start(stdout, function(err, data)
+        if data == nil then
+            return
         end
-    end
 
-    return false
+        for _, line in ipairs(vim.split(data, "\n")) do
+            if line ~= "" then
+                local split_line = vim.split(line, ":")
+                local filepath, lnum, col, tag, text =
+                    split_line[1], split_line[2], split_line[3], split_line[4], split_line[5]
+
+                if tag and text then
+                    if not todos[tag] then
+                        todos[tag] = {}
+                    end
+
+                    local category_tbl = todos[tag]
+
+                    category_tbl[#category_tbl + 1] = {
+                        filepath = filepath,
+                        lnum = lnum,
+                        col = col,
+                        tag = tag,
+                        text = text,
+                    }
+                end
+            end
+        end
+
+        if err ~= nil then
+            vim.schedule(function()
+                utils.echo_warning(err)
+            end)
+        end
+    end)
+
+    luv.read_start(stderr, function(err, data)
+        if data == nil then
+            return
+        end
+
+        if err ~= nil then
+            vim.schedule(function()
+                utils.echo_warning(err)
+            end)
+        end
+    end)
 end
 
 return {
     title = "TODOs",
     icon = config.todos.icon,
     draw = function(ctx)
-        if not has_todos then
-            local lines = { "provider 'todo-comments' not installed" }
-            return { lines = lines, hl = {} }
-        end
-
         local lines = {}
         local hl = {}
 
@@ -105,10 +110,6 @@ return {
 
         if #lines == 0 then
             lines = { "<no TODOs>" }
-        end
-
-        if search_controller.is_current_path_ignored() then
-            lines = { "<path ignored>" }
         end
 
         return { lines = lines, hl = hl }
@@ -135,15 +136,15 @@ return {
                 return
             end
             vim.cmd("wincmd p")
-            vim.cmd("e " .. location.filename)
+            vim.cmd("e " .. location.filepath)
             vim.fn.cursor(location.lnum, location.col)
         end,
     },
     setup = function()
-        search_controller.do_search()
+        async_update()
     end,
     update = function()
-        search_controller.do_search()
+        async_update()
     end,
     toggle_all = function()
         loclist:toggle_all_groups()
