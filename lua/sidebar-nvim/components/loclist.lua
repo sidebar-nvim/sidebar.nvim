@@ -7,8 +7,6 @@ Loclist.DEFAULT_OPTIONS = {
     group_icon = { closed = "", opened = "" },
     -- badge showing the number of items in each group
     show_group_count = true,
-    -- line and col numbers
-    show_location = false,
     -- if there's a single group, skip rendering the group controls
     ommit_single_group = false,
     -- initial state of the groups
@@ -17,8 +15,6 @@ Loclist.DEFAULT_OPTIONS = {
         group = "SidebarNvimLabel",
         group_count = "SidebarNvimSectionTitle",
         item_icon = "SidebarNvimNormal",
-        item_lnum = "SidebarNvimLineNr",
-        item_col = "SidebarNvimLineNr",
         item_text = "SidebarNvimNormal",
     },
 }
@@ -66,8 +62,6 @@ function Loclist:add_item(item)
         table.insert(self._group_keys, item.group)
     end
 
-    item.lnum = item.lnum or 0
-    item.col = item.col or 0
     item.order = item.order or 0
 
     table.insert(self.groups[item.group], item)
@@ -169,16 +163,6 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
                 { item.icon.hl or self.highlights.item_icon, #section_lines, #line, #line + #item.icon.text }
             )
             line = line .. item.icon.text .. " "
-        end
-
-        if self.show_location then
-            local lnum = "" .. item.lnum
-            table.insert(section_hl, { self.highlights.item_lnum, #section_lines, #line + 1, #line + #lnum + 1 })
-            line = line .. " " .. lnum .. ":"
-
-            local col = "" .. item.col
-            table.insert(section_hl, { self.highlights.item_col, #section_lines, #line, #line + #col })
-            line = line .. col .. " "
         end
 
         if type(item.left) == "table" and #item.left ~= 0 then
