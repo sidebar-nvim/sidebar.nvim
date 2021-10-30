@@ -31,7 +31,7 @@ setmetatable(Loclist, { __index = Component })
 -- |- (boolean) o.show_group_count show a badge after the group name with the count of items contained in the group
 -- |- (boolean) o.ommit_single_group whether this component should draw the group line if there's only one group present
 function Loclist:new(o)
-    o = vim.tbl_deep_extend("force", Loclist.DEFAULT_OPTIONS, o or {}, {
+    o = vim.tbl_deep_extend("force", vim.deepcopy(Loclist.DEFAULT_OPTIONS), o or {}, {
         -- table(line_number -> group ref)
         _group_indexes = {},
         -- table(line__number -> item ref)
