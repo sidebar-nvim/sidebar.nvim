@@ -160,7 +160,7 @@ return {
         -- BufLeave triggered only after leaving terminal buffers
         vim.api.nvim_exec(
             [[
-          augroup sidebar_nvim_todos_update
+          augroup sidebar_nvim_git_status_update
               autocmd!
               autocmd ShellCmdPost * lua require'sidebar-nvim.builtin.git-status'.update()
               autocmd BufLeave term://* lua require'sidebar-nvim.builtin.git-status'.update()
