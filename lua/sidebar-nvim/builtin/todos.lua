@@ -34,10 +34,26 @@ local function async_update(ctx)
     local stdout = luv.new_pipe(false)
     local stderr = luv.new_pipe(false)
     local handle
+    local cmd
+    local args
 
-    -- PERF: Use rg instead of git grep when it's installed
-    handle = luv.spawn("git", {
-        args = { "grep", "-no", "--column", "-EI", "(TODO|NOTE|FIX|PERF|HACK|WARN) *:.*" },
+    -- Use ripgrep by default, if it's installed
+    if vim.fn.executable("rg") == 1 then
+        cmd = "rg"
+        args = {
+            "--ignore-files",
+            "--no-hidden",
+            "--column",
+            "--only-matching",
+            "(TODO|NOTE|FIX|PERF|HACK|WARN) *:.*",
+        }
+    else
+        cmd = "git"
+        args = { "grep", "-no", "--column", "-EI", "(TODO|NOTE|FIX|PERF|HACK|WARN) *:.*" }
+    end
+
+    handle = luv.spawn(cmd, {
+        args = args,
         stdio = { nil, stdout, stderr },
         cmd = luv.cwd(),
     }, function()
