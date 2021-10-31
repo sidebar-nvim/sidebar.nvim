@@ -34,6 +34,7 @@ end
 
 -- scan directory recursively
 local function scan_dir(directory)
+    local show_hidden = config.files.show_hidden
     local handle = luv.fs_scandir(directory)
     local children = {}
     local children_directories = {}
@@ -46,19 +47,21 @@ local function scan_dir(directory)
             break
         end
 
-        if filetype == "file" then
-            table.insert(
-                children_files,
-                { name = filename, type = "file", open = false, path = directory .. "/" .. filename }
-            )
-        elseif filetype == "directory" then
-            table.insert(children_directories, {
-                name = filename,
-                type = "directory",
-                open = false,
-                path = directory .. "/" .. filename,
-                children = scan_dir(directory .. "/" .. filename),
-            })
+        if show_hidden or filename:sub(1, 1) ~= "." then
+            if filetype == "file" then
+                table.insert(
+                    children_files,
+                    { name = filename, type = "file", open = false, path = directory .. "/" .. filename }
+                )
+            elseif filetype == "directory" then
+                table.insert(children_directories, {
+                    name = filename,
+                    type = "directory",
+                    open = false,
+                    path = directory .. "/" .. filename,
+                    children = scan_dir(directory .. "/" .. filename),
+                })
+            end
         end
     end
 
@@ -76,44 +79,39 @@ local function scan_dir(directory)
 end
 
 local function build_loclist(group, directory, level)
-    local show_hidden = config.files.show_hidden
     local loclist_items = {}
 
     if directory.children then
         for _, node in ipairs(directory.children) do
             if node.type == "file" then
-                if show_hidden or node.name:sub(1, 1) ~= "." then
-                    local icon = get_fileicon(node.name)
+                local icon = get_fileicon(node.name)
 
-                    loclist_items[#loclist_items + 1] = {
-                        group = group,
-                        left = {
-                            { text = string.rep("  ", level) .. icon.text .. " ", hl = icon.hl },
-                            { text = node.name },
-                        },
-                        node = node,
-                    }
-                end
+                loclist_items[#loclist_items + 1] = {
+                    group = group,
+                    left = {
+                        { text = string.rep("  ", level) .. icon.text .. " ", hl = icon.hl },
+                        { text = node.name },
+                    },
+                    node = node,
+                }
             elseif node.type == "directory" then
-                if show_hidden or node.name:sub(1, 1) ~= "." then
-                    local icon
-                    if node.open then
-                        icon = icons["directory_open"]
-                    else
-                        icon = icons["directory_closed"]
-                    end
-
-                    loclist_items[#loclist_items + 1] = {
-                        group = group,
-                        left = {
-                            {
-                                text = string.rep("  ", level) .. icon .. " " .. node.name,
-                                hl = "SidebarNvimFilesDirectory",
-                            },
-                        },
-                        node = node,
-                    }
+                local icon
+                if node.open then
+                    icon = icons["directory_open"]
+                else
+                    icon = icons["directory_closed"]
                 end
+
+                loclist_items[#loclist_items + 1] = {
+                    group = group,
+                    left = {
+                        {
+                            text = string.rep("  ", level) .. icon .. " " .. node.name,
+                            hl = "SidebarNvimFilesDirectory",
+                        },
+                    },
+                    node = node,
+                }
             end
 
             if node.type == "directory" and node.open then
