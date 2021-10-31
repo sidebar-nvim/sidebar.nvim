@@ -13,6 +13,7 @@ sidebar.custom_sections	sidebar.txt	/*sidebar.custom_sections*
 sidebar.datetime	sidebar.txt	/*sidebar.datetime*
 sidebar.datetime-config	sidebar.txt	/*sidebar.datetime-config*
 sidebar.debouncer	sidebar.txt	/*sidebar.debouncer*
+sidebar.disable_closing_prompt	sidebar.txt	/*sidebar.disable_closing_prompt*
 sidebar.disable_default_keybindings	sidebar.txt	/*sidebar.disable_default_keybindings*
 sidebar.draw	sidebar.txt	/*sidebar.draw*
 sidebar.git-status	sidebar.txt	/*sidebar.git-status*

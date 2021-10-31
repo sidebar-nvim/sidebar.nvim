@@ -49,8 +49,6 @@ function M.setup(opts)
 end
 
 function M._internal_setup()
-    view._wipe_rogue_buffer()
-
     colors.setup()
     bindings.setup()
     view.setup()

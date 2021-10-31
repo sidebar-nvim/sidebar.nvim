@@ -14,7 +14,7 @@ local opts = {open = true}
 sidebar.setup(opts)
 ```
 
-See [options](#options) for a full list of setup options
+See [options](./doc/general.md#options) for a full list of setup options
 
 ## Requirements
 
