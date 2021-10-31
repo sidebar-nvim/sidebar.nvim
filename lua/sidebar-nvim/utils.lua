@@ -90,4 +90,19 @@ function M.shortest_path(path)
     return path
 end
 
+function M.filename(path)
+    local split = vim.split(path, "/")
+    return split[#split]
+end
+
+function M.truncate(s, size)
+    local length = #s
+
+    if length <= size then
+        return s
+    else
+        return s:sub(1, size) .. ".."
+    end
+end
+
 return M

@@ -158,12 +158,20 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
 
         if type(item.left) == "table" and #item.left ~= 0 then
             for _, i in ipairs(item.left) do
+                -- Calculate space left in line
+                local space_left = ctx.width - #line - 1
+
+                -- Break if line is already full
+                if space_left <= 0 then
+                    break
+                end
+
                 if i.hl then
                     table.insert(section_hl, { i.hl, #section_lines, #line, -1 })
                 else
                     table.insert(section_hl, { "SidebarNvimNormal", #section_lines, #line, -1 })
                 end
-                line = line .. i.text
+                line = line .. i.text:sub(1, space_left)
             end
         end
 
@@ -172,8 +180,11 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
             local temp_hl = {}
 
             for _, i in ipairs(item.right) do
-                -- Break if line will exceed max width
-                if #line + #temp_line + #i.text > ctx.width then
+                -- Calculate space left in line
+                local space_left = ctx.width - #line - #temp_line - 1
+
+                -- Break if line is already full
+                if space_left <= 0 then
                     break
                 end
 
@@ -183,11 +194,11 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
                     table.insert(temp_hl, { "SidebarNvimNormal", #section_lines, #line + #temp_line, -1 })
                 end
 
-                temp_line = temp_line .. i.text
+                temp_line = temp_line .. i.text:sub(1, space_left)
             end
 
             -- Calculate offset and add empty space in the middle
-            local offset = ctx.width - #temp_line - #line + 1
+            local offset = ctx.width - #temp_line - #line
             local gap = string.rep(" ", offset)
             line = line .. gap .. temp_line
 

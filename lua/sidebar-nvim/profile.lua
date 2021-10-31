@@ -50,7 +50,7 @@ function M.print_summary(filter)
         table.insert(entries, vim.tbl_deep_extend("force", { name = key }, M.entries[key]))
     end
 
-    -- TODO:: convert units
+    -- TODO: convert units
 
     table.sort(entries, function(a, b)
         -- reverse sort

@@ -9,7 +9,16 @@ local loclist = Loclist:new({
 
 local todos = {}
 
-local function async_update(_)
+local icons = {
+    TODO = { text = "", hl = "SidebarNvimTodoIconTodo" },
+    HACK = { text = "", hl = "SidebarNvimTodoIconHack" },
+    WARN = { text = "", hl = "SidebarNvimTodoIconWarn" },
+    PERF = { text = "", hl = "SidebarNvimTodoIconPerf" },
+    NOTE = { text = "", hl = "SidebarNvimTodoIconNote" },
+    FIX = { text = "", hl = "SidebarNvimTodoIconFix" },
+}
+
+local function async_update(ctx)
     loclist:clear()
     todos = {}
 
@@ -19,7 +28,7 @@ local function async_update(_)
 
     -- PERF: Use rg instead of git grep when it's installed
     handle = luv.spawn("git", {
-        args = { "grep", "-no", "--column", "-EI", "(TODO|NOTE|FIXME|PERF|HACK) *:.*" },
+        args = { "grep", "-no", "--column", "-EI", "(TODO|NOTE|FIX|PERF|HACK|WARN) *:.*" },
         stdio = { nil, stdout, stderr },
         cmd = luv.cwd(),
     }, function()
@@ -28,12 +37,16 @@ local function async_update(_)
                 loclist:add_item({
                     group = item.tag,
                     left = {
-                        { text = item.lnum, hl = "SidebarNvimTodoLineNumber" },
+                        icons[item.tag],
+                        { text = " " .. item.lnum, hl = "SidebarNvimTodoLineNumber" },
                         { text = ":" },
-                        { text = item.col .. " ", hl = "SidebarNvimTodoColNumber" },
+                        { text = item.col, hl = "SidebarNvimTodoColNumber" },
+                        { text = utils.truncate(item.text, ctx.width / 2) },
+                    },
+                    right = {
                         {
-                            text = utils.shortest_path(item.filepath),
-                            -- text = vim.fn.fnamemodify(item.filepath, ":t"),
+                            text = utils.filename(item.filepath),
+                            hl = "SidebarNvimLineNr",
                         },
                     },
                     filepath = item.filepath,
@@ -61,21 +74,19 @@ local function async_update(_)
                 local filepath, lnum, col, tag, text =
                     split_line[1], split_line[2], split_line[3], split_line[4], split_line[5]
 
-                if tag and text then
-                    if not todos[tag] then
-                        todos[tag] = {}
-                    end
-
-                    local category_tbl = todos[tag]
-
-                    category_tbl[#category_tbl + 1] = {
-                        filepath = filepath,
-                        lnum = lnum,
-                        col = col,
-                        tag = tag,
-                        text = text,
-                    }
+                if not todos[tag] then
+                    todos[tag] = {}
                 end
+
+                local category_tbl = todos[tag]
+
+                category_tbl[#category_tbl + 1] = {
+                    filepath = filepath,
+                    lnum = lnum,
+                    col = col,
+                    tag = tag,
+                    text = text,
+                }
             end
         end
 
@@ -124,6 +135,12 @@ return {
             SidebarNvimTodoFilename = "SidebarNvimNormal",
             SidebarNvimTodoLineNumber = "SidebarNvimLineNr",
             SidebarNvimTodoColNumber = "SidebarNvimLineNr",
+            SidebarNvimTodoIconTodo = "DiagnosticInfo",
+            SidebarNvimTodoIconHack = "DiagnosticWarning",
+            SidebarNvimTodoIconWarn = "DiagnosticWarning",
+            SidebarNvimTodoIconPerf = "DiagnosticError",
+            SidebarNvimTodoIconNote = "DiagnosticHint",
+            SidebarNvimTodoIconFix = "DiagnosticError",
         },
     },
     bindings = {
@@ -140,11 +157,11 @@ return {
             vim.fn.cursor(location.lnum, location.col)
         end,
     },
-    setup = function()
-        async_update()
+    setup = function(ctx)
+        async_update(ctx)
     end,
-    update = function()
-        async_update()
+    update = function(ctx)
+        async_update(ctx)
     end,
     toggle_all = function()
         loclist:toggle_all_groups()
