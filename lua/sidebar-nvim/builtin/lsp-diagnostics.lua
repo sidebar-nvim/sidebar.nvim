@@ -93,7 +93,6 @@ return {
         return get_diagnostics(ctx)
     end,
     highlights = {
-        -- { MyHLGroup = { gui=<color>, fg=<color>, bg=<color> } }
         groups = {},
         links = {
             SidebarNvimLspDiagnosticsError = "LspDiagnosticsDefaultError",
@@ -102,9 +101,6 @@ return {
             SidebarNvimLspDiagnosticsHint = "LspDiagnosticsDefaultHint",
             SidebarNvimLspDiagnosticsLineNumber = "SidebarNvimLineNr",
             SidebarNvimLspDiagnosticsColNumber = "SidebarNvimLineNr",
-            SidebarNvimLspDiagnosticsFilename = "SidebarNvimLabel",
-            SidebarNvimLspDiagnosticsTotalNumber = "LspTroubleCount",
-            SidebarNvimLspDiagnosticsMessage = "SidebarNvimNormal",
         },
     },
     bindings = {

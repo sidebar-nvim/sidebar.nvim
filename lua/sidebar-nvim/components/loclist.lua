@@ -168,7 +168,7 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
         if type(item.left) == "table" and #item.left ~= 0 then
             for _, i in ipairs(item.left) do
                 -- Calculate space left in line
-                local space_left = ctx.width - #line - 1
+                local space_left = ctx.width - #line
 
                 -- Break if line is already full
                 if space_left <= 0 then

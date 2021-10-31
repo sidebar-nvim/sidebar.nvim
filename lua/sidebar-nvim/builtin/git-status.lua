@@ -21,7 +21,7 @@ local function parse_git_diff(group, line)
     local t = vim.split(line, "\t")
     local added, removed, filepath = t[1], t[2], t[3]
     local extension = filepath:match("^.+%.(.+)$")
-    local fileicon
+    local fileicon = ""
 
     if has_devicons and devicons.has_loaded() then
         fileicon, _ = devicons.get_icon_color(filepath, extension)
@@ -189,11 +189,8 @@ return {
         return { lines = lines, hl = hl }
     end,
     highlights = {
-        -- { MyHLGroup = { gui=<color>, fg=<color>, bg=<color> } }
         groups = {},
-        -- { MyHLGroupLink = <string> }
         links = {
-            SidebarNvimGitStatusState = "SidebarNvimKeyword",
             SidebarNvimGitStatusFileName = "SidebarNvimNormal",
             SidebarNvimGitStatusFileIcon = "SidebarNvimSectionTitle",
             SidebarNvimGitStatusDiffAdded = "DiffAdded",

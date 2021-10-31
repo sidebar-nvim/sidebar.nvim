@@ -16,8 +16,6 @@ loclist:add_group("PERF")
 loclist:add_group("NOTE")
 loclist:add_group("FIX")
 
-local todos = {}
-
 local icons = {
     TODO = { text = "", hl = "SidebarNvimTodoIconTodo" },
     HACK = { text = "", hl = "SidebarNvimTodoIconHack" },
@@ -28,7 +26,7 @@ local icons = {
 }
 
 local function async_update(ctx)
-    todos = {}
+    local todos = {}
 
     local stdout = luv.new_pipe(false)
     local stderr = luv.new_pipe(false)
@@ -152,13 +150,9 @@ return {
         return { lines = lines, hl = hl }
     end,
     highlights = {
-        -- { MyHLGroup = { gui=<color>, fg=<color>, bg=<color> } }
         groups = {},
-        -- { MyHLGroupLink = <string> }
         links = {
-            SidebarNvimTodoTag = "SidebarNvimLabel",
-            SidebarNvimTodoTotalNumber = "SidebarNvimNormal",
-            SidebarNvimTodoFilename = "SidebarNvimNormal",
+            SidebarNvimTodoFilename = "SidebarNvimLineNr",
             SidebarNvimTodoLineNumber = "SidebarNvimLineNr",
             SidebarNvimTodoColNumber = "SidebarNvimLineNr",
             SidebarNvimTodoIconTodo = "DiagnosticInfo",

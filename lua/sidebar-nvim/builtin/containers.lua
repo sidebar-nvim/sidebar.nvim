@@ -99,10 +99,6 @@ local function async_update(_)
                 utils.echo_warning(err)
             end)
         end
-
-        -- vim.schedule(function()
-        -- utils.echo_warning(data)
-        -- end)
     end)
 end
 
@@ -134,13 +130,10 @@ return {
         return { lines = lines, hl = hl }
     end,
     highlights = {
-        -- { MyHLGroup = { gui=<color>, fg=<color>, bg=<color> } }
         groups = {},
-        -- { MyHLGroupLink = <string> }
         links = {
             SidebarNvimDockerContainerStatusRunning = "LspDiagnosticsDefaultInformation",
             SidebarNvimDockerContainerStatusExited = "LspDiagnosticsDefaultError",
-            SidebarNvimDockerContainerName = "SidebarNvimNormal",
         },
     },
     bindings = {
