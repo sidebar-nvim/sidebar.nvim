@@ -15,7 +15,7 @@ local icons = {
     opened = "",
 }
 
-local root = nil
+local file_status = {}
 
 local function get_fileicon(filename)
     if has_devicons and devicons.has_loaded() then
@@ -47,17 +47,27 @@ local function scan_dir(directory)
             break
         end
 
+        local path = directory .. "/" .. filename
+        local status
+
+        if not file_status[path] then
+            file_status[path] = { open = false }
+            status = file_status[path]
+        else
+            status = file_status[path]
+        end
+
         if show_hidden or filename:sub(1, 1) ~= "." then
             if filetype == "file" then
                 table.insert(
                     children_files,
-                    { name = filename, type = "file", open = false, path = directory .. "/" .. filename }
+                    { name = filename, type = "file", open = status.open, path = directory .. "/" .. filename }
                 )
             elseif filetype == "directory" then
                 table.insert(children_directories, {
                     name = filename,
                     type = "directory",
-                    open = false,
+                    open = status.open,
                     path = directory .. "/" .. filename,
                     children = scan_dir(directory .. "/" .. filename),
                 })
@@ -92,7 +102,10 @@ local function build_loclist(group, directory, level)
                         { text = string.rep("  ", level) .. icon.text .. " ", hl = icon.hl },
                         { text = node.name },
                     },
-                    node = node,
+                    name = node.name,
+                    path = node.path,
+                    type = node.type,
+                    open = node.open,
                 }
             elseif node.type == "directory" then
                 local icon
@@ -110,7 +123,10 @@ local function build_loclist(group, directory, level)
                             hl = "SidebarNvimFilesDirectory",
                         },
                     },
-                    node = node,
+                    name = node.name,
+                    path = node.path,
+                    type = node.type,
+                    open = node.open,
                 }
             end
 
@@ -123,26 +139,31 @@ local function build_loclist(group, directory, level)
 end
 
 local function update(group, directory)
-    if not root then
-        root = { path = directory, children = scan_dir(directory) }
-    end
+    local cwd = { path = directory, children = scan_dir(directory) }
 
-    loclist:set_items(build_loclist(group, root, 0), { remove_groups = true })
+    loclist:set_items(build_loclist(group, cwd, 0), { remove_groups = true })
 end
-
--- local async_update_debounced = Debouncer:new(get_files, 1000)
 
 return {
     title = "Files",
     icon = config["files"].icon,
-    setup = function(ctx)
-        -- get_files(ctx)
+    setup = function(_)
+        vim.api.nvim_exec(
+            [[
+          augroup sidebar_nvim_files_update
+              autocmd!
+              autocmd ShellCmdPost * lua require'sidebar-nvim.builtin.files'.update()
+              autocmd BufLeave term://* lua require'sidebar-nvim.builtin.files'.update()
+          augroup END
+          ]],
+            false
+        )
     end,
-    update = function(ctx)
+    update = function(_)
         local cwd = vim.fn.getcwd()
-        update(utils.shortest_path(cwd), cwd)
-        -- async_update_debounced:call(ctx)
-        -- update_files()
+        local group = utils.shortest_path(cwd)
+
+        update(group, cwd)
     end,
     draw = function(ctx)
         local lines = {}
@@ -169,11 +190,11 @@ return {
             if location == nil then
                 return
             end
-            if location.node.type == "file" then
+            if location.type == "file" then
                 vim.cmd("wincmd p")
-                vim.cmd("e " .. location.node.path)
+                vim.cmd("e " .. location.path)
             else
-                location.node.open = not location.node.open
+                file_status[location.path].open = not location.open
             end
         end,
     },
