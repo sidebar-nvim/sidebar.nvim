@@ -99,6 +99,7 @@ end
 -- @param size number
 function M.resize(size)
     lib.resize(size)
+    lib.update()
 end
 
 --- Returns the window width for sidebar-nvim within the tabpage specified
