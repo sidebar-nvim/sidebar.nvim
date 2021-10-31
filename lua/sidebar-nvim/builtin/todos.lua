@@ -5,7 +5,16 @@ local luv = vim.loop
 
 local loclist = Loclist:new({
     groups_initially_closed = config.todos.initially_closed,
+    show_empty_groups = false,
 })
+
+-- Make sure all groups exist
+loclist:add_group("TODO")
+loclist:add_group("HACK")
+loclist:add_group("WARN")
+loclist:add_group("PERF")
+loclist:add_group("NOTE")
+loclist:add_group("FIX")
 
 local todos = {}
 

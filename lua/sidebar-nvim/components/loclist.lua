@@ -7,6 +7,8 @@ Loclist.DEFAULT_OPTIONS = {
     group_icon = { closed = "", opened = "" },
     -- badge showing the number of items in each group
     show_group_count = true,
+    -- if empty groups should be displayed
+    show_empty_groups = true,
     -- if there's a single group, skip rendering the group controls
     ommit_single_group = false,
     -- initial state of the groups
@@ -116,6 +118,10 @@ end
 function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_hl)
     local group = self.groups[group_name]
 
+    if #group == 0 and not self.show_empty_groups then
+        return
+    end
+
     if with_label then
         local icon = self.group_icon.opened
         if group.is_closed then
@@ -171,7 +177,7 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
                 else
                     table.insert(section_hl, { "SidebarNvimNormal", #section_lines, #line, -1 })
                 end
-                line = line .. i.text:sub(1, space_left)
+                line = line .. tostring(i.text):sub(1, space_left)
             end
         end
 
