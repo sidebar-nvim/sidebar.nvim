@@ -63,12 +63,16 @@ function Loclist:add_item(item)
         table.insert(self._group_keys, item.group)
     end
 
-    item.order = item.order or 0
+    local group_tbl = self.groups[item.group]
+    group_tbl[#group_tbl + 1] = item
 
-    table.insert(self.groups[item.group], item)
-    table.sort(self.groups[item.group], function(a, b)
-        return a.order < b.order
-    end)
+    if item.order then
+        table.sort(self.groups[item.group], function(a, b)
+            return a.order < b.order
+        end)
+    else
+        item.order = 0
+    end
 end
 
 -- replace all the items with the new list
@@ -83,7 +87,7 @@ end
 function Loclist:set_items(items, clear_opts)
     self:clear(clear_opts)
 
-    for _, item in pairs(items) do
+    for _, item in ipairs(items) do
         self:add_item(item)
     end
 
