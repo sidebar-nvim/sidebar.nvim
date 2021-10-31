@@ -37,7 +37,7 @@ local function async_update(_)
     local cmd = docker_utils.build_docker_command(args, stdout, stderr)
     handle = luv.spawn(cmd.bin, cmd.opts, function()
         vim.schedule(function()
-            loclist:clear()
+            local loclist_items = {}
             if output_tmp ~= "" then
                 for _, line in ipairs(vim.split(output_tmp, "\n")) do
                     line = string.sub(line, 2, #line - 1)
@@ -46,7 +46,7 @@ local function async_update(_)
                         local ret, container = pcall(vim.fn.json_decode, line)
                         if ret then
                             local icon = get_container_icon(container)
-                            loclist:add_item({
+                            table.insert(loclist_items, {
                                 group = "containers",
                                 left = {
                                     { text = icon.text .. " ", hl = icon.hl },
@@ -63,6 +63,7 @@ local function async_update(_)
                     end
                 end
             end
+            loclist:set_items(loclist_items, { remove_groups = false })
         end)
 
         luv.read_stop(stdout)

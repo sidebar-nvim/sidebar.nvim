@@ -100,9 +100,6 @@ local function async_cmd(group, command, args, parse_fn)
     handle = luv.spawn(command, { args = args, stdio = { nil, stdout, stderr }, cwd = luv.cwd() }, function()
         if finished == 3 then
             loclist:set_items(loclist_items, { remove_groups = false })
-
-            -- Fix group order
-            -- loclist._group_keys = { "Staged", "Unstaged", "Untracked" }
         end
 
         luv.read_stop(stdout)
@@ -144,9 +141,7 @@ local function async_cmd(group, command, args, parse_fn)
     end)
 end
 
-local function async_update(ctx)
-    loclist:clear()
-    loclist:close_all_groups({ remove_groups = false })
+local function async_update(_)
     loclist_items = {}
     finished = 0
 

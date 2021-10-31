@@ -86,7 +86,10 @@ function Loclist:set_items(items, clear_opts)
     for _, item in pairs(items) do
         self:add_item(item)
     end
-    self._group_keys = vim.tbl_keys(self.groups)
+
+    if clear_opts.remove_groups then
+        self._group_keys = vim.tbl_keys(self.groups)
+    end
 end
 
 -- add an empty group

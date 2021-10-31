@@ -28,7 +28,6 @@ local icons = {
 }
 
 local function async_update(ctx)
-    loclist:clear()
     todos = {}
 
     local stdout = luv.new_pipe(false)
@@ -57,9 +56,10 @@ local function async_update(ctx)
         stdio = { nil, stdout, stderr },
         cmd = luv.cwd(),
     }, function()
+        local loclist_items = {}
         for _, items in pairs(todos) do
             for _, item in ipairs(items) do
-                loclist:add_item({
+                table.insert(loclist_items, {
                     group = item.tag,
                     left = {
                         icons[item.tag],
@@ -80,6 +80,7 @@ local function async_update(ctx)
                 })
             end
         end
+        loclist:set_items(loclist_items, { remove_groups = false })
 
         luv.read_stop(stdout)
         luv.read_stop(stderr)
