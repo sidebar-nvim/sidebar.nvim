@@ -173,12 +173,10 @@ local function exec(cmd, args)
     local handle
 
     handle = luv.spawn(cmd, { args = args, stdio = { nil, stdout, stderr }, cwd = luv.cwd() }, function()
-        vim.schedule(function()
-            local cwd = vim.fn.getcwd()
-            local group = utils.shortest_path(cwd)
+        local cwd = luv.cwd()
+        local group = utils.shortest_path(cwd)
 
-            update(group, cwd)
-        end)
+        update(group, cwd)
 
         luv.read_stop(stdout)
         luv.read_stop(stderr)
