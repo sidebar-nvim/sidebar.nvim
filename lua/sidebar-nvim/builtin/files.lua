@@ -328,10 +328,29 @@ return {
             current_cmd = {}
         end,
         ["e"] = function(line)
-            --TODO: create
+            local location = loclist:get_location_at(line)
+            if location == nil then
+                return
+            end
+
+            local parent
+
+            if location.type == "directory" then
+                parent = location.path
+            else
+                parent = location.parent
+            end
+            local name = vim.fn.input("file name: ")
+            exec("touch", { parent .. "/" .. name })
         end,
         ["r"] = function(line)
-            --TODO: rename
+            local location = loclist:get_location_at(line)
+            if location == nil then
+                return
+            end
+
+            local new_name = vim.fn.input('rename file "' .. location.node.name .. '" to: ')
+            exec("mv", { location.node.path, location.node.parent .. "/" .. new_name })
         end,
         ["u"] = function(line)
             -- TODO: undo
