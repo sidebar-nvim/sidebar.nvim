@@ -25,7 +25,25 @@ local icons = {
     FIX = { text = "", hl = "SidebarNvimTodoIconFix" },
 }
 
+local current_path_ignored_cache = false
+
+local function is_current_path_ignored()
+    local cwd = vim.loop.cwd()
+    for _, path in pairs(config.todos.ignored_paths or {}) do
+        if vim.fn.expand(path) == cwd then
+            return true
+        end
+    end
+
+    return false
+end
+
 local function async_update(ctx)
+    current_path_ignored_cache = is_current_path_ignored()
+    if current_path_ignored_cache then
+        return
+    end
+
     local todos = {}
 
     local stdout = luv.new_pipe(false)
@@ -33,6 +51,7 @@ local function async_update(ctx)
     local handle
     local cmd
     local args
+    local keywords_regex = "(TODO|NOTE|FIX|PERF|HACK|WARN)"
 
     -- Use ripgrep by default, if it's installed
     if vim.fn.executable("rg") == 1 then
@@ -42,11 +61,11 @@ local function async_update(ctx)
             "--no-hidden",
             "--column",
             "--only-matching",
-            "(TODO|NOTE|FIX|PERF|HACK|WARN) *:.*",
+            keywords_regex .. ":.*",
         }
     else
         cmd = "git"
-        args = { "grep", "-no", "--column", "-EI", "(TODO|NOTE|FIX|PERF|HACK|WARN) *:.*" }
+        args = { "grep", "-no", "--column", "-EI", keywords_regex .. ":.*" }
     end
 
     handle = luv.spawn(cmd, {
@@ -94,23 +113,23 @@ local function async_update(ctx)
 
         for _, line in ipairs(vim.split(data, "\n")) do
             if line ~= "" then
-                local split_line = vim.split(line, ":")
-                local filepath, lnum, col, tag, text =
-                    split_line[1], split_line[2], split_line[3], split_line[4], split_line[5]
+                local filepath, lnum, col, tag, text = line:match("^(.+):(%d+):(%d+):(%w+):(.*)$")
 
-                if not todos[tag] then
-                    todos[tag] = {}
+                if filepath and tag then
+                    if not todos[tag] then
+                        todos[tag] = {}
+                    end
+
+                    local category_tbl = todos[tag]
+
+                    category_tbl[#category_tbl + 1] = {
+                        filepath = filepath,
+                        lnum = lnum,
+                        col = col,
+                        tag = tag,
+                        text = text,
+                    }
                 end
-
-                local category_tbl = todos[tag]
-
-                category_tbl[#category_tbl + 1] = {
-                    filepath = filepath,
-                    lnum = lnum,
-                    col = col,
-                    tag = tag,
-                    text = text,
-                }
             end
         end
 
@@ -140,6 +159,10 @@ return {
     draw = function(ctx)
         local lines = {}
         local hl = {}
+
+        if current_path_ignored_cache then
+            lines = { "<path ignored>" }
+        end
 
         loclist:draw(ctx, lines, hl)
 

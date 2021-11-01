@@ -24,7 +24,7 @@ local function parse_git_diff(group, line)
     local fileicon = ""
 
     if has_devicons and devicons.has_loaded() then
-        fileicon, _ = devicons.get_icon_color(filepath, extension)
+        fileicon = devicons.get_icon_color(filepath, extension)
     end
 
     if filepath ~= "" then
@@ -69,7 +69,7 @@ local function parse_git_status(group, line)
         local fileicon
 
         if has_devicons and devicons.has_loaded() then
-            fileicon, _ = devicons.get_icon_color(filepath, extension)
+            fileicon = devicons.get_icon_color(filepath, extension)
         end
 
         loclist:open_group(group)
@@ -98,6 +98,8 @@ local function async_cmd(group, command, args, parse_fn)
 
     local handle
     handle = luv.spawn(command, { args = args, stdio = { nil, stdout, stderr }, cwd = luv.cwd() }, function()
+        finished = finished + 1
+
         if finished == 3 then
             loclist:set_items(loclist_items, { remove_groups = false })
         end
@@ -111,7 +113,6 @@ local function async_cmd(group, command, args, parse_fn)
 
     luv.read_start(stdout, function(err, data)
         if data == nil then
-            finished = finished + 1
             return
         end
 
