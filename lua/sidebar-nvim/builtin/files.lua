@@ -313,7 +313,9 @@ return {
                 dest = location.parent
             end
 
-            file_status[dest].open = true
+            if file_status[dest] then
+                file_status[dest].open = true
+            end
 
             current_cmd.args[#current_cmd.args + 1] = dest
             exec(current_cmd.cmd, current_cmd.args)
