@@ -36,6 +36,10 @@ end
 
 -- scan directory recursively
 local function scan_dir(directory)
+    if not file_status[directory].open then
+        return
+    end
+
     local show_hidden = config.files.show_hidden
     local handle = luv.fs_scandir(directory)
     local children = {}
@@ -123,7 +127,7 @@ local function build_loclist(group, directory, level)
                 }
             elseif node.type == "directory" then
                 local icon
-                if node.open then
+                if node.status.open then
                     icon = icons["directory_open"]
                 else
                     icon = icons["directory_closed"]
@@ -162,9 +166,16 @@ local function build_loclist(group, directory, level)
 end
 
 local function update(group, directory)
-    local cwd = { path = directory, children = scan_dir(directory) }
+    -- local async
 
-    loclist:set_items(build_loclist(group, cwd, 0), { remove_groups = true })
+    -- async = luv.new_async(function()
+    local node = { path = directory, children = scan_dir(directory) }
+
+    loclist:set_items(build_loclist(group, node, 0), { remove_groups = true })
+    --     async:close()
+    -- end)
+
+    -- async:send()
 end
 
 local function exec(cmd, args)
@@ -226,6 +237,8 @@ return {
     update = function(_)
         local cwd = vim.fn.getcwd()
         local group = utils.shortest_path(cwd)
+
+        file_status[cwd] = { open = true, selected = false }
 
         update(group, cwd)
     end,
