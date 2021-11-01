@@ -91,7 +91,7 @@ function Loclist:set_items(items, clear_opts)
         self:add_item(item)
     end
 
-    if clear_opts.remove_groups then
+    if clear_opts and clear_opts.remove_groups then
         self._group_keys = vim.tbl_keys(self.groups)
     end
 end
