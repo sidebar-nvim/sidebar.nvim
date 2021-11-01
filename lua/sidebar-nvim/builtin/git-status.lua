@@ -24,7 +24,7 @@ local function parse_git_diff(group, line)
     local fileicon = ""
 
     if has_devicons and devicons.has_loaded() then
-        fileicon, _ = devicons.get_icon_color(filepath, extension)
+        fileicon = devicons.get_icon_color(filepath, extension)
     end
 
     if filepath ~= "" then
@@ -69,7 +69,7 @@ local function parse_git_status(group, line)
         local fileicon
 
         if has_devicons and devicons.has_loaded() then
-            fileicon, _ = devicons.get_icon_color(filepath, extension)
+            fileicon = devicons.get_icon_color(filepath, extension)
         end
 
         loclist:open_group(group)
