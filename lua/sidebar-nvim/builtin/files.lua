@@ -428,5 +428,21 @@ return {
                 exec(history.groups[history.position])
             end
         end,
+        ["<CR>"] = function(line)
+            local location = loclist:get_location_at(line)
+            if location == nil then
+                return
+            end
+            if location.node.type == "file" then
+                vim.cmd("wincmd p")
+                vim.cmd("e " .. location.node.path)
+            else
+                if open_directories[location.node.path] == nil then
+                    open_directories[location.node.path] = true
+                else
+                    open_directories[location.node.path] = nil
+                end
+            end
+        end,
     },
 }
