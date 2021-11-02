@@ -364,7 +364,7 @@ return {
             operation = {
                 success = true,
                 exec = function()
-                    luv.fs_open(operation.dest, "w", 0640, function(err, file)
+                    luv.fs_open(operation.dest, "w", 420, function(err, file)
                         if err ~= nil then
                             warn_error(err)
                         else
