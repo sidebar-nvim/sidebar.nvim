@@ -1,9 +1,12 @@
 local Loclist = require("sidebar-nvim.components.loclist")
 local config = require("sidebar-nvim.config")
+local view = require("sidebar-nvim.view")
 
 local loclist = Loclist:new({ ommit_single_group = true })
 local loclist_items = {}
 local open_symbols = {}
+local last_buffer
+local last_pos
 
 local kinds = {
     { text = " ", hl = "TSURI" },
@@ -61,23 +64,32 @@ end
 local function get_symbols(ctx)
     local lines = {}
     local hl = {}
+    local current_buf = vim.api.nvim_get_current_buf()
+    local current_pos = vim.lsp.util.make_position_params()
 
-    vim.lsp.buf_request(
-        vim.api.nvim_get_current_buf(),
-        "textDocument/documentSymbol",
-        vim.lsp.util.make_position_params(),
-        -- function(err, method, result, client_id, bufnr, config)
-        function(err, _, symbols, _, _, _)
-            loclist_items = {}
-            if err ~= nil then
-                return
-            end
+    if current_buf ~= view.View.bufnr then
+        last_buffer = current_buf
+        last_pos = current_pos
+    else
+        current_buf = last_buffer
+        current_pos = last_pos
+    end
 
-            build_loclist(symbols, 1)
+    if current_buf == nil then
+        return
+    end
 
-            -- error(vim.inspect(result))
+    vim.lsp.buf_request(current_buf, "textDocument/documentSymbol", current_pos, function(err, _, symbols, _, _, _)
+        print(view.View.bufnr, current_buf, symbols)
+        loclist_items = {}
+        if err ~= nil then
+            return
         end
-    )
+
+        if symbols ~= nil then
+            build_loclist(symbols, 1)
+        end
+    end)
 
     -- FIX: there is no guarantee the callback will have executed before this point, so loclist will problably have items from the last update
     loclist:set_items(loclist_items, { remove_groups = false })
