@@ -35,7 +35,7 @@ local kinds = {
     { text = "+ ", hl = "TSOperator" },
     { text = "𝙏 ", hl = "TSParameter" },
 }
-local function build_loclist(loclist_items, symbols, level)
+local function build_loclist(filepath, loclist_items, symbols, level)
     table.sort(symbols, function(a, b)
         return a.range.start.line < b.range.start.line
     end)
@@ -50,12 +50,12 @@ local function build_loclist(loclist_items, symbols, level)
                 { text = symbol.detail, hl = "SidebarNvimSymbolsDetail" },
             },
             right = {},
-            data = { symbol = symbol },
+            data = { symbol = symbol, filepath = filepath },
         }
 
         -- uses a unique key for each symbol appending the name and position
         if symbol.children and open_symbols[symbol.name .. symbol.range.start.line .. symbol.range.start.character] then
-            build_loclist(loclist_items, symbol.children, level + 1)
+            build_loclist(filepath, loclist_items, symbol.children, level + 1)
         end
     end
 end
@@ -80,12 +80,13 @@ local function get_symbols(ctx)
 
     vim.lsp.buf_request(current_buf, "textDocument/documentSymbol", current_pos, function(err, _, symbols, _, _, _)
         local loclist_items = {}
+        local filepath = vim.api.nvim_buf_get_name(current_buf)
         if err ~= nil then
             return
         end
 
         if symbols ~= nil then
-            build_loclist(loclist_items, symbols, 1)
+            build_loclist(filepath, loclist_items, symbols, 1)
             loclist:set_items(loclist_items, { remove_groups = false })
         end
     end)
@@ -139,8 +140,8 @@ return {
             local symbol = location.data.symbol
 
             vim.cmd("wincmd p")
-            vim.cmd("e " .. location.filepath)
-            vim.fn.cursor(symbol.range.start.line, symbol.range.start.character)
+            vim.cmd("e " .. location.data.filepath)
+            vim.fn.cursor(symbol.range.start.line + 1, symbol.range.start.character + 1)
         end,
     },
 }
