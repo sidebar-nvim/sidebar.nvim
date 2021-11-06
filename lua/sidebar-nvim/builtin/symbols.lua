@@ -3,7 +3,6 @@ local config = require("sidebar-nvim.config")
 local view = require("sidebar-nvim.view")
 
 local loclist = Loclist:new({ ommit_single_group = true })
-local loclist_items = {}
 local open_symbols = {}
 local last_buffer
 local last_pos
@@ -36,7 +35,7 @@ local kinds = {
     { text = "+ ", hl = "TSOperator" },
     { text = "𝙏 ", hl = "TSParameter" },
 }
-local function build_loclist(symbols, level)
+local function build_loclist(loclist_items, symbols, level)
     table.sort(symbols, function(a, b)
         return a.range.start.line < b.range.start.line
     end)
@@ -56,17 +55,16 @@ local function build_loclist(symbols, level)
 
         -- uses a unique key for each symbol appending the name and position
         if symbol.children and open_symbols[symbol.name .. symbol.range.start.line .. symbol.range.start.character] then
-            build_loclist(symbol.children, level + 1)
+            build_loclist(loclist_items, symbol.children, level + 1)
         end
     end
 end
 
 local function get_symbols(ctx)
-    local lines = {}
-    local hl = {}
     local current_buf = vim.api.nvim_get_current_buf()
     local current_pos = vim.lsp.util.make_position_params()
 
+    -- if current buffer is sidebar's own buffer, use previous buffer
     if current_buf ~= view.View.bufnr then
         last_buffer = current_buf
         last_pos = current_pos
@@ -75,38 +73,40 @@ local function get_symbols(ctx)
         current_pos = last_pos
     end
 
-    if current_buf == nil then
+    if not current_buf or vim.api.nvim_buf_get_option(current_buf, "buftype") ~= "" then
+        loclist:clear()
         return
     end
 
     vim.lsp.buf_request(current_buf, "textDocument/documentSymbol", current_pos, function(err, _, symbols, _, _, _)
-        print(view.View.bufnr, current_buf, symbols)
-        loclist_items = {}
+        local loclist_items = {}
         if err ~= nil then
             return
         end
 
         if symbols ~= nil then
-            build_loclist(symbols, 1)
+            build_loclist(loclist_items, symbols, 1)
+            loclist:set_items(loclist_items, { remove_groups = false })
         end
     end)
-
-    -- FIX: there is no guarantee the callback will have executed before this point, so loclist will problably have items from the last update
-    loclist:set_items(loclist_items, { remove_groups = false })
-    loclist:draw(ctx, lines, hl)
-
-    if lines == nil or #lines == 0 then
-        return "<no symbols>"
-    else
-        return { lines = lines, hl = hl }
-    end
 end
 
 return {
     title = "Symbols",
     icon = config["symbols"].icon,
     draw = function(ctx)
-        return get_symbols(ctx)
+        local lines = {}
+        local hl = {}
+
+        get_symbols(ctx)
+
+        loclist:draw(ctx, lines, hl)
+
+        if lines == nil or #lines == 0 then
+            return "<no symbols>"
+        else
+            return { lines = lines, hl = hl }
+        end
     end,
     highlights = {
         groups = {},
