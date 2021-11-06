@@ -342,7 +342,7 @@ return {
 
             exec(group)
         end,
-        ["e"] = function(line)
+        ["c"] = function(line)
             local location = loclist:get_location_at(line)
             if location == nil then
                 return
@@ -386,6 +386,17 @@ return {
             history.groups[history.position] = group
 
             exec(group)
+        end,
+        ["e"] = function(line)
+            local location = loclist:get_location_at(line)
+            if location == nil then
+                return
+            end
+
+            if location.type == "file" then
+                vim.cmd("wincmd p")
+                vim.cmd("e " .. location.node.path)
+            end
         end,
         ["r"] = function(line)
             local location = loclist:get_location_at(line)
