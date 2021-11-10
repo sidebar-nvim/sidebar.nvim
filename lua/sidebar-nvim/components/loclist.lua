@@ -127,7 +127,7 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
 
     if with_label then
         local icon = self.group_icon.opened
-        if group.is_closed then
+        if #group == 0 or group.is_closed then
             icon = self.group_icon.closed
         end
 
