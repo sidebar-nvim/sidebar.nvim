@@ -70,10 +70,13 @@ local function parse_git_status(group, line)
     local extension = filepath:match("^.+%.(.+)$")
 
     if status == "??" then
-        local fileicon
+        local fileicon = ""
 
         if has_devicons and devicons.has_loaded() then
-            fileicon = devicons.get_icon_color(filepath, extension)
+            local icon = devicons.get_icon_color(filepath, extension)
+            if icon then
+                fileicon = icon
+            end
         end
 
         loclist:open_group(group)
