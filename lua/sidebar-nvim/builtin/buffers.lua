@@ -10,7 +10,13 @@ local loclist_items = {}
 local function get_fileicon(filename)
     if has_devicons and devicons.has_loaded() then
         local extension = filename:match("^.+%.(.+)$")
-        local fileicon, _ = devicons.get_icon_color(filename, extension)
+
+        local fileicon = ""
+        local icon, _ = devicons.get_icon_color(filename, extension)
+        if icon then
+          fileicon = icon
+        end
+
         local highlight = "SidebarNvimNormal"
 
         if extension then
