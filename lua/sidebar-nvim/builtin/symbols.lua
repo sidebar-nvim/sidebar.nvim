@@ -78,7 +78,11 @@ local function get_symbols(ctx)
         return
     end
 
-    vim.lsp.buf_request(current_buf, "textDocument/documentSymbol", current_pos, function(err, _, symbols, _, _, _)
+    vim.lsp.buf_request(current_buf, "textDocument/documentSymbol", current_pos, function(err, method, symbols)
+        if vim.fn.has("nvim-0.5.1") == 1 then
+            symbols = method
+        end
+
         local loclist_items = {}
         local filepath = vim.api.nvim_buf_get_name(current_buf)
         if err ~= nil then
