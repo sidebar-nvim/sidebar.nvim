@@ -21,6 +21,8 @@ M["lsp-diagnostics"] = { icon = "" }
 
 M["buffers"] = { icon = "" }
 
+M["symbols"] = { icon = "ƒ" }
+
 M.containers = { icon = "", use_podman = false, attach_shell = "/bin/sh", show_all = true, interval = 5000 }
 
 M.datetime = { icon = "", format = "%a %b %d, %H:%M", clocks = { { name = "local" } } }
