@@ -178,14 +178,78 @@ local function undo(group)
     end
 end
 
-local function warn_error(err, _)
-    if err ~= nil then
-        vim.schedule(function()
-            utils.echo_warning(err)
-        end)
+local function copy_file(src, dest, confirm_overwrite)
+    if confirm_overwrite and luv.fs_access(dest, "r") ~= false then
+        local overwrite = vim.fn.input('file "' .. dest .. '" already exists. Overwrite? y/n: ')
+
+        if overwrite ~= "y" then
+            return
+        end
     end
+
+    luv.fs_copyfile(src, dest, function(err, _)
+        if err ~= nil then
+            vim.schedule(function()
+                utils.echo_warning(err)
+            end)
+        end
+    end)
 end
 
+local function create_file(dest)
+    if luv.fs_access(dest, "r") ~= false then
+        vim.schedule(function()
+            utils.echo_warning('file "' .. dest .. '" already exists.')
+        end)
+        return
+    end
+
+    luv.fs_open(dest, "w", 420, function(err, file)
+        if err ~= nil then
+            vim.schedule(function()
+                utils.echo_warning(err)
+            end)
+        else
+            luv.fs_close(file)
+        end
+    end)
+end
+
+local function delete_file(src, trash, confirm_deletion)
+    if confirm_deletion then
+        local delete = vim.fn.input('delete file "' .. src .. '"? y/n: ')
+
+        if delete ~= "y" then
+            return
+        end
+    end
+
+    luv.fs_rename(src, trash, function(err, _)
+        if err ~= nil then
+            vim.schedule(function()
+                utils.echo_warning(err)
+            end)
+        end
+    end)
+end
+
+local function move_file(src, dest, confirm_overwrite)
+    if confirm_overwrite and luv.fs_access(dest, "r") ~= false then
+        local overwrite = vim.fn.input('file "' .. dest .. '" already exists. Overwrite? y/n: ')
+
+        if overwrite ~= "y" then
+            return
+        end
+    end
+
+    luv.fs_rename(src, dest, function(err, _)
+        if err ~= nil then
+            vim.schedule(function()
+                utils.echo_warning(err)
+            end)
+        end
+    end)
+end
 return {
     title = "Files",
     icon = config["files"].icon,
@@ -252,10 +316,10 @@ return {
             local operation
             operation = {
                 exec = function()
-                    luv.fs_rename(operation.src, operation.dest, warn_error)
+                    delete_file(operation.src, operation.dest, true)
                 end,
                 undo = function()
-                    luv.fs_rename(operation.dest, operation.src, warn_error)
+                    move_file(operation.dest, operation.src, true)
                 end,
                 src = location.node.path,
                 dest = trash_dir .. location.node.name,
@@ -308,10 +372,10 @@ return {
                 local operation
                 operation = {
                     exec = function()
-                        luv.fs_copyfile(operation.src, operation.dest, warn_error)
+                        copy_file(operation.src, operation.dest, true)
                     end,
                     undo = function()
-                        luv.fs_rename(operation.dest, trash_dir .. utils.filename(operation.src), warn_error)
+                        delete_file(operation.dest, trash_dir .. utils.filename(operation.src), true)
                     end,
                     src = path,
                     dest = dest_dir .. "/" .. utils.filename(path),
@@ -323,10 +387,10 @@ return {
                 local operation
                 operation = {
                     exec = function()
-                        luv.fs_rename(operation.src, operation.dest, warn_error)
+                        move_file(operation.src, operation.dest, true)
                     end,
                     undo = function()
-                        luv.fs_rename(operation.dest, operation.src, warn_error)
+                        move_file(operation.dest, operation.src, true)
                     end,
                     src = path,
                     dest = dest_dir .. "/" .. utils.filename(path),
@@ -342,7 +406,7 @@ return {
 
             exec(group)
         end,
-        ["e"] = function(line)
+        ["c"] = function(line)
             local location = loclist:get_location_at(line)
             if location == nil then
                 return
@@ -364,16 +428,10 @@ return {
             operation = {
                 success = true,
                 exec = function()
-                    luv.fs_open(operation.dest, "w", 0640, function(err, file)
-                        if err ~= nil then
-                            warn_error(err)
-                        else
-                            luv.fs_close(file)
-                        end
-                    end)
+                    create_file(operation.dest)
                 end,
                 undo = function()
-                    luv.fs_rename(operation.dest, trash_dir .. name, warn_error)
+                    delete_file(operation.dest, trash_dir .. name, true)
                 end,
                 src = nil,
                 dest = parent .. "/" .. name,
@@ -387,6 +445,17 @@ return {
 
             exec(group)
         end,
+        ["e"] = function(line)
+            local location = loclist:get_location_at(line)
+            if location == nil then
+                return
+            end
+
+            if location.type == "file" then
+                vim.cmd("wincmd p")
+                vim.cmd("e " .. location.node.path)
+            end
+        end,
         ["r"] = function(line)
             local location = loclist:get_location_at(line)
 
@@ -399,10 +468,10 @@ return {
 
             operation = {
                 exec = function()
-                    luv.fs_rename(operation.src, operation.dest, warn_error)
+                    move_file(operation.src, operation.dest, true)
                 end,
                 undo = function()
-                    luv.fs_rename(operation.dest, operation.src, warn_error)
+                    move_file(operation.dest, operation.src, true)
                 end,
                 src = location.node.path,
                 dest = location.node.parent .. "/" .. new_name,
@@ -426,6 +495,22 @@ return {
             if history.position < #history.groups then
                 history.position = history.position + 1
                 exec(history.groups[history.position])
+            end
+        end,
+        ["<CR>"] = function(line)
+            local location = loclist:get_location_at(line)
+            if location == nil then
+                return
+            end
+            if location.node.type == "file" then
+                vim.cmd("wincmd p")
+                vim.cmd("e " .. location.node.path)
+            else
+                if open_directories[location.node.path] == nil then
+                    open_directories[location.node.path] = true
+                else
+                    open_directories[location.node.path] = nil
+                end
             end
         end,
     },
