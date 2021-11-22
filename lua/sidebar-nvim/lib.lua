@@ -185,6 +185,7 @@ end
 function M.on_keypress(key)
     local section_match = M.find_section_at_cursor()
     bindings.on_keypress(utils.unescape_keycode(key), section_match)
+    M.update()
 end
 
 function M.on_cursor_move(direction)

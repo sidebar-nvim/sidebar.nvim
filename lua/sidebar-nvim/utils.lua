@@ -1,5 +1,6 @@
 local M = {}
 local api = vim.api
+local luv = vim.loop
 
 function M.echo_warning(msg)
     api.nvim_command("echohl WarningMsg")
@@ -90,6 +91,10 @@ function M.shortest_path(path)
     return path
 end
 
+function M.dir(path)
+    return path:match("^(.+/)")
+end
+
 function M.filename(path)
     local split = vim.split(path, "/")
     return split[#split]
@@ -103,6 +108,46 @@ function M.truncate(s, size)
     else
         return s:sub(1, size) .. ".."
     end
+end
+
+function M.async_cmd(cmd, args, callback)
+    local stdout = luv.new_pipe(false)
+    local stderr = luv.new_pipe(false)
+    local handle
+
+    handle = luv.spawn(cmd, { args = args, stdio = { nil, stdout, stderr }, cwd = luv.cwd() }, function()
+        if callback then
+            callback()
+        end
+
+        luv.read_stop(stdout)
+        luv.read_stop(stderr)
+        stdout:close()
+        stderr:close()
+        handle:close()
+    end)
+
+    luv.read_start(stdout, function(err, data)
+        if err ~= nil then
+            vim.schedule(function()
+                M.echo_warning(err)
+            end)
+        end
+    end)
+
+    luv.read_start(stderr, function(err, data)
+        if data ~= nil then
+            vim.schedule(function()
+                M.echo_warning(data)
+            end)
+        end
+
+        if err ~= nil then
+            vim.schedule(function()
+                M.echo_warning(err)
+            end)
+        end
+    end)
 end
 
 return M
