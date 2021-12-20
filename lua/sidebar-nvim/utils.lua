@@ -127,7 +127,7 @@ function M.async_cmd(cmd, args, callback)
         handle:close()
     end)
 
-    luv.read_start(stdout, function(err, data)
+    luv.read_start(stdout, function(err, _)
         if err ~= nil then
             vim.schedule(function()
                 M.echo_warning(err)

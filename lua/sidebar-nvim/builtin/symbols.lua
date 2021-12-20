@@ -60,7 +60,7 @@ local function build_loclist(filepath, loclist_items, symbols, level)
     end
 end
 
-local function get_symbols(ctx)
+local function get_symbols(_)
     local current_buf = vim.api.nvim_get_current_buf()
     local current_pos = vim.lsp.util.make_position_params()
 
