@@ -291,6 +291,7 @@ return {
     },
 
     bindings = {
+        -- toggle
         ["t"] = function(line)
             local location = loclist:get_location_at(line)
             if location == nil then
@@ -306,6 +307,7 @@ return {
                 end
             end
         end,
+        -- delete
         ["d"] = function(line)
             local location = loclist:get_location_at(line)
             if location == nil then
@@ -331,6 +333,7 @@ return {
 
             exec(group)
         end,
+        -- yank
         ["y"] = function(line)
             local location = loclist:get_location_at(line)
             if location == nil then
@@ -340,6 +343,7 @@ return {
             yanked_files[location.node.path] = true
             cut_files = {}
         end,
+        -- cut
         ["x"] = function(line)
             local location = loclist:get_location_at(line)
             if location == nil then
@@ -349,6 +353,7 @@ return {
             cut_files[location.node.path] = true
             yanked_files = {}
         end,
+        -- paste
         ["p"] = function(line)
             local location = loclist:get_location_at(line)
             if location == nil then
@@ -405,6 +410,7 @@ return {
 
             exec(group)
         end,
+        -- create
         ["c"] = function(line)
             local location = loclist:get_location_at(line)
             if location == nil then
@@ -444,6 +450,7 @@ return {
 
             exec(group)
         end,
+        -- open current file
         ["e"] = function(line)
             local location = loclist:get_location_at(line)
             if location == nil then
@@ -455,6 +462,7 @@ return {
                 vim.cmd("e " .. location.node.path)
             end
         end,
+        -- rename
         ["r"] = function(line)
             local location = loclist:get_location_at(line)
 
@@ -484,12 +492,14 @@ return {
 
             exec(group)
         end,
+        -- undo
         ["u"] = function(_)
             if history.position > 0 then
                 undo(history.groups[history.position])
                 history.position = history.position - 1
             end
         end,
+        -- redo
         ["<C-r>"] = function(_)
             if history.position < #history.groups then
                 history.position = history.position + 1

@@ -15,13 +15,13 @@ M.sections = { "datetime", "git", "diagnostics" }
 
 M.section_separator = "-----"
 
-M["git"] = { icon = "" }
+M.git = { icon = "" }
 
-M["diagnostics"] = { icon = "" }
+M.diagnostics = { icon = "" }
 
-M["buffers"] = { icon = "" }
+M.buffers = { icon = "" }
 
-M["symbols"] = { icon = "ƒ" }
+M.symbols = { icon = "ƒ" }
 
 M.containers = { icon = "", use_podman = false, attach_shell = "/bin/sh", show_all = true, interval = 5000 }
 

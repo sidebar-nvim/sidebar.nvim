@@ -174,3 +174,85 @@ require("sidebar-nvim").setup({
 |-----|------|--------|
 | `e` | hovering a container location | open a new terminal and attach to the container with `docker exec -it <container id> ${config.containers.attach_shell}`
 
+### buffers
+
+Shows current loaded buffers.
+
+
+#### config {#buffers-config}
+
+```lua
+require("sidebar-nvim").setup({
+    ...
+    buffers = {
+        icon = "",
+    }
+    ...
+})
+```
+
+#### keybindings {#buffers-keybindings}
+
+| key | when | action |
+|-----|------|--------|
+| `e` | hovering an item | open the identified buffer in a window
+
+
+### files
+
+Shows/manage current directory structure.
+
+
+#### config {#files-config}
+
+```lua
+require("sidebar-nvim").setup({
+    ...
+    files = {
+        icon = "",
+        show_hidden = false,
+    }
+    ...
+})
+```
+
+#### keybindings {#files-keybindings}
+
+| key | when | action |
+|-----|------|--------|
+| `t` | hovering an item | open/close a folder
+| `d` | hovering an item | delete file/folder
+| `y` | hovering an item | yank/copy a file/folder
+| `x` | hovering an item | cut a file/folder
+| `p` | hovering an item | paste a file/folder
+| `c` | hovering an item | create a new file
+| `e` | hovering an item | open the current file
+| `r` | hovering an item | rename file/folder
+| `u` | hovering the section | undo operation
+| `<C-r>` | hovering the section | redo operation
+| `<CR>` | hovering an item | open file/folder
+
+
+### symbols
+
+Shows lsp symbols for the current buffer.
+
+
+#### config {#symbols-config}
+
+```lua
+require("sidebar-nvim").setup({
+    ...
+    symbols = {
+        icon = "ƒ",
+    }
+    ...
+})
+```
+
+#### keybindings {#files-keybindings}
+
+| key | when | action |
+|-----|------|--------|
+| `t` | hovering an item | toggle group
+| `e` | hovering an item | open location
