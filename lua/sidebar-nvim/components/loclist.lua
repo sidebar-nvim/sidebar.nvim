@@ -49,10 +49,12 @@ end
 -- |- (string) item.group the group name that this item will live
 -- |- (number) item.lnum the line number of this item
 -- |- (number) item.col the col number of this item
--- |- (string) item.text
--- |- (table) item.icon
--- |--|- (string) item.icon.text
--- |--|- (string) item.icon.hl override the default icon highlight group
+-- |- (table|array) item.left
+-- |--|- (string) item.left[n].text = "abc"
+-- |--|- (string) item.left[n].hl = "<highlight group>"
+-- |- (table|array) item.right
+-- |--|- (string) item.left[n].text = "abc"
+-- |--|- (string) item.left[n].hl = "<highlight group>"
 -- |- (number) item.order items are sorted based on order within each group
 function Loclist:add_item(item)
     if not self.groups[item.group] then
@@ -81,8 +83,12 @@ end
 -- |-- (string) item.group the group name that this item will live
 -- |-- (number) item.lnum the line number of this item
 -- |-- (number) item.col the col number of this item
--- |-- (string) item.text
--- |-- (string) item.icon
+-- |- (table|array) item.left
+-- |--|- (string) item.left[n].text = "abc"
+-- |--|- (string) item.left[n].hl = "<highlight group>"
+-- |- (table|array) item.right
+-- |--|- (string) item.left[n].text = "abc"
+-- |--|- (string) item.left[n].hl = "<highlight group>"
 -- |- clear_opts (table) see Loclist:clear
 function Loclist:set_items(items, clear_opts)
     self:clear(clear_opts)

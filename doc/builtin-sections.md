@@ -93,10 +93,7 @@ require("sidebar-nvim").setup({
 
 ### todos
 
-Shows the TODOs in source. Provided by [todo-comments](https://github.com/folke/todo-comments.nvim)
-
-There are some small issues using this section see https://github.com/folke/todo-comments.nvim/pull/63
-So you might want to consider using my fork instead https://github.com/GustavoKatel/todo-comments.nvim
+Shows the TODOs in source. Provided by RipGrep.
 
 #### config {#todos-config}
 
