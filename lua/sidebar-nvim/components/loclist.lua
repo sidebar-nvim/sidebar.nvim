@@ -16,7 +16,6 @@ Loclist.DEFAULT_OPTIONS = {
     highlights = {
         group = "SidebarNvimLabel",
         group_count = "SidebarNvimSectionTitle",
-        item_text = "SidebarNvimNormal",
     },
 }
 
