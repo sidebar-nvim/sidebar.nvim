@@ -19,7 +19,7 @@ require("sidebar-nvim").setup({
     initial_width = 35,
     hide_statusline = false,
     update_interval = 1000,
-    sections = { "datetime", "git-status", "lsp-diagnostics" },
+    sections = { "datetime", "git", "diagnostics" },
     section_separator = "-----",
     containers = {
         attach_shell = "/bin/sh", show_all = true, interval = 5000,
@@ -74,7 +74,7 @@ Update frequency in milliseconds
 
 #### `sections`
 
-Default: `{ "datetime", "git-status", "lsp-diagnostics" }`
+Default: `{ "datetime", "git", "diagnostics" }`
 
 Which sections should the sidebar render
 

@@ -14,7 +14,7 @@ local function get_fileicon(filename)
         local fileicon = ""
         local icon, _ = devicons.get_icon_color(filename, extension)
         if icon then
-          fileicon = icon
+            fileicon = icon
         end
 
         local highlight = "SidebarNvimNormal"

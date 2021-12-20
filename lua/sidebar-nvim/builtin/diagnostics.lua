@@ -17,46 +17,45 @@ local function get_diagnostics(ctx)
 
     local open_bufs = vim.api.nvim_list_bufs()
 
-    local all_diagnostics = vim.lsp.diagnostic.get_all()
+    local all_diagnostics = vim.diagnostic.get()
     local loclist_items = {}
 
-    for bufnr, buffer_diagnostics in pairs(all_diagnostics) do
+    for _, diag in pairs(all_diagnostics) do
+        local bufnr = diag.bufnr
         if open_bufs[bufnr] ~= nil and vim.api.nvim_buf_is_loaded(bufnr) then
             local filepath = vim.api.nvim_buf_get_name(bufnr)
             local filename = vim.fn.fnamemodify(filepath, ":t")
 
-            for _, diag in pairs(buffer_diagnostics) do
-                local message = diag.message
-                message = message:gsub("\n", " ")
+            local message = diag.message
+            message = message:gsub("\n", " ")
 
-                local severity = diag.severity
-                local level = severity_level[severity]
-                local icon = icons[severity]
+            local severity = diag.severity
+            local level = severity_level[severity]
+            local icon = icons[severity]
 
-                if not use_icons then
-                    icon = level
-                end
-
-                table.insert(loclist_items, {
-                    group = filename,
-                    left = {
-                        { text = icon .. " ", hl = "SidebarNvimLspDiagnostics" .. level },
-                        {
-                            text = diag.range.start.line + 1,
-                            hl = "SidebarNvimLspDiagnosticsLineNumber",
-                        },
-                        { text = ":" },
-                        {
-                            text = (diag.range.start.character + 1) .. " ",
-                            hl = "SidebarNvimLspDiagnosticsColNumber",
-                        },
-                        { text = message },
-                    },
-                    lnum = diag.range.start.line + 1,
-                    col = diag.range.start.character + 1,
-                    filepath = filepath,
-                })
+            if not use_icons then
+                icon = level
             end
+
+            table.insert(loclist_items, {
+                group = filename,
+                left = {
+                    { text = icon .. " ", hl = "SidebarNvimLspDiagnostics" .. level },
+                    {
+                        text = diag.lnum + 1,
+                        hl = "SidebarNvimLspDiagnosticsLineNumber",
+                    },
+                    { text = ":" },
+                    {
+                        text = (diag.col + 1) .. " ",
+                        hl = "SidebarNvimLspDiagnosticsColNumber",
+                    },
+                    { text = message },
+                },
+                lnum = diag.lnum + 1,
+                col = diag.col + 1,
+                filepath = filepath,
+            })
         end
     end
 
@@ -88,7 +87,7 @@ end
 
 return {
     title = "Diagnostics",
-    icon = config["lsp-diagnostics"].icon,
+    icon = config["diagnostics"].icon,
     draw = function(ctx)
         return get_diagnostics(ctx)
     end,

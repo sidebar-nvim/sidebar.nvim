@@ -40,9 +40,7 @@ function M.print_summary(filter)
     if filter then
         filtered_keys = vim.tbl_filter(function(entry)
             return vim.tbl_contains(filter, entry)
-        end, vim.tbl_keys(
-            M.entries
-        ))
+        end, vim.tbl_keys(M.entries))
     end
 
     local entries = {}

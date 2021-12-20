@@ -162,7 +162,7 @@ local async_update_debounced = Debouncer:new(async_update, 1000)
 
 return {
     title = "Git Status",
-    icon = config["git-status"].icon,
+    icon = config["git"].icon,
     setup = function(ctx)
         -- ShellCmdPost triggered after ":!<cmd>"
         -- BufLeave triggered only after leaving terminal buffers
@@ -170,8 +170,8 @@ return {
             [[
           augroup sidebar_nvim_git_status_update
               autocmd!
-              autocmd ShellCmdPost * lua require'sidebar-nvim.builtin.git-status'.update()
-              autocmd BufLeave term://* lua require'sidebar-nvim.builtin.git-status'.update()
+              autocmd ShellCmdPost * lua require'sidebar-nvim.builtin.git'.update()
+              autocmd BufLeave term://* lua require'sidebar-nvim.builtin.git'.update()
           augroup END
           ]],
             false

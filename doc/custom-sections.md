@@ -154,7 +154,7 @@ Builtin components abstract ui elements that can be reused within sections.
 
 Create a location list with collapsable groups.
 
-Sections using it: [git-status](./builtin-sections.md#git-status), [lsp-diagnostics](./builtin-sections.md#lsp-diagnostics) and [todos](./builtin-sections.md#todos)
+Sections using it: [git](./builtin-sections.md#git), [diagnostics](./builtin-sections.md#diagnostics) and [todos](./builtin-sections.md#todos)
 
 Example:
 ```lua

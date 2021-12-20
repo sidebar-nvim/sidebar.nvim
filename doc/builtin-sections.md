@@ -43,40 +43,40 @@ Clock options:
 
 You can see a list of all [available timezones here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
 
-### git-status
+### git
 
 Prints the status of the repo as returned by `git status --porcelain`
 
-#### config {#git-status-config}
+#### config {#git-config}
 
 Example configuration:
 
 ```lua
 require("sidebar-nvim").setup({
     ...
-    ["git-status"] = {
+    ["git"] = {
         icon = "",
     }
     ...
 })
 ```
 
-#### keybindings {#git-status-keybindings}
+#### keybindings {#git-keybindings}
 
 | key | when | action |
 |-----|------|--------|
 | `e` | hovering filename | open file in the previous window
 
-### lsp-diagnostics
+### diagnostics
 
 Prints the current status of the builtin lsp grouper by file. It shows only loaded buffers
 
-#### config {#lsp-diagnostics-config}
+#### config {#diagnostics-config}
 
 ```lua
 require("sidebar-nvim").setup({
     ...
-    ["lsp-diagnostics"] = {
+    ["diagnostics"] = {
         icon = "",
     }
     ...
@@ -84,7 +84,7 @@ require("sidebar-nvim").setup({
 ```
 
 
-#### keybindings {#lsp-diagnostics-keybindings}
+#### keybindings {#diagnostics-keybindings}
 
 | key | when | action |
 |-----|------|--------|

@@ -11,13 +11,13 @@ M.update_interval = 1000
 
 M.enable_profile = false
 
-M.sections = { "datetime", "git-status", "lsp-diagnostics" }
+M.sections = { "datetime", "git", "diagnostics" }
 
 M.section_separator = "-----"
 
-M["git-status"] = { icon = "" }
+M["git"] = { icon = "" }
 
-M["lsp-diagnostics"] = { icon = "" }
+M["diagnostics"] = { icon = "" }
 
 M["buffers"] = { icon = "" }
 

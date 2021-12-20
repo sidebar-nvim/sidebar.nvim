@@ -30,10 +30,9 @@ local function get_fileicon(filename)
         if extension then
             highlight = "DevIcon" .. extension
         end
-        return { text = fileicon, hl = highlight }
-    else
-        return { text = icons["file"] .. " " }
+        return { text = fileicon or icons["file"], hl = highlight }
     end
+    return { text = icons["file"] .. " " }
 end
 
 -- scan directory recursively

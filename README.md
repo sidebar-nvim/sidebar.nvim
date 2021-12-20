@@ -18,7 +18,7 @@ See [options](./doc/general.md#options) for a full list of setup options
 
 ## Requirements
 
-- Neovim 0.5+
+- Neovim 0.6
 - Nerdfonts (requirement by the default icons, you can change the icons to remove this requirement)
 
 ## Quick links
