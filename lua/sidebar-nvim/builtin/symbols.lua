@@ -83,6 +83,16 @@ local function get_symbols(_)
         return
     end
 
+    local clients = vim.lsp.buf_get_clients(current_buf)
+    local clients_filtered = vim.tbl_filter(function(client)
+        return client.supports_method("textDocument/documentSymbol")
+    end, clients)
+
+    if #clients_filtered == 0 then
+        loclist:clear()
+        return
+    end
+
     vim.lsp.buf_request(current_buf, "textDocument/documentSymbol", current_pos, function(err, method, symbols)
         if vim.fn.has("nvim-0.5.1") == 1 then
             symbols = method
