@@ -73,7 +73,12 @@ local function get_symbols(_)
         current_pos = last_pos
     end
 
-    if not current_buf or vim.api.nvim_buf_get_option(current_buf, "buftype") ~= "" then
+    if
+        current_buf == view.View.bufnr
+        or not current_buf
+        or not vim.api.nvim_buf_is_loaded(current_buf)
+        or vim.api.nvim_buf_get_option(current_buf, "buftype") ~= ""
+    then
         loclist:clear()
         return
     end
