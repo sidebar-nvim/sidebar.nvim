@@ -47,6 +47,9 @@ end
 ---Check if the tree buffer is valid and loaded.
 ---@return boolean
 local function is_buf_valid()
+    if M.View.bufnr == nil then
+        return false
+    end
     return a.nvim_buf_is_valid(M.View.bufnr) and a.nvim_buf_is_loaded(M.View.bufnr)
 end
 
