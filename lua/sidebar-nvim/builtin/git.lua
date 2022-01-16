@@ -11,10 +11,12 @@ local loclist = Loclist:new({})
 -- Make sure all groups exist
 loclist:add_group("Staged")
 loclist:add_group("Unstaged")
+loclist:add_group("Unmerged")
 loclist:add_group("Untracked")
 
 local loclist_items = {}
 local finished = 0
+local expected_job_count = 4
 
 -- parse line from git diff --numstat into a loclist item
 local function parse_git_diff(group, line)
@@ -107,7 +109,7 @@ local function async_cmd(group, command, args, parse_fn)
     handle = luv.spawn(command, { args = args, stdio = { nil, stdout, stderr }, cwd = luv.cwd() }, function()
         finished = finished + 1
 
-        if finished == 3 then
+        if finished == expected_job_count then
             loclist:set_items(loclist_items, { remove_groups = false })
         end
 
@@ -153,8 +155,11 @@ local function async_update(_)
     loclist_items = {}
     finished = 0
 
-    async_cmd("Staged", "git", { "diff", "--numstat", "--staged" }, parse_git_diff)
-    async_cmd("Unstaged", "git", { "diff", "--numstat" }, parse_git_diff)
+    -- if add a new job, please update `expected_job_count` at the top
+    -- TODO: investigate using coroutines to wait for all jobs and then update the loclist
+    async_cmd("Staged", "git", { "diff", "--numstat", "--staged", "--diff-filter=u" }, parse_git_diff)
+    async_cmd("Unstaged", "git", { "diff", "--numstat", "--diff-filter=u" }, parse_git_diff)
+    async_cmd("Unmerged", "git", { "diff", "--numstat", "--diff-filter=U" }, parse_git_diff)
     async_cmd("Untracked", "git", { "status", "--porcelain" }, parse_git_status)
 end
 
