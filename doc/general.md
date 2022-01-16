@@ -78,7 +78,7 @@ Default: `{ "datetime", "git", "diagnostics" }`
 
 Which sections should the sidebar render
 
-See [Bultin Sections](./builtin-sections.md) and [Custom Sections](./custom-sections.md)
+See [Builtin Sections](./builtin-sections.md) and [Custom Sections](./custom-sections.md)
 
 #### `section_separator`
 
