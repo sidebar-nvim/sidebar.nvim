@@ -122,15 +122,17 @@ function M.draw(sections_data)
         M.render_hl(view.View.bufnr, hl)
         api.nvim_buf_set_option(view.View.bufnr, "modifiable", false)
 
-        if cursor and #lines >= cursor[1] then
-            api.nvim_win_set_cursor(view.get_winnr(), cursor)
-        end
-        if cursor then
-            api.nvim_win_set_option(view.get_winnr(), "wrap", false)
-        end
+        if view.win_open() then
+            if cursor and #lines >= cursor[1] then
+                api.nvim_win_set_cursor(view.get_winnr(), cursor)
+            end
+            if cursor then
+                api.nvim_win_set_option(view.get_winnr(), "wrap", false)
+            end
 
-        if config.hide_statusline then
-            api.nvim_win_set_option(view.get_winnr(), "statusline", "%#NonText#")
+            if config.hide_statusline then
+                api.nvim_win_set_option(view.get_winnr(), "statusline", "%#NonText#")
+            end
         end
 
         return section_line_indexes

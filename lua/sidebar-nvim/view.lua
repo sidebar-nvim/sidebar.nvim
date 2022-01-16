@@ -158,15 +158,17 @@ function M.set_cursor(opts)
     end
 end
 
-function M.focus(winnr, open_if_closed)
+function M.focus(winnr)
     local wnr = winnr or M.get_winnr()
+
+    if wnr == nil then
+        return
+    end
 
     if a.nvim_win_get_tabpage(wnr) ~= a.nvim_win_get_tabpage(0) then
         M.close()
         M.open()
         wnr = M.get_winnr()
-    elseif open_if_closed and not M.win_open() then
-        M.open()
     end
 
     a.nvim_set_current_win(wnr)
@@ -182,6 +184,10 @@ local function get_defined_width()
 end
 
 function M.resize()
+    if not M.win_open() then
+        return
+    end
+
     if not a.nvim_win_is_valid(M.get_winnr()) then
         return
     end
