@@ -4,7 +4,7 @@ local has_luatz, luatz = pcall(require, "luatz")
 local _, timetable = pcall(require, "luatz.timetable")
 
 local is_config_valid = false
-local config_error_messages = ""
+local config_error_messages = {}
 
 local function get_clock_value_using_luatz(clock, format)
     local dt = luatz.time()

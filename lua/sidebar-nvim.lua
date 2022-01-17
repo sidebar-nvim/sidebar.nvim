@@ -8,7 +8,7 @@ local bindings = require("sidebar-nvim.bindings")
 local profile = require("sidebar-nvim.profile")
 local utils = require("sidebar-nvim.utils")
 
-local M = { open_on_start = false, setup_called = false, vim_enter_called = false }
+local M = { open_on_start = false, setup_called = false }
 
 local deprecated_config_map = { docker = "containers" }
 local function check_deprecated_field(key)
@@ -43,7 +43,8 @@ function M.setup(opts)
 
     M.setup_called = true
     -- check if vim enter has already been called, if so, do initialize
-    if M.vim_enter_called then
+    -- docs for `vim.v.vim_did_enter`: https://neovim.io/doc/user/autocmd.html#VimEnter
+    if vim.v.vim_did_enter == 1 then
         M._internal_setup()
     end
 end
@@ -62,8 +63,6 @@ function M._internal_setup()
 end
 
 function M._vim_enter()
-    M.vim_enter_called = true
-
     if M.setup_called then
         M._internal_setup()
     end
