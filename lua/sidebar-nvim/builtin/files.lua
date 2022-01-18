@@ -428,6 +428,11 @@ return {
             open_directories[parent] = true
 
             local name = vim.fn.input("file name: ")
+
+            if string.len(name) == 0 then
+                return
+            end
+
             local operation
 
             operation = {
