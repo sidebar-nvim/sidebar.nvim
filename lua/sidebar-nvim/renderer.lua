@@ -101,8 +101,8 @@ local function get_lines_and_hl(sections_data)
             local separator = build_section_separator(data.section)
 
             if type(separator) == "table" then
-                for idx, line in ipairs(separator) do
-                    table.insert(hl, { "SidebarNvimSectionSeperator", #lines + idx, 0, #line })
+                for _, line in ipairs(separator) do
+                    table.insert(hl, { "SidebarNvimSectionSeperator", #lines + 1, 0, #line })
                     table.insert(lines, line)
                 end
             else
