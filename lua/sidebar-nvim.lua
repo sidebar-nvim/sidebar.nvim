@@ -29,7 +29,7 @@ function M.setup(opts)
         if key == "open" then
             M.open_on_start = value
         else
-            if type(value) ~= "table" or key == "sections" then
+            if type(value) ~= "table" or key == "sections" or key == "section_separator" then
                 config[key] = value
             else
                 if type(config[key]) == "table" then

@@ -52,8 +52,12 @@ local function build_section_separator(section)
         return config.section_separator
     end
 
+    if type(config.section_separator) == "table" then
+        return config.section_separator
+    end
+
     if type(config.section_separator) ~= "function" then
-        utils.echo_warning("'section_separator' must be string or function")
+        utils.echo_warning("'section_separator' must be string, table or function")
         return
     end
 
@@ -66,7 +70,7 @@ local function get_lines_and_hl(sections_data)
     local hl = {}
     local section_line_indexes = {}
 
-    for _, data in pairs(sections_data) do
+    for index, data in ipairs(sections_data) do
         local section_title = build_section_title(data.section)
 
         table.insert(hl, { "SidebarNvimSectionTitle", #lines, 0, #section_title })
@@ -93,12 +97,19 @@ local function get_lines_and_hl(sections_data)
             table.insert(hl, hl_entry)
         end
 
-        local separator = build_section_separator(data.section)
+        if index ~= #sections_data then
+            local separator = build_section_separator(data.section)
 
-        table.insert(hl, { "SidebarNvimSectionSeperator", #lines + 1, 0, #separator })
-        table.insert(lines, "")
-        table.insert(lines, separator)
-        table.insert(lines, "")
+            if type(separator) == "table" then
+                for idx, line in ipairs(separator) do
+                    table.insert(hl, { "SidebarNvimSectionSeperator", #lines + idx, 0, #line })
+                    table.insert(lines, line)
+                end
+            else
+                table.insert(hl, { "SidebarNvimSectionSeperator", #lines + 1, 0, #separator })
+                table.insert(lines, separator)
+            end
+        end
     end
 
     return lines, hl, section_line_indexes

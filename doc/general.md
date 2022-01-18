@@ -20,7 +20,7 @@ require("sidebar-nvim").setup({
     hide_statusline = false,
     update_interval = 1000,
     sections = { "datetime", "git", "diagnostics" },
-    section_separator = "-----",
+    section_separator = {"", "-----", ""},
     containers = {
         attach_shell = "/bin/sh", show_all = true, interval = 5000,
     },
@@ -82,7 +82,7 @@ See [Builtin Sections](./builtin-sections.md) and [Custom Sections](./custom-sec
 
 #### `section_separator`
 
-Default: `-----`
+Default: `{"", "-----", ""}`
 
 Can be a string or a function with like the following:
 

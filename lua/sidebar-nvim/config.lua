@@ -13,7 +13,7 @@ M.enable_profile = false
 
 M.sections = { "datetime", "git", "diagnostics" }
 
-M.section_separator = "-----"
+M.section_separator = { "", "-----", "" }
 
 M.git = { icon = "" }
 
