@@ -35,13 +35,17 @@ local function get_buffers(ctx)
     loclist_items = {}
 
     for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
-        -- if buffer ~= view.View.bufnr and vim.api.nvim_buf_is_loaded(buffer) then
         if buffer ~= view.View.bufnr then
             local bufname = vim.api.nvim_buf_get_name(buffer)
             local name_hl = "SidebarNvimNormal"
+            local modified = ""
 
             if buffer == current_buffer then
                 name_hl = "SidebarNvimBuffersActive"
+            end
+
+            if vim.api.nvim_buf_get_option(buffer, "modified") then
+                modified = " *"
             end
 
             if bufname ~= "" and vim.api.nvim_buf_is_loaded(buffer) then
@@ -49,9 +53,9 @@ local function get_buffers(ctx)
                     group = "buffers",
                     left = {
                         get_fileicon(bufname),
-                        { text = " " .. utils.filename(bufname), hl = name_hl },
+                        { text = " " .. utils.filename(bufname) .. modified, hl = name_hl },
                     },
-                    data = { filepath = bufname },
+                    data = { buffer = buffer, filepath = bufname },
                 }
             end
         end
@@ -80,6 +84,33 @@ return {
         },
     },
     bindings = {
+        ["d"] = function(line)
+            local location = loclist:get_location_at(line)
+
+            if location == nil then
+                return
+            end
+
+            local buffer = location.data.buffer
+            local is_modified = vim.api.nvim_buf_get_option(buffer, "modified")
+
+            if is_modified then
+                local action = vim.fn.input(
+                    'file "' .. location.data.filepath .. '" has been modified. [w]rite/[d]iscard/[c]ancel: '
+                )
+
+                if action == "w" then
+                    vim.api.nvim_buf_call(buffer, function()
+                        vim.cmd("silent! w")
+                    end)
+                    vim.api.nvim_buf_delete(buffer, { force = true })
+                elseif action == "d" then
+                    vim.api.nvim_buf_delete(buffer, { force = true })
+                end
+            else
+                vim.api.nvim_buf_delete(buffer, { force = true })
+            end
+        end,
         ["e"] = function(line)
             local location = loclist:get_location_at(line)
             if location == nil then
@@ -88,6 +119,17 @@ return {
 
             vim.cmd("wincmd p")
             vim.cmd("e " .. location.data.filepath)
+        end,
+        ["w"] = function(line)
+            local location = loclist:get_location_at(line)
+
+            if location == nil then
+                return
+            end
+
+            vim.api.nvim_buf_call(location.data.buffer, function()
+                vim.cmd("silent! w")
+            end)
         end,
     },
 }
