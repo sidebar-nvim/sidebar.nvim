@@ -429,7 +429,7 @@ return {
 
             local name = vim.fn.input("file name: ")
 
-            if string.len(name) == 0 then
+            if string.len(vim.trim(name)) == 0 then
                 return
             end
 
