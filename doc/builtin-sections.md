@@ -195,7 +195,9 @@ require("sidebar-nvim").setup({
 
 | key | when | action |
 |-----|------|--------|
+| `d` | hovering an item | close the identified buffer
 | `e` | hovering an item | open the identified buffer in a window
+| `w` | hovering an item | save the identified buffer
 
 
 ### files
