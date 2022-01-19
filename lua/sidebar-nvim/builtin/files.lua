@@ -291,22 +291,6 @@ return {
     },
 
     bindings = {
-        -- toggle
-        ["t"] = function(line)
-            local location = loclist:get_location_at(line)
-            if location == nil then
-                return
-            end
-            if location.type == "file" then
-                open_directories[location.node.parent] = nil
-            else
-                if open_directories[location.node.path] == nil then
-                    open_directories[location.node.path] = true
-                else
-                    open_directories[location.node.path] = nil
-                end
-            end
-        end,
         -- delete
         ["d"] = function(line)
             local location = loclist:get_location_at(line)
@@ -465,6 +449,12 @@ return {
             if location.type == "file" then
                 vim.cmd("wincmd p")
                 vim.cmd("e " .. location.node.path)
+            else
+                if open_directories[location.node.path] == nil then
+                    open_directories[location.node.path] = true
+                else
+                    open_directories[location.node.path] = nil
+                end
             end
         end,
         -- rename
