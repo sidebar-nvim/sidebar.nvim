@@ -10,7 +10,7 @@ Loclist.DEFAULT_OPTIONS = {
     -- if empty groups should be displayed
     show_empty_groups = true,
     -- if there's a single group, skip rendering the group controls
-    ommit_single_group = false,
+    omit_single_group = false,
     -- initial state of the groups
     groups_initially_closed = false,
     highlights = {
@@ -25,7 +25,7 @@ setmetatable(Loclist, { __index = Component })
 -- @param (table) o
 -- |- (table) o.groups list of groups containing (table) items. See Loclist:add_item
 -- |- (boolean) o.show_group_count show a badge after the group name with the count of items contained in the group
--- |- (boolean) o.ommit_single_group whether this component should draw the group line if there's only one group present
+-- |- (boolean) o.omit_single_group whether this component should draw the group line if there's only one group present
 function Loclist:new(o)
     o = vim.tbl_deep_extend("force", vim.deepcopy(Loclist.DEFAULT_OPTIONS), o or {}, {
         -- table(line_number -> group ref)
@@ -237,7 +237,7 @@ function Loclist:draw(ctx, section_lines, section_hl)
     self._group_indexes = {}
     self._location_indexes = {}
 
-    if #self._group_keys == 1 and self.ommit_single_group then
+    if #self._group_keys == 1 and self.omit_single_group then
         self:draw_group(ctx, self._group_keys[1], false, section_lines, section_hl)
         return
     end

@@ -2,7 +2,7 @@ local Loclist = require("sidebar-nvim.components.loclist")
 local config = require("sidebar-nvim.config")
 local view = require("sidebar-nvim.view")
 
-local loclist = Loclist:new({ ommit_single_group = true })
+local loclist = Loclist:new({ omit_single_group = true })
 local open_symbols = {}
 local last_buffer
 local last_pos

@@ -6,7 +6,7 @@ local config = require("sidebar-nvim.config")
 local luv = vim.loop
 
 local loclist = Loclist:new({
-    ommit_single_group = true,
+    omit_single_group = true,
 })
 
 local output_tmp = ""

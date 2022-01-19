@@ -4,7 +4,7 @@ local Loclist = require("sidebar-nvim.components.loclist")
 local config = require("sidebar-nvim.config")
 local has_devicons, devicons = pcall(require, "nvim-web-devicons")
 
-local loclist = Loclist:new({ ommit_single_group = true })
+local loclist = Loclist:new({ omit_single_group = true })
 local loclist_items = {}
 
 local function get_fileicon(filename)
