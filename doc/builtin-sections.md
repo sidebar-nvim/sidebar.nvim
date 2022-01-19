@@ -186,6 +186,7 @@ require("sidebar-nvim").setup({
     ...
     buffers = {
         icon = "",
+        ignored_buffers = {} -- ignore buffers by regex
     }
     ...
 })

@@ -36,27 +36,37 @@ local function get_buffers(ctx)
 
     for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
         if buffer ~= view.View.bufnr then
+            local ignored = false
             local bufname = vim.api.nvim_buf_get_name(buffer)
-            local name_hl = "SidebarNvimNormal"
-            local modified = ""
 
-            if buffer == current_buffer then
-                name_hl = "SidebarNvimBuffersActive"
+            for _, ignored_buffer in ipairs(config.buffers.ignored_buffers or {}) do
+                if string.match(bufname, ignored_buffer) then
+                    ignored = true
+                end
             end
 
-            if vim.api.nvim_buf_get_option(buffer, "modified") then
-                modified = " *"
-            end
+            if not ignored then
+                local name_hl = "SidebarNvimNormal"
+                local modified = ""
 
-            if bufname ~= "" and vim.api.nvim_buf_is_loaded(buffer) then
-                loclist_items[#loclist_items + 1] = {
-                    group = "buffers",
-                    left = {
-                        get_fileicon(bufname),
-                        { text = " " .. utils.filename(bufname) .. modified, hl = name_hl },
-                    },
-                    data = { buffer = buffer, filepath = bufname },
-                }
+                if buffer == current_buffer then
+                    name_hl = "SidebarNvimBuffersActive"
+                end
+
+                if vim.api.nvim_buf_get_option(buffer, "modified") then
+                    modified = " *"
+                end
+
+                if bufname ~= "" and vim.api.nvim_buf_is_loaded(buffer) then
+                    loclist_items[#loclist_items + 1] = {
+                        group = "buffers",
+                        left = {
+                            get_fileicon(bufname),
+                            { text = " " .. utils.filename(bufname) .. modified, hl = name_hl },
+                        },
+                        data = { buffer = buffer, filepath = bufname },
+                    }
+                end
             end
         end
     end
