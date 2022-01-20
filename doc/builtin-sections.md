@@ -7,7 +7,7 @@ Prints the current date and time using. You can define multiple clocks with diff
 NOTE: In order to use timezones you need to install `luatz` from luarocks, like the following if using `packer`:
 ```lua
 use {
-    "GustavoKatel/sidebar.nvim",
+    "sidebar-nvim/sidebar.nvim",
     rocks = {'luatz'}
 }
 ```
