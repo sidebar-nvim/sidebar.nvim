@@ -214,6 +214,7 @@ require("sidebar-nvim").setup({
     files = {
         icon = "",
         show_hidden = false,
+        ignored_paths = {"%.git$"}
     }
     ...
 })

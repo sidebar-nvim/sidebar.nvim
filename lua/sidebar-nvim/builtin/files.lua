@@ -54,22 +54,33 @@ local function scan_dir(directory)
             break
         end
 
-        if show_hidden or filename:sub(1, 1) ~= "." then
-            if filetype == "file" then
-                table.insert(children_files, {
-                    name = filename,
-                    type = "file",
-                    path = directory .. "/" .. filename,
-                    parent = directory,
-                })
-            elseif filetype == "directory" then
-                table.insert(children_directories, {
-                    name = filename,
-                    type = "directory",
-                    path = directory .. "/" .. filename,
-                    parent = directory,
-                    children = scan_dir(directory .. "/" .. filename),
-                })
+        local path = directory .. "/" .. filename
+        local ignored = false
+
+        for _, ignored_path in ipairs(config.files.ignored_paths or {}) do
+            if string.match(path, ignored_path) then
+                ignored = true
+            end
+        end
+
+        if not ignored then
+            if show_hidden or filename:sub(1, 1) ~= "." then
+                if filetype == "file" then
+                    table.insert(children_files, {
+                        name = filename,
+                        type = "file",
+                        path = path,
+                        parent = directory,
+                    })
+                elseif filetype == "directory" then
+                    table.insert(children_directories, {
+                        name = filename,
+                        type = "directory",
+                        path = path,
+                        parent = directory,
+                        children = scan_dir(directory .. "/" .. filename),
+                    })
+                end
             end
         end
     end

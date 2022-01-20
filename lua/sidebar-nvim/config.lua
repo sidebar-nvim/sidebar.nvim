@@ -29,7 +29,7 @@ M.datetime = { icon = "", format = "%a %b %d, %H:%M", clocks = { { name = "lo
 
 M.todos = { icon = "", ignored_paths = { "~" }, initially_closed = false }
 
-M.files = { icon = "", show_hidden = false }
+M.files = { icon = "", show_hidden = false, ignored_paths = { "%.git$" } }
 
 M.disable_closing_prompt = false
 
