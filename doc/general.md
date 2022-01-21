@@ -170,4 +170,6 @@ Use in case of errors. Clear the current highlighting so it can be re-rendered
 | *SidebarNvimDockerContainerName* | SidebarNvimNormal |
 | *SidebarNvimDatetimeClockName* | SidebarNvimComment |
 | *SidebarNvimDatetimeClockValue* | SidebarNvimNormal |
+| *SidebarNvimBuffersActive* | SidebarNvimSectionTitle |
+| *SidebarNvimBuffersNumber* | SidebarNvimComment |
 

@@ -22,9 +22,9 @@ local function get_fileicon(filename)
         if extension then
             highlight = "DevIcon" .. extension
         end
-        return { text = "  " .. fileicon, hl = highlight }
+        return { text = "  " .. fileicon .. " ", hl = highlight }
     else
-        return { text = "  " }
+        return { text = "   " }
     end
 end
 
@@ -58,13 +58,21 @@ local function get_buffers(ctx)
                 end
 
                 if bufname ~= "" and vim.api.nvim_buf_is_loaded(buffer) then
+                    -- sorting = "id"
+                    local order = buffer
+                    if config["buffers"].sorting == "name" then
+                        order = bufname
+                    end
+
                     loclist_items[#loclist_items + 1] = {
                         group = "buffers",
                         left = {
                             get_fileicon(bufname),
-                            { text = " " .. utils.filename(bufname) .. modified, hl = name_hl },
+                            { text = buffer .. " ", hl = "SidebarNvimBuffersNumber" },
+                            { text = utils.filename(bufname) .. modified, hl = name_hl },
                         },
                         data = { buffer = buffer, filepath = bufname },
+                        order = order,
                     }
                 end
             end
@@ -91,6 +99,7 @@ return {
         groups = {},
         links = {
             SidebarNvimBuffersActive = "SidebarNvimSectionTitle",
+            SidebarNvimBuffersNumber = "SidebarNvimComment",
         },
     },
     bindings = {

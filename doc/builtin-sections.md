@@ -186,7 +186,8 @@ require("sidebar-nvim").setup({
     ...
     buffers = {
         icon = "",
-        ignored_buffers = {} -- ignore buffers by regex
+        ignored_buffers = {}, -- ignore buffers by regex
+        sorting = "id", -- alternatively set it to "name" to sort by buffer name instead of buf id
     }
     ...
 })
