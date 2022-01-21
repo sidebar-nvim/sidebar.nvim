@@ -92,6 +92,7 @@ local function async_update(ctx)
                         },
                     },
                     filepath = item.filepath,
+                    order = item.filepath,
                     lnum = item.lnum,
                     col = item.col,
                 })
