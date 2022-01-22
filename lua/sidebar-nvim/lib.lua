@@ -124,10 +124,13 @@ function M.focus(opts)
     end
 
     if opts and opts.section_index then
-        local cursor = M.find_cursor_at_section_index(
-            opts.section_index,
-            { content_only = opts.cursor_at_content or false }
-        )
+        local content_only = true
+
+        if opts.cursor_at_content == false then
+            content_only = false
+        end
+
+        local cursor = M.find_cursor_at_section_index(opts.section_index, { content_only = content_only })
 
         if cursor then
             api.nvim_win_set_cursor(0, cursor)
