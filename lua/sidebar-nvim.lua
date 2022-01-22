@@ -109,8 +109,11 @@ function M.get_width(tabpage)
 end
 
 -- Focus or open the sidebar
-function M.focus()
-    lib.focus()
+-- @param opts table
+-- @param opts.section_index number
+-- @param opts.cursor_at_content boolean
+function M.focus(opts)
+    lib.focus(opts)
 end
 
 -- @param opts table

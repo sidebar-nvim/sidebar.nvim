@@ -126,9 +126,19 @@ Immediately update the view and the sections
 
 Resize the view width to `size`. `size` is a number
 
-#### `focus()` (`SidebarNvimFocus`)
+#### `focus(opts)` (`SidebarNvimFocus`)
 
 Move the cursor to the sidebar window
+
+```lua
+require('sidebar-nvim').focus({
+    section_index = 2, -- cursor will be in the second section
+
+    -- if true, cursor will skip the section title and it will be placed at the first line of content
+    -- otherwise it will be placed at the title. Default: true
+    cursor_at_content = true,
+})
+```
 
 #### `get_width(tabpage)`
 

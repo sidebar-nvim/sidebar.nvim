@@ -114,14 +114,25 @@ end
 -- Focus or open the sidebar
 -- @param opts table
 -- @param opts.section_index number
+-- @param opts.cursor_at_content boolean
 function M.focus(opts)
-    if not view.is_win_open() then
+    if view.is_win_open() then
+        local winnr = view.get_winnr()
+        view.focus(winnr)
+    else
         M.open({ focus = true })
-        return
     end
 
-    local winnr = view.get_winnr()
-    view.focus(winnr)
+    if opts and opts.section_index then
+        local cursor = M.find_cursor_at_section_index(
+            opts.section_index,
+            { content_only = opts.cursor_at_content or false }
+        )
+
+        if cursor then
+            api.nvim_win_set_cursor(0, cursor)
+        end
+    end
 end
 
 --- Returns the window width for sidebar-nvim within the tabpage specified
@@ -180,6 +191,29 @@ function M.find_section_at_cursor(opts)
                 cursor_col = cursor_col,
                 line_index = section_line_index,
             }
+        end
+    end
+
+    return nil
+end
+
+-- this is the oposite of `find_section_at_cursor`, given a section index, find the current line in the buffer
+-- @param index number
+-- @param opts table
+-- @param |- opts.content_only boolean whether the cursor should be placed at the first line of content or the section title
+-- @return table with cursor {line: number, col: number}
+-- @return nil
+function M.find_cursor_at_section_index(index, opts)
+    opts = opts or { content_only = false }
+
+    local cursor = { 0, 0 }
+
+    for section_index, section_line_index in ipairs(M.State.section_line_indexes) do
+        if section_index == index then
+            local start_line = get_start_line(opts.content_only, section_line_index)
+
+            cursor[1] = start_line
+            return cursor
         end
     end
 
