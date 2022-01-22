@@ -113,6 +113,12 @@ function M.focus()
     lib.focus()
 end
 
+-- @param opts table
+-- @param |- opts.any_tabpage boolean if true check if is open in any tabpage, if false check in current tab
+function M.is_open(opts)
+    return lib.is_open(opts)
+end
+
 function M.reset_highlight()
     colors.setup()
     renderer.render_hl(view.View.bufnr, {})

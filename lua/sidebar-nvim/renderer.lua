@@ -122,7 +122,7 @@ function M.draw(sections_data)
         end
 
         local cursor
-        if view.win_open() then
+        if view.is_win_open() then
             cursor = api.nvim_win_get_cursor(view.get_winnr())
         end
 
@@ -133,7 +133,7 @@ function M.draw(sections_data)
         M.render_hl(view.View.bufnr, hl)
         api.nvim_buf_set_option(view.View.bufnr, "modifiable", false)
 
-        if view.win_open() then
+        if view.is_win_open() then
             if cursor and #lines >= cursor[1] then
                 api.nvim_win_set_cursor(view.get_winnr(), cursor)
             end

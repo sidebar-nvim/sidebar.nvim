@@ -26,7 +26,7 @@ local function _redraw()
 end
 
 local function loop()
-    if not view.win_open({ any_tabpage = true }) then
+    if not view.is_win_open({ any_tabpage = true }) then
         return
     end
 
@@ -70,7 +70,7 @@ function M.update()
         M.timer = nil
     end
 
-    if view.win_open({ any_tabpage = true }) then
+    if view.is_win_open({ any_tabpage = true }) then
         updater.update()
     end
     loop()
@@ -84,13 +84,13 @@ function M.open(opts)
 end
 
 function M.close()
-    if view.win_open() then
+    if view.is_win_open() then
         view.close()
     end
 end
 
 function M.toggle(opts)
-    if view.win_open() then
+    if view.is_win_open() then
         M.close()
         return
     end
@@ -105,13 +105,17 @@ function M.resize(size)
     view.resize()
 end
 
+-- @param opts table
+-- @param |- opts.any_tabpage boolean if true check if is open in any tabpage, if false check in current tab
 function M.is_open(opts)
-    return view.win_open(opts)
+    return view.is_win_open(opts)
 end
 --
 -- Focus or open the sidebar
-function M.focus()
-    if not view.win_open() then
+-- @param opts table
+-- @param opts.section_index number
+function M.focus(opts)
+    if not view.is_win_open() then
         M.open({ focus = true })
         return
     end
@@ -233,7 +237,7 @@ end
 
 function M.on_tab_change()
     vim.schedule(function()
-        if not view.win_open() and view.win_open({ any_tabpage = true }) then
+        if not view.is_win_open() and view.is_win_open({ any_tabpage = true }) then
             view.open({ focus = false })
         end
     end)
@@ -241,7 +245,7 @@ end
 
 function M.on_win_leave()
     vim.defer_fn(function()
-        if not view.win_open() then
+        if not view.is_win_open() then
             return
         end
 

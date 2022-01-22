@@ -1,5 +1,6 @@
 local bindings = require("sidebar-nvim.bindings")
 local config = require("sidebar-nvim.config")
+local utils = require("sidebar-nvim.utils")
 
 local a = vim.api
 
@@ -143,6 +144,14 @@ function M._prevent_buffer_override()
 end
 
 function M.win_open(opts)
+    -- TODO: [deprecated] to remove
+    utils.echo_warning("view.win_open() is now deprecated, please use 'require('sidebar-nvim').is_open()'")
+    return M.is_win_open(opts)
+end
+
+-- @param opts table
+-- @param |- opts.any_tabpage boolean if true check if is open in any tabpage, if false check in current tab
+function M.is_win_open(opts)
     if opts and opts.any_tabpage then
         for _, v in pairs(M.View.tabpages) do
             if a.nvim_win_is_valid(v.winnr) then
@@ -156,7 +165,7 @@ function M.win_open(opts)
 end
 
 function M.set_cursor(opts)
-    if M.win_open() then
+    if M.is_win_open() then
         pcall(a.nvim_win_set_cursor, M.get_winnr(), opts)
     end
 end
@@ -187,7 +196,7 @@ local function get_defined_width()
 end
 
 function M.resize()
-    if not M.win_open() then
+    if not M.is_win_open() then
         return
     end
 
@@ -229,7 +238,7 @@ function M.open(options)
 end
 
 function M.close()
-    if not M.win_open() then
+    if not M.is_win_open() then
         return
     end
     if #a.nvim_list_wins() == 1 then
