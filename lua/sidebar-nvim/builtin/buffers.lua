@@ -99,7 +99,7 @@ return {
         groups = {},
         links = {
             SidebarNvimBuffersActive = "SidebarNvimSectionTitle",
-            SidebarNvimBuffersNumber = "SidebarNvimComment",
+            SidebarNvimBuffersNumber = "SIdebarnvimLineNr",
         },
     },
     bindings = {
