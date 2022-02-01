@@ -35,7 +35,21 @@ local kinds = {
     { text = "+ ", hl = "TSOperator" },
     { text = "𝙏 ", hl = "TSParameter" },
 }
+
+local function keep_normalized_symbols(symbols)
+    local symbols_ = {}
+    for _, symbol in ipairs(symbols) do
+        symbol.range = symbol.range or (symbol.location or {}).range
+        -- Filter out symbols that don't support range or location.range
+        if symbol.range then
+            table.insert(symbols_, symbol)
+        end
+    end
+    return symbols_
+end
+
 local function build_loclist(filepath, loclist_items, symbols, level)
+    symbols = keep_normalized_symbols(symbols)
     table.sort(symbols, function(a, b)
         return a.range.start.line < b.range.start.line
     end)
@@ -47,7 +61,7 @@ local function build_loclist(filepath, loclist_items, symbols, level)
             left = {
                 { text = string.rep(" ", level) .. kind.text, hl = kind.hl },
                 { text = symbol.name .. " ", hl = "SidebarNvimSymbolsName" },
-                { text = symbol.detail, hl = "SidebarNvimSymbolsDetail" },
+                { text = symbol.detail or "", hl = "SidebarNvimSymbolsDetail" },
             },
             right = {},
             data = { symbol = symbol, filepath = filepath },
