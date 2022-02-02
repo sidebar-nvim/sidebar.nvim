@@ -118,7 +118,7 @@ end
 local function sanitize_lines(lines)
     local lines_ = {}
     for _, line_ in ipairs(lines) do
-        local line = string.gsub(line_, '%s+', ' ')
+        local line = string.gsub(line_, '[\n\r]', ' ')
         table.insert(lines_, line)
     end
     return lines_
