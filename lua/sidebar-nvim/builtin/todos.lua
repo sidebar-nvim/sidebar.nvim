@@ -57,7 +57,6 @@ local function async_update(ctx)
     if vim.fn.executable("rg") == 1 then
         cmd = "rg"
         args = {
-            "--ignore-files",
             "--no-hidden",
             "--column",
             "--only-matching",
