@@ -1,7 +1,9 @@
 local M = {}
 
-M.disable_default_keybindings = 0
-M.bindings = nil
+M.keybindings = {
+    enable_default = true,
+    bindings = nil,
+}
 M.side = "left"
 M.initial_width = 35
 

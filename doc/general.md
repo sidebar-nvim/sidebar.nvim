@@ -12,8 +12,10 @@ Defaults:
 
 ```lua
 require("sidebar-nvim").setup({
-    disable_default_keybindings = 0,
-    bindings = nil,
+    keybindings = {
+      enable_default = true,
+      bindings = nil
+    },
     open = false,
     side = "left",
     initial_width = 35,
@@ -30,13 +32,13 @@ require("sidebar-nvim").setup({
 })
 ```
 
-#### `disable_default_keybindings`
+#### `keybindings.enable_default`
 
-Default: 0
+Default: true
 
 Enable/disable the default keybindings
 
-#### `bindings` {#bindings}
+#### `keybindings.bindings` {#bindings}
 
 Default: nil
 
@@ -46,7 +48,9 @@ Example:
 
 ```lua
 require("sidebar-nvim").setup({
-    bindings = { ["q"] = function() require("sidebar-nvim").close() end }
+    keybindings = {
+      bindings = { ["q"] = function() require("sidebar-nvim").close() end }
+    }
 })
 ```
 

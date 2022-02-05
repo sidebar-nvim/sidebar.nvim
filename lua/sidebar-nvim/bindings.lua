@@ -18,8 +18,8 @@ M.State = {
 }
 
 function M.setup()
-    local user_mappings = config.bindings or {}
-    if config.disable_default_keybindings == 1 then
+    local user_mappings = config.keybindings.bindings or {}
+    if not config.keybindings.enable_default then
         M.State.view_bindings = user_mappings
     else
         local result = vim.tbl_extend("force", M.State.view_bindings, user_mappings)
