@@ -319,7 +319,7 @@ return { lines = lines, hl = hl }
 
 ```
 
-### loclist:add_item
+### loclist:add_item {doc=sidebar-loclist-add-item}
 
 adds a new item to the loclist. Example: `loclist:add_item(item)`
 
@@ -337,13 +337,13 @@ This will result in `my text` in the section with the first word with highlight 
 - `item.right` (table) same as `item.left` but shown on the right side
 - `item.order` (number) all items are sorted before drawn on the screen, use this to define each item priority
 
-### loclist:set_items
+### loclist:set_items {doc=sidebar-loclist-set-items}
 
 this method receive a list of items and call [loclist:add_item](###loclist-add_item) to each one of them
 
 optionally users can pass a second parameter `clear_opts` (table) which is passed to [loclist:clear](###loclist-clear) before adding new items
 
-### loclist:clear
+### loclist:clear {doc=sidebar-loclist-clear}
 
 remove all items
 
@@ -352,9 +352,9 @@ Parameters:
 - `clear_opts` (table)
 - `clear_opts.remove_groups` (boolean) if true, also remove groups from the list, otherwise only items will be removed, removing groups from the list also means that the state of groups will be cleared
 
-## Utils
+# Utils
 
-### Debouncer
+## Debouncer
 
 This can be used to avoid multiple calls within a certain time frame. It's useful if you want to avoid multiple expensive computations in sequence.
 
@@ -500,29 +500,31 @@ require("sidebar-nvim").setup({
 
 The following functions are available to the user to control this specific section elements.
 
-#### toggle_all()
+<!-- panvimdoc renders subheading-4 differnt, so use heading-5 here instead -->
+
+##### toggle_all()
 
 Toggle all groups, i.e.: NOTE, TODO, FIXME etc.
 
 Call like the following: `require("sidebar-nvim.builtin.todos").<function>`
 
-#### close_all()
+##### close_all()
 
 Close all groups.
 
-#### open_all()
+##### open_all()
 
 Open all groups.
 
-#### open(group_name)
+##### open(group_name)
 
 Opens the group with name `group_name`. Example `require("sidebar-nvim.builtin.todos").open("NOTE")`
 
-#### close(group_name)
+##### close(group_name)
 
 Closes the group with name `group_name`. Example `require("sidebar-nvim.builtin.todos").close("NOTE")`
 
-#### toggle(group_name)
+##### toggle(group_name)
 
 Toggle the group with name `group_name`. Example `require("sidebar-nvim.builtin.todos").toggle("NOTE")`
 
