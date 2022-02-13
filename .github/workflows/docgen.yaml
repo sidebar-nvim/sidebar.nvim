@@ -1,6 +1,7 @@
 name: Generate Documentation
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - dev
@@ -32,3 +33,5 @@ jobs:
           delete-branch: true
           base: "main"
           title: "[docs]: Update documentation"
+          body: |
+            Automated changes by the [docgen workflow](https://github.com/sidebar-nvim/sidebar.nvim/actions/workflows/docgen.yaml)
