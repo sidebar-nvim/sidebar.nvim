@@ -55,7 +55,7 @@ require("sidebar-nvim").setup({
 })
 ```
 
-Note sections can override these bindings, please see [Section Bindings](./custom-sections.md#bindings)
+Note sections can override these bindings, please see [Section Bindings](#section-bindings)
 
 - `side` (string): Side of sidebar. Default is `'left'`
 

@@ -24,8 +24,8 @@ See [options](./doc/general.md#options) for a full list of setup options
 ## Quick links
 
 - [Options, commands, api and colors](./doc/general.md)
-- [Builtin sections](./doc/builtin-sections.md)
-- [Custom sections](./doc/custom-sections.md)
+- [Builtin sections](./doc/general.md#builtin-sections)
+- [Custom sections](./doc/general.md#custom-sections)
 
 
 ## TODOs (Need help)
