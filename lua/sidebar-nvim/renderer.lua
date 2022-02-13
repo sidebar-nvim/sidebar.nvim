@@ -9,11 +9,22 @@ local namespace_id = api.nvim_create_namespace("SidebarNvimHighlights")
 
 local M = {}
 
+-- extracted from this PR: https://github.com/sidebar-nvim/sidebar.nvim/pull/41
+-- thanks @lambdahands
+local function sanitize_lines(lines)
+    local lines_ = {}
+    for _, line_ in ipairs(lines) do
+        local line = string.gsub(line_, "[\n\r]", " ")
+        table.insert(lines_, line)
+    end
+    return lines_
+end
+
 local function expand_section_lines(section_lines, lines_offset)
     if type(section_lines) == "string" then
         return vim.split(section_lines, "\n"), nil
     elseif type(section_lines) == "table" and section_lines.lines == nil then
-        return section_lines, nil
+        return sanitize_lines(section_lines), nil
     end
 
     -- we have here section_lines = { lines = string|table of strings, hl = table }
@@ -23,6 +34,8 @@ local function expand_section_lines(section_lines, lines_offset)
 
     if type(section_lines) == "string" then
         section_lines = vim.split(section_lines, "\n")
+    else
+        section_lines = sanitize_lines(section_lines)
     end
 
     -- we must offset the hl lines so it matches the current section position
