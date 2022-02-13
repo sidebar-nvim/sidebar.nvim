@@ -31,7 +31,7 @@ jobs:
           commit-message: "docs: autogenerate"
           branch: "docs/auto-update"
           delete-branch: true
-          base: "main"
+          base: "dev"
           title: "[docs]: Update documentation"
           body: |
             Automated changes by the [docgen workflow](https://github.com/sidebar-nvim/sidebar.nvim/actions/workflows/docgen.yaml)
