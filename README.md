@@ -30,10 +30,10 @@ See [options](./doc/general.md#options) for a full list of setup options
 
 ## TODOs (Need help)
 
-- [x] Better section icons - users can define custom icons see [Options](./doc/general.md#options)
 - [ ] Allow sections to define custom hl groups for icons
-- [ ] Improve docs + write vim help files
 - [ ] See repo issues, any contribution is really appreciated
+- [x] Better section icons - users can define custom icons see [Options](./doc/general.md#options)
+- [x] Improve docs + write vim help files - thanks @aspeddro
 
 
 ## Third party sections
