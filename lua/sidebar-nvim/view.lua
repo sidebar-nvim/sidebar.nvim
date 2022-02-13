@@ -6,6 +6,8 @@ local a = vim.api
 
 local M = {}
 
+M.is_prompt_exiting = false
+
 M.View = {
     bufnr = nil,
     tabpages = {},
@@ -242,15 +244,14 @@ function M.close()
         return
     end
     if #a.nvim_list_wins() == 1 then
-        local ans = "n"
-        if not config.disable_closing_prompt then
-            ans = vim.fn.input("[SidebarNvim] this is the last open window, are you sure you want to quit nvim ? y/n: ")
-        end
+        local modified_buffers = utils.get_existing_buffers({ modified = true })
 
-        if config.disable_closing_prompt or ans == "y" then
-            vim.cmd("q!")
+        if #modified_buffers == 0 then
+            a.nvim_command(":silent q!")
+        else
+            utils.echo_warning("cannot exit with modified buffers!")
+            a.nvim_command(":sb " .. modified_buffers[1])
         end
-        return
     end
     a.nvim_win_hide(M.get_winnr())
 end

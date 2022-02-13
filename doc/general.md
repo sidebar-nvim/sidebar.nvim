@@ -26,7 +26,6 @@ require("sidebar-nvim").setup({
     },
     datetime = { format = "%a %b %d, %H:%M", clocks = { { name = "local" } } },
     todos = { ignored_paths = { "~" } },
-    disable_closing_prompt = false
 })
 ```
 
@@ -93,12 +92,6 @@ end
 ```
 
 `section` is the section definition. See [Custom Sections](./custom-sections.md) for more info
-
-#### `disable_closing_prompt`
-
-Default: false
-
-Enable/disable the closing prompt when the sidebar is the last open window
 
 ## Api
 

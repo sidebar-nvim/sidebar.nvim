@@ -292,7 +292,7 @@ function M.on_win_leave()
             return api.nvim_win_get_tabpage(w) == curtab
         end, windows)
         if #windows == 1 then
-            api.nvim_command(":silent qa!")
+            M.close()
         elseif #wins_in_tabpage == 1 then
             api.nvim_command(":tabclose")
         end
