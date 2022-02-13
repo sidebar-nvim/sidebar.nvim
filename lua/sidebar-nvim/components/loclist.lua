@@ -13,6 +13,7 @@ Loclist.DEFAULT_OPTIONS = {
     omit_single_group = false,
     -- initial state of the groups
     groups_initially_closed = false,
+    -- highlight groups for each control element
     highlights = {
         group = "SidebarNvimLabel",
         group_count = "SidebarNvimSectionTitle",
