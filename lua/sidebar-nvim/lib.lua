@@ -148,9 +148,11 @@ end
 function M.destroy()
     view.close()
 
-    M.timer:stop()
-    M.timer:close()
-    M.timer = nil
+    if M.timer ~= nil then
+        M.timer:stop()
+        M.timer:close()
+        M.timer = nil
+    end
 
     view._wipe_rogue_buffer()
 end
