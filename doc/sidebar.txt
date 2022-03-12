@@ -1,4 +1,4 @@
-*sidebar.txt*           For NVIM v0.6.0          Last change: 2022 February 23
+*sidebar.txt*            For NVIM v0.6.0            Last change: 2022 March 12
 
 ==============================================================================
 Table of Contents                                  *sidebar-table-of-contents*
@@ -665,6 +665,7 @@ CONFIG ~
             icon = "",
             ignored_buffers = {}, -- ignore buffers by regex
             sorting = "id", -- alternatively set it to "name" to sort by buffer name instead of buf id
+            show_numbers = true, -- whether to also show the buffer numbers
         }
         ...
     })
