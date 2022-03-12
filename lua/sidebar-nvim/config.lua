@@ -19,7 +19,7 @@ M.git = { icon = "" }
 
 M.diagnostics = { icon = "" }
 
-M.buffers = { icon = "", ignored_buffers = {}, sorting = "id" }
+M.buffers = { icon = "", ignored_buffers = {}, sorting = "id", show_numbers = true }
 
 M.symbols = { icon = "ƒ" }
 

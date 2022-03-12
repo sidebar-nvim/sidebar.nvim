@@ -64,11 +64,16 @@ local function get_buffers(ctx)
                         order = bufname
                     end
 
+                    local numbers_text = {}
+                    if config.buffers.show_numbers then
+                        numbers_text = { text = buffer .. " ", hl = "SidebarNvimBuffersNumber" }
+                    end
+
                     loclist_items[#loclist_items + 1] = {
                         group = "buffers",
                         left = {
                             get_fileicon(bufname),
-                            { text = buffer .. " ", hl = "SidebarNvimBuffersNumber" },
+                            numbers_text,
                             { text = utils.filename(bufname) .. modified, hl = name_hl },
                         },
                         data = { buffer = buffer, filepath = bufname },
