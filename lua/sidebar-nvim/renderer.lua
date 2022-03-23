@@ -128,6 +128,15 @@ local function get_lines_and_hl(sections_data)
     return lines, hl, section_line_indexes
 end
 
+local function sanitize_lines(lines)
+    local lines_ = {}
+    for _, line_ in ipairs(lines) do
+        local line = string.gsub(line_, '[\n\r]', ' ')
+        table.insert(lines_, line)
+    end
+    return lines_
+end
+
 function M.draw(sections_data)
     return profile.run("view.render", function()
         if not api.nvim_buf_is_loaded(view.View.bufnr) then
@@ -140,6 +149,7 @@ function M.draw(sections_data)
         end
 
         local lines, hl, section_line_indexes = get_lines_and_hl(sections_data)
+        lines = sanitize_lines(lines)
 
         api.nvim_buf_set_option(view.View.bufnr, "modifiable", true)
         api.nvim_buf_set_lines(view.View.bufnr, 0, -1, false, lines)
