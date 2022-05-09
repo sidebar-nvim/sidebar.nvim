@@ -37,6 +37,9 @@ local kinds = {
 }
 local function build_loclist(filepath, loclist_items, symbols, level)
     table.sort(symbols, function(a, b)
+        if vim.fn.has('nvim-0.8') then
+            return a.location.range.start.line < b.location.range.start.line
+        end
         return a.range.start.line < b.range.start.line
     end)
 
@@ -94,7 +97,7 @@ local function get_symbols(_)
     end
 
     vim.lsp.buf_request(current_buf, "textDocument/documentSymbol", current_pos, function(err, method, symbols)
-        if vim.fn.has("nvim-0.5.1") == 1 then
+        if vim.fn.has("nvim-0.5.1") == 1 or vim.fn.has("nvim-0.8") == 1 then
             symbols = method
         end
 
