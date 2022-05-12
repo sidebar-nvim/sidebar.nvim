@@ -35,12 +35,14 @@ local kinds = {
     { text = "+ ", hl = "TSOperator" },
     { text = "𝙏 ", hl = "TSParameter" },
 }
+
+local function get_range(s)
+    return s.range or s.location.range
+end
+
 local function build_loclist(filepath, loclist_items, symbols, level)
     table.sort(symbols, function(a, b)
-        if vim.fn.has('nvim-0.8') then
-            return a.location.range.start.line < b.location.range.start.line
-        end
-        return a.range.start.line < b.range.start.line
+        return get_range(a).start.line < get_range(a).start.line
     end)
 
     for _, symbol in ipairs(symbols) do
