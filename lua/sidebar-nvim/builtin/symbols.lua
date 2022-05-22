@@ -35,9 +35,14 @@ local kinds = {
     { text = "+ ", hl = "TSOperator" },
     { text = "𝙏 ", hl = "TSParameter" },
 }
+
+local function get_range(s)
+    return s.range or s.location.range
+end
+
 local function build_loclist(filepath, loclist_items, symbols, level)
     table.sort(symbols, function(a, b)
-        return a.range.start.line < b.range.start.line
+        return get_range(a).start.line < get_range(a).start.line
     end)
 
     for _, symbol in ipairs(symbols) do
@@ -94,7 +99,7 @@ local function get_symbols(_)
     end
 
     vim.lsp.buf_request(current_buf, "textDocument/documentSymbol", current_pos, function(err, method, symbols)
-        if vim.fn.has("nvim-0.5.1") == 1 then
+        if vim.fn.has("nvim-0.5.1") == 1 or vim.fn.has("nvim-0.8") == 1 then
             symbols = method
         end
 
