@@ -17,6 +17,7 @@ local icons = {
 local yanked_files = {}
 local cut_files = {}
 local open_directories = {}
+local focused_file_path = nil
 
 local history = { position = 0, groups = {} }
 local trash_dir = luv.os_homedir() .. "/.local/share/Trash/files/"
@@ -113,11 +114,19 @@ local function build_loclist(group, directory, level)
                     selected = { text = " *", hl = "SidebarNvimFilesCut" }
                 end
 
+                local name_hl = nil
+                if
+                    focused_file_path ~= nil
+                    and vim.fn.fnamemodify(node.path, ":.") == vim.fn.fnamemodify(focused_file_path, ":.")
+                then
+                    name_hl = "SidebarNvimFocusedFile"
+                end
+
                 loclist_items[#loclist_items + 1] = {
                     group = group,
                     left = {
                         { text = string.rep("  ", level) .. icon.text .. " ", hl = icon.hl },
-                        { text = node.name },
+                        { text = node.name, hl = name_hl },
                         selected,
                     },
                     name = node.name,
@@ -167,10 +176,56 @@ local function build_loclist(group, directory, level)
     return loclist_items
 end
 
-local function update(group, directory)
+local function update_current_dir(group, directory)
     local node = { path = directory, children = scan_dir(directory) }
 
     loclist:set_items(build_loclist(group, node, 0), { remove_groups = true })
+end
+
+local function update(_)
+    local cwd = vim.fn.getcwd()
+    local group = utils.shortest_path(cwd)
+
+    open_directories[cwd] = true
+
+    update_current_dir(group, cwd)
+end
+
+local function focus(filename)
+    local parent_path
+
+    if filename == nil then
+        filename = vim.fn.expand("%:p")
+        parent_path = vim.fn.expand("%:p:h")
+    else
+        filename = vim.fn.fnamemodify(filename, ":p")
+        parent_path = vim.fn.fnamemodify(filename, ":p:h")
+    end
+
+    local cwd = vim.fn.getcwd()
+    local relative_path = vim.fn.fnamemodify(parent_path, ":.")
+
+    -- if the file is at the root, then ignore parent folders
+    if cwd ~= relative_path then
+        local components = vim.split(relative_path, "/")
+
+        local sub_path = cwd
+
+        for _, component in ipairs(components) do
+            sub_path = sub_path .. "/" .. component
+
+            -- check wether we are outside of the current dir, in this case we have nothing to show. exit
+            if vim.fn.isdirectory(sub_path) == 0 then
+                return
+            end
+
+            open_directories[sub_path] = true
+        end
+    end
+
+    focused_file_path = filename
+
+    update() --P(path)
 end
 
 local function exec(group)
@@ -264,25 +319,23 @@ return {
     title = "Files",
     icon = config["files"].icon,
     setup = function(_)
-        vim.api.nvim_exec(
-            [[
-          augroup sidebar_nvim_files_update
-              autocmd!
-              autocmd ShellCmdPost * lua require'sidebar-nvim.builtin.files'.update()
-              autocmd BufLeave term://* lua require'sidebar-nvim.builtin.files'.update()
-          augroup END
-          ]],
-            false
+        vim.api.nvim_create_augroup("sidebar_nvim_files_update", { clear = true })
+        vim.api.nvim_create_autocmd({ "ShellCmdPost" }, { group = "sidebar_nvim_files_update", callback = update })
+        vim.api.nvim_create_autocmd(
+            { "BufLeave" },
+            { group = "sidebar_nvim_files_update", pattern = "term://*", callback = update }
         )
-    end,
-    update = function(_)
-        local cwd = vim.fn.getcwd()
-        local group = utils.shortest_path(cwd)
 
-        open_directories[cwd] = true
-
-        update(group, cwd)
+        if config["files"].follow then
+            vim.api.nvim_create_autocmd({ "BufEnter", "BufLeave" }, {
+                group = "sidebar_nvim_files_update",
+                callback = function(event)
+                    focus(event.file)
+                end,
+            })
+        end
     end,
+    update = update,
     draw = function(ctx)
         local lines = {}
         local hl = {}
@@ -298,8 +351,11 @@ return {
             SidebarNvimFilesDirectory = "SidebarNvimSectionTitle",
             SidebarNvimFilesYanked = "SidebarNvimLabel",
             SidebarNvimFilesCut = "DiagnosticError",
+            SidebarNvimFocusedFile = "CursorLine",
         },
     },
+
+    focus = focus,
 
     bindings = {
         -- delete
