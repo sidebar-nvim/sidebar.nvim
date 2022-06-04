@@ -446,6 +446,8 @@ require("sidebar-nvim").setup({
 | key | when | action |
 |-----|------|--------|
 | `e` | hovering filename | open file in the previous window
+| `s` | hovering filename | stage files
+| `u` | hovering filename | unstage files
 
 ## diagnostics
 

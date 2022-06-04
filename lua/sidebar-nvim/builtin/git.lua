@@ -185,6 +185,7 @@ return {
     end,
     update = function(ctx)
         if not ctx then
+            ---@diagnostic disable-next-line: missing-parameter
             ctx = { width = sidebar.get_width() }
         end
         async_update_debounced:call(ctx)
@@ -218,6 +219,28 @@ return {
             end
             vim.cmd("wincmd p")
             vim.cmd("e " .. location.filepath)
+        end,
+        -- stage files
+        ["s"] = function(line)
+            local location = loclist:get_location_at(line)
+            if location == nil then
+                return
+            end
+
+            utils.async_cmd("git", { "add", location.filepath }, function()
+                async_update_debounced:call()
+            end)
+        end,
+        -- unstage files
+        ["u"] = function(line)
+            local location = loclist:get_location_at(line)
+            if location == nil then
+                return
+            end
+
+            utils.async_cmd("git", { "restore", "--staged", location.filepath }, function()
+                async_update_debounced:call()
+            end)
         end,
     },
 }
