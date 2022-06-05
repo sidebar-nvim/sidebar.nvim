@@ -194,6 +194,8 @@ end
 
 local function focus(filename)
     local parent_path
+    -- reset the open directories
+    open_directories = {}
 
     if filename == nil then
         filename = vim.fn.expand("%:p")
