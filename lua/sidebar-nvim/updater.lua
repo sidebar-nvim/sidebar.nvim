@@ -1,4 +1,5 @@
 local utils = require("sidebar-nvim.utils")
+local utils_sections = require("sidebar-nvim.utils_sections")
 local view = require("sidebar-nvim.view")
 local config = require("sidebar-nvim.config")
 local profile = require("sidebar-nvim.profile")
@@ -17,8 +18,8 @@ function M.setup()
 
     local ctx = { width = view.get_width() }
 
-    for section_index, section_data in ipairs(config.sections) do
-        local section = utils.resolve_section(section_index, section_data)
+    for section_index, section in utils_sections.section_iterator() do
+        ctx.section_index = section_index
         if section then
             local hl_def = section.highlights or {}
 
@@ -65,9 +66,7 @@ function M.draw()
 
         local draw_ctx = { width = view.View.width }
 
-        for section_index, section_data in pairs(config.sections) do
-            local section = utils.resolve_section(section_index, section_data)
-
+        for section_index, section in utils_sections.section_iterator() do
             if section ~= nil then
                 local section_lines = profile.run("draw.sections." .. section_index, section.draw, draw_ctx)
                 local data = { lines = section_lines, section = section }

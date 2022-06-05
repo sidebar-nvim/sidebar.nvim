@@ -8,6 +8,7 @@ local updater = require("sidebar-nvim.updater")
 local config = require("sidebar-nvim.config")
 local bindings = require("sidebar-nvim.bindings")
 local utils = require("sidebar-nvim.utils")
+local utils_sections = require("sidebar-nvim.utils_sections")
 
 local first_init_done = false
 
@@ -115,13 +116,9 @@ end
 -- @param opts table
 -- @param opts.section_index number
 -- @param opts.cursor_at_content boolean
+-- @param opts.query table data sent to the section (if found) to refine the location
 function M.focus(opts)
-    if view.is_win_open() then
-        local winnr = view.get_winnr()
-        view.focus(winnr)
-    else
-        M.open({ focus = true })
-    end
+    local cursor = nil
 
     if opts and opts.section_index then
         local content_only = true
@@ -130,11 +127,18 @@ function M.focus(opts)
             content_only = false
         end
 
-        local cursor = M.find_cursor_at_section_index(opts.section_index, { content_only = content_only })
+        cursor = M.find_cursor_at_section_index(opts.section_index, { content_only = content_only, query = opts.query })
+    end
 
-        if cursor then
-            api.nvim_win_set_cursor(0, cursor)
-        end
+    if view.is_win_open() then
+        local winnr = view.get_winnr()
+        view.focus(winnr)
+    else
+        M.open({ focus = true })
+    end
+
+    if cursor then
+        api.nvim_win_set_cursor(0, cursor)
     end
 end
 
@@ -206,16 +210,30 @@ end
 -- @param index number
 -- @param opts table
 -- @param |- opts.content_only boolean whether the cursor should be placed at the first line of content or the section title
+-- @param |- opts.query table data sent to the section (if found) to refine the location
 -- @return table with cursor {line: number, col: number}
 -- @return nil
 function M.find_cursor_at_section_index(index, opts)
-    opts = opts or { content_only = false }
+    opts = vim.tbl_deep_extend("force", { content_only = false, query = nil }, opts or {})
 
     local cursor = { 0, 0 }
 
     for section_index, section_line_index in ipairs(M.State.section_line_indexes) do
         if section_index == index then
-            local start_line = get_start_line(opts.content_only, section_line_index)
+            local content_only = opts.content_only
+            local section_offset = 0
+
+            if opts.query then
+                content_only = true
+
+                local section = utils_sections.get_section_at_index(section_index)
+
+                if section and section.query_line then
+                    section_offset = section.query_line(opts.query) or 0
+                end
+            end
+
+            local start_line = get_start_line(content_only, section_line_index) + section_offset
 
             cursor[1] = start_line
             return cursor

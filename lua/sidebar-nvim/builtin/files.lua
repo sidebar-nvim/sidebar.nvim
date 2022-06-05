@@ -134,6 +134,7 @@ local function build_loclist(group, directory, level)
                     type = node.type,
                     parent = node.parent,
                     node = node,
+                    id = node.path,
                 }
             elseif node.type == "directory" then
                 local icon
@@ -354,6 +355,21 @@ return {
             SidebarNvimFocusedFile = "CursorLine",
         },
     },
+
+    query_line = function(query)
+        if not query or not query.filename then
+            return nil
+        end
+
+        -- TODO: we are focusing, but when the parents are not open, we can't jump to that location
+        focus(query.filename)
+
+        local filename = vim.fn.fnamemodify(vim.fn.expand(query.filename), ":p")
+
+        local line = loclist:get_line_at_id(filename)
+
+        return line
+    end,
 
     focus = focus,
 

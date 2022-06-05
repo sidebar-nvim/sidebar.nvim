@@ -112,6 +112,7 @@ end
 -- @param opts table
 -- @param opts.section_index number
 -- @param opts.cursor_at_content boolean
+-- @param opts.query table data sent to the section (if found) to refine the location
 function M.focus(opts)
     lib.focus(opts)
 end
