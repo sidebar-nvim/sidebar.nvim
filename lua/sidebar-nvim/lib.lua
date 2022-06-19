@@ -14,7 +14,7 @@ local first_init_done = false
 
 local M = {}
 
-M.State = { section_line_indexes = {} }
+M.State = { section_line_indexes = {}, after_draw_call_queue = {} }
 
 M.timer = nil
 
@@ -33,6 +33,11 @@ local function loop()
 
     updater.draw()
     _redraw()
+
+    for _, fn in ipairs(M.State.after_draw_call_queue) do
+        fn()
+    end
+    M.State.after_draw_call_queue = {}
 end
 
 local function _start_timer(should_delay)
@@ -79,6 +84,10 @@ function M.update()
     _start_timer(true)
 end
 
+function M.run_after_next_draw(fn)
+    table.insert(M.State.after_draw_call_queue, fn)
+end
+
 function M.open(opts)
     view.open(opts or { focus = false })
     M.update()
@@ -116,7 +125,7 @@ end
 -- @param opts table
 -- @param opts.section_index number
 -- @param opts.cursor_at_content boolean
--- @param opts.query table data sent to the section (if found) to refine the location
+-- @param opts.section_line_offset number
 function M.focus(opts)
     local cursor = nil
 
@@ -127,11 +136,14 @@ function M.focus(opts)
             content_only = false
         end
 
-        cursor = M.find_cursor_at_section_index(opts.section_index, { content_only = content_only, query = opts.query })
+        cursor = M.find_cursor_at_section_index(
+            opts.section_index,
+            { content_only = content_only, section_line_offset = opts.section_line_offset }
+        )
     end
 
     if view.is_win_open() then
-        local winnr = view.get_winnr()
+        local winnr = view.get_winnr(nil)
         view.focus(winnr)
     else
         M.open({ focus = true })
@@ -210,30 +222,18 @@ end
 -- @param index number
 -- @param opts table
 -- @param |- opts.content_only boolean whether the cursor should be placed at the first line of content or the section title
--- @param |- opts.query table data sent to the section (if found) to refine the location
+-- @param |- opts.section_line_offset number
 -- @return table with cursor {line: number, col: number}
 -- @return nil
 function M.find_cursor_at_section_index(index, opts)
-    opts = vim.tbl_deep_extend("force", { content_only = false, query = nil }, opts or {})
+    opts = vim.tbl_deep_extend("force", { content_only = false, section_line_offset = 0 }, opts or {})
 
     local cursor = { 0, 0 }
 
     for section_index, section_line_index in ipairs(M.State.section_line_indexes) do
         if section_index == index then
             local content_only = opts.content_only
-            local section_offset = 0
-
-            if opts.query then
-                content_only = true
-
-                local section = utils_sections.get_section_at_index(section_index)
-
-                if section and section.query_line then
-                    section_offset = section.query_line(opts.query) or 0
-                end
-            end
-
-            local start_line = get_start_line(content_only, section_line_index) + section_offset
+            local start_line = get_start_line(content_only, section_line_index) + opts.section_line_offset
 
             cursor[1] = start_line
             return cursor

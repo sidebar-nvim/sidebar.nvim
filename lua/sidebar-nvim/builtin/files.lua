@@ -19,6 +19,8 @@ local cut_files = {}
 local open_directories = {}
 local focused_file_path = nil
 
+local section_index = nil
+
 local history = { position = 0, groups = {} }
 local trash_dir = luv.os_homedir() .. "/.local/share/Trash/files/"
 
@@ -192,7 +194,9 @@ local function update(_)
     update_current_dir(group, cwd)
 end
 
-local function focus(filename)
+local function focus(filename, opts)
+    opts = vim.tbl_deep_extend("force", { move_cursor = false }, opts or {})
+
     local parent_path
     -- reset the open directories
     open_directories = {}
@@ -201,6 +205,7 @@ local function focus(filename)
         filename = vim.fn.expand("%:p")
         parent_path = vim.fn.expand("%:p:h")
     else
+        filename = vim.fn.expand(filename)
         filename = vim.fn.fnamemodify(filename, ":p")
         parent_path = vim.fn.fnamemodify(filename, ":p:h")
     end
@@ -228,7 +233,19 @@ local function focus(filename)
 
     focused_file_path = filename
 
+    if opts.move_cursor then
+        require("sidebar-nvim.lib").run_after_next_draw(function()
+            local line = loclist:get_line_at_id(filename)
+            require("sidebar-nvim.lib").focus({
+                section_index = section_index,
+                cursor_at_content = true,
+                section_line_offset = line,
+            })
+        end)
+    end
+
     update() --P(path)
+    require("sidebar-nvim.lib").update()
 end
 
 local function exec(group)
@@ -321,7 +338,8 @@ end
 return {
     title = "Files",
     icon = config["files"].icon,
-    setup = function(_)
+    setup = function(ctx)
+        section_index = ctx.section_index
         vim.api.nvim_create_augroup("sidebar_nvim_files_update", { clear = true })
         vim.api.nvim_create_autocmd({ "ShellCmdPost" }, { group = "sidebar_nvim_files_update", callback = update })
         vim.api.nvim_create_autocmd(
@@ -357,21 +375,6 @@ return {
             SidebarNvimFocusedFile = "CursorLine",
         },
     },
-
-    query_line = function(query)
-        if not query or not query.filename then
-            return nil
-        end
-
-        -- TODO: we are focusing, but when the parents are not open, we can't jump to that location
-        focus(query.filename)
-
-        local filename = vim.fn.fnamemodify(vim.fn.expand(query.filename), ":p")
-
-        local line = loclist:get_line_at_id(filename)
-
-        return line
-    end,
 
     focus = focus,
 

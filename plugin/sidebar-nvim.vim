@@ -20,6 +20,7 @@ command! SidebarNvimClose lua require'sidebar-nvim'.close()
 command! SidebarNvimToggle lua require'sidebar-nvim'.toggle()
 command! SidebarNvimUpdate lua require'sidebar-nvim'.update()
 command! SidebarNvimFocus lua require'sidebar-nvim'.focus()
+command! SidebarNvimFilesFind lua require'sidebar-nvim.builtin.files'.focus('%', { move_cursor = true })
 command! -nargs=1 SidebarNvimResize lua require'sidebar-nvim'.resize(<args>)
 
 let &cpo = s:save_cpo
