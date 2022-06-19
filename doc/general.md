@@ -35,6 +35,7 @@ require("sidebar-nvim").setup({
     update_interval = 1000,
     sections = { "datetime", "git", "diagnostics" },
     section_separator = {"", "-----", ""},
+    section_title_separator = {""},
     containers = {
         attach_shell = "/bin/sh", show_all = true, interval = 5000,
     },
@@ -73,12 +74,28 @@ See [Builtin Sections](#builtin-sections) and [Custom Sections](#custom-sections
 
     ```lua
     -- Using a function
+    -- It needs to return a table
     function section_separator(section, index)
-        return "-----"
+        return { "-----" }
     end
     ```
 
   `section` is the section definition. See [Custom Sections](#custom-sections) for more info
+
+  `index` count from the `sections` table
+
+- `section_title_separator` (string | table | function): Section title separator mark. This is rendered between the section title and the section content. It can be a string, a table or a function. Default is `{""}`
+
+    ```lua
+    -- Using a function
+    -- It needs to return a table
+    function section_title_separator(section, index)
+        return { "-----" }
+    end
+    ```
+
+  `section` is the section definition. See [Custom Sections](#custom-sections) for more info
+
   `index` count from the `sections` table
 
 # Lua API
@@ -653,6 +670,7 @@ require("sidebar-nvim").setup({
 | --------------- | ----------- |
 | *SidebarNvimSectionTitle* | Directory |
 | *SidebarNvimSectionSeparator* | Comment |
+| *SidebarNvimSectionTitleSeparator* | Comment |
 | *SidebarNvimNormal* | Normal |
 | *SidebarNvimLabel* | Label |
 | *SidebarNvimComment* | Comment |

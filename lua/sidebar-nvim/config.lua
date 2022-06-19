@@ -15,6 +15,8 @@ M.sections = { "datetime", "git", "diagnostics" }
 
 M.section_separator = { "", "-----", "" }
 
+M.section_title_separator = { "" }
+
 M.git = { icon = "" }
 
 M.diagnostics = { icon = "" }

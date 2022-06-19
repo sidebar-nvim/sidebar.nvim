@@ -10,6 +10,7 @@ local function get_links()
     return {
         SidebarNvimSectionTitle = "Directory",
         SidebarNvimSectionSeperator = "Comment",
+        SidebarNvimSectionTitleSeperator = "Comment",
         SidebarNvimNormal = "Normal",
         SidebarNvimLabel = "Label",
         SidebarNvimComment = "Comment",
