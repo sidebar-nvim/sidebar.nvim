@@ -1,4 +1,4 @@
-*sidebar.txt*             For NVIM v0.6.0            Last change: 2022 June 05
+*sidebar.txt*             For NVIM v0.6.0            Last change: 2022 June 19
 
 ==============================================================================
 Table of Contents                                  *sidebar-table-of-contents*
@@ -118,12 +118,12 @@ See |sidebar-builtin-sections| and |sidebar-custom-sections|
     a string, a table or a function. Default is `{"", "-----", ""}`
     >
         -- Using a function
-        function section_separator(section)
+        function section_separator(section, index)
             return "-----"
         end
     <
     `section` is the section definition. See |sidebar-custom-sections| for more
-    info
+    info `index` count from the `sections` table
 
 
 ==============================================================================
