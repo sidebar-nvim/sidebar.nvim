@@ -1,4 +1,3 @@
-local utils = require("sidebar-nvim.utils")
 local Component = require("sidebar-nvim.components.basic")
 
 local Loclist = {}

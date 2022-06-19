@@ -8,7 +8,6 @@ local updater = require("sidebar-nvim.updater")
 local config = require("sidebar-nvim.config")
 local bindings = require("sidebar-nvim.bindings")
 local utils = require("sidebar-nvim.utils")
-local utils_sections = require("sidebar-nvim.utils_sections")
 
 local first_init_done = false
 
