@@ -60,7 +60,7 @@ local function build_section_title(section)
 end
 
 -- luacheck: push ignore section
-local function build_section_separator(section)
+local function build_section_separator(section, index)
     if type(config.section_separator) == "string" then
         return config.section_separator
     end
@@ -74,7 +74,7 @@ local function build_section_separator(section)
         return
     end
 
-    return config.section_separator(section)
+    return config.section_separator(section, index)
 end
 -- luacheck: pop
 
@@ -111,7 +111,7 @@ local function get_lines_and_hl(sections_data)
         end
 
         if index ~= #sections_data then
-            local separator = build_section_separator(data.section)
+            local separator = build_section_separator(data.section, index)
 
             if type(separator) == "table" then
                 for _, line in ipairs(separator) do
