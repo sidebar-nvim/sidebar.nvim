@@ -35,7 +35,10 @@ local function loop()
     _redraw()
 
     for _, fn in ipairs(M.State.after_draw_call_queue) do
-        fn()
+        local ret = pcall(fn)
+        if not ret then
+            utils.echo_warning("after_draw_call failed")
+        end
     end
     M.State.after_draw_call_queue = {}
 end
