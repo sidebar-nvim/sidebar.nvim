@@ -21,7 +21,7 @@ M.git = { icon = "" }
 
 M.diagnostics = { icon = "" }
 
-M.buffers = { icon = "", ignored_buffers = {}, sorting = "id", show_numbers = true }
+M.buffers = { icon = "", ignored_buffers = {}, sorting = "id", show_numbers = true, show_non_loaded = false }
 
 M.symbols = { icon = "ƒ" }
 
