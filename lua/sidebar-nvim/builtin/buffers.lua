@@ -34,8 +34,6 @@ local function get_buffers(ctx)
     local current_buffer = vim.api.nvim_get_current_buf()
     loclist_items = {}
 
-    local ignored_buftypes = { "terminal" }
-
     for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
         if buffer ~= view.View.bufnr then
             local ignored = false
@@ -48,37 +46,24 @@ local function get_buffers(ctx)
             end
 
             if bufname == "" then
-                ignored = ignored and true
+                ignored = true
             end
 
-            if config.buffers.show_non_loaded and not vim.api.nvim_buf_is_loaded(buffer) then
-                ignored = ignored and false
+            if config.buffers.ignore_not_loaded and not vim.api.nvim_buf_is_loaded(buffer) then
+                ignored = true
             end
 
+            -- NOTE: should we be more specific?
             if vim.api.nvim_buf_get_option(buffer, "bufhidden") ~= "" then
                 ignored = true
             end
 
-            if vim.tbl_contains(ignored_buftypes, vim.api.nvim_buf_get_option(buffer, "buftype")) then
+            -- always ignore terminals
+            if config.buffers.ignore_terminal and string.match(bufname, "term://.*") then
                 ignored = true
             end
 
             if not ignored then
-                if string.match(bufname, "term://.*") then
-                    P(
-                        "nr: "
-                            .. buffer
-                            .. " name: "
-                            .. bufname
-                            .. " bufhidden="
-                            .. vim.api.nvim_buf_get_option(buffer, "bufhidden")
-                            .. " buftype="
-                            .. vim.api.nvim_buf_get_option(buffer, "buftype")
-                            .. " "
-                            .. " not ignored"
-                    )
-                end
-
                 local name_hl = "SidebarNvimNormal"
                 local modified = ""
 
