@@ -21,6 +21,7 @@ local function check_deprecated_field(key)
 end
 
 function M.setup(opts)
+    utils.echo_warning("setup called")
     opts = opts or {}
 
     -- this keys should not be merged by tbl_deep_merge, they should be overriden completely
@@ -53,6 +54,7 @@ function M.setup(opts)
 end
 
 function M._internal_setup()
+    utils.echo_warning("internal setup called")
     colors.setup()
     bindings.setup()
     view.setup()
@@ -126,10 +128,11 @@ function M.is_open(opts)
 end
 
 function M.reset_highlight()
-    if M.setup_called then
-        colors.setup()
-        renderer.render_hl(view.View.bufnr, {})
-    end
+    utils.echo_warning("reset highlight called!")
+    --if M.setup_called then
+    --colors.setup()
+    --renderer.render_hl(view.View.bufnr, {})
+    --end
 end
 
 function M._on_cursor_move(direction)
