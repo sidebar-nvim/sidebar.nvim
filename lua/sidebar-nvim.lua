@@ -126,8 +126,10 @@ function M.is_open(opts)
 end
 
 function M.reset_highlight()
-    colors.setup()
-    renderer.render_hl(view.View.bufnr, {})
+    if M.setup_called then
+        colors.setup()
+        renderer.render_hl(view.View.bufnr, {})
+    end
 end
 
 function M._on_cursor_move(direction)
