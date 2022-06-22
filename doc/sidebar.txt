@@ -1,4 +1,4 @@
-*sidebar.txt*             For NVIM v0.6.0            Last change: 2022 June 21
+*sidebar.txt*             For NVIM v0.6.0            Last change: 2022 June 22
 
 ==============================================================================
 Table of Contents                                  *sidebar-table-of-contents*
