@@ -35,6 +35,7 @@ require("sidebar-nvim").setup({
     update_interval = 1000,
     sections = { "datetime", "git", "diagnostics" },
     section_separator = {"", "-----", ""},
+    section_title_separator = {""},
     containers = {
         attach_shell = "/bin/sh", show_all = true, interval = 5000,
     },
@@ -73,12 +74,29 @@ See [Builtin Sections](#builtin-sections) and [Custom Sections](#custom-sections
 
     ```lua
     -- Using a function
-    function section_separator(section)
-        return "-----"
+    -- It needs to return a table
+    function section_separator(section, index)
+        return { "-----" }
     end
     ```
 
   `section` is the section definition. See [Custom Sections](#custom-sections) for more info
+
+  `index` count from the `sections` table
+
+- `section_title_separator` (string | table | function): Section title separator mark. This is rendered between the section title and the section content. It can be a string, a table or a function. Default is `{""}`
+
+    ```lua
+    -- Using a function
+    -- It needs to return a table
+    function section_title_separator(section, index)
+        return { "-----" }
+    end
+    ```
+
+  `section` is the section definition. See [Custom Sections](#custom-sections) for more info
+
+  `index` count from the `sections` table
 
 # Lua API
 
@@ -446,6 +464,8 @@ require("sidebar-nvim").setup({
 | key | when | action |
 |-----|------|--------|
 | `e` | hovering filename | open file in the previous window
+| `s` | hovering filename | stage files
+| `u` | hovering filename | unstage files
 
 ## diagnostics
 
@@ -571,6 +591,8 @@ require("sidebar-nvim").setup({
         ignored_buffers = {}, -- ignore buffers by regex
         sorting = "id", -- alternatively set it to "name" to sort by buffer name instead of buf id
         show_numbers = true, -- whether to also show the buffer numbers
+        ignore_not_loaded = false, -- whether to ignore not loaded buffers
+        ignore_terminal = true, -- whether to show terminal buffers in the list
     }
     ...
 })
@@ -650,6 +672,7 @@ require("sidebar-nvim").setup({
 | --------------- | ----------- |
 | *SidebarNvimSectionTitle* | Directory |
 | *SidebarNvimSectionSeparator* | Comment |
+| *SidebarNvimSectionTitleSeparator* | Comment |
 | *SidebarNvimNormal* | Normal |
 | *SidebarNvimLabel* | Label |
 | *SidebarNvimComment* | Comment |

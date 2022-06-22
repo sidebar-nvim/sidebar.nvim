@@ -5,7 +5,6 @@ set cpo&vim
 
 augroup SidebarNvim
 au!
-au ColorScheme * lua require'sidebar-nvim'.reset_highlight()
 au VimEnter * lua require'sidebar-nvim'._vim_enter()
 au VimLeavePre * lua require'sidebar-nvim.lib'.on_vim_leave()
 au TabEnter * lua require'sidebar-nvim.lib'.on_tab_change()

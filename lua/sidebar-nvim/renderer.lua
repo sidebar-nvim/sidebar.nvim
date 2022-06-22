@@ -59,10 +59,9 @@ local function build_section_title(section)
     return icon .. " " .. section.title
 end
 
--- luacheck: push ignore section
-local function build_section_separator(section)
+local function build_section_separator(section, index)
     if type(config.section_separator) == "string" then
-        return config.section_separator
+        return { config.section_separator }
     end
 
     if type(config.section_separator) == "table" then
@@ -74,9 +73,25 @@ local function build_section_separator(section)
         return
     end
 
-    return config.section_separator(section)
+    return config.section_separator(section, index)
 end
--- luacheck: pop
+
+local function build_section_title_separator(section, index)
+    if type(config.section_title_separator) == "string" then
+        return { config.section_title_separator }
+    end
+
+    if type(config.section_title_separator) == "table" then
+        return config.section_title_separator
+    end
+
+    if type(config.section_title_separator) ~= "function" then
+        utils.echo_warning("'section_title_separator' must be false, string, table or function")
+        return
+    end
+
+    return config.section_title_separator(section, index)
+end
 
 local function get_lines_and_hl(sections_data)
     local lines = {}
@@ -85,13 +100,20 @@ local function get_lines_and_hl(sections_data)
 
     for index, data in ipairs(sections_data) do
         local section_title = build_section_title(data.section)
+        local section_title_length = 1
 
         table.insert(hl, { "SidebarNvimSectionTitle", #lines, 0, #section_title })
 
-        local section_content_start = #lines + 3 -- +3 white spaces
-        local section_title_start = #lines + 1
+        local section_title_separator = build_section_title_separator(data.section, index)
+
+        local section_content_start = #lines + section_title_length + #section_title_separator + 1
+        local section_title_start = #lines + section_title_length
         table.insert(lines, section_title)
-        table.insert(lines, "")
+
+        for _, line in ipairs(section_title_separator) do
+            table.insert(hl, { "SidebarNvimSectionTitleSeperator", #lines, 0, #line })
+            table.insert(lines, line)
+        end
 
         local section_lines, section_hl = expand_section_lines(data.lines, #lines)
 
@@ -99,7 +121,7 @@ local function get_lines_and_hl(sections_data)
             content_start = section_content_start,
             content_length = #section_lines,
             section_start = section_title_start,
-            section_length = #section_lines + 4, -- +4 whitespaces
+            section_length = #section_lines + section_title_length + #section_title_separator + 1,
         })
 
         for _, line in ipairs(section_lines) do
@@ -111,16 +133,11 @@ local function get_lines_and_hl(sections_data)
         end
 
         if index ~= #sections_data then
-            local separator = build_section_separator(data.section)
+            local separator = build_section_separator(data.section, index)
 
-            if type(separator) == "table" then
-                for _, line in ipairs(separator) do
-                    table.insert(hl, { "SidebarNvimSectionSeperator", #lines, 0, #line })
-                    table.insert(lines, line)
-                end
-            else
-                table.insert(hl, { "SidebarNvimSectionSeperator", #lines + 1, 0, #separator })
-                table.insert(lines, separator)
+            for _, line in ipairs(separator) do
+                table.insert(hl, { "SidebarNvimSectionSeperator", #lines, 0, #line })
+                table.insert(lines, line)
             end
         end
     end

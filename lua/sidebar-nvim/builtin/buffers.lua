@@ -45,6 +45,24 @@ local function get_buffers(ctx)
                 end
             end
 
+            if bufname == "" then
+                ignored = true
+            end
+
+            if config.buffers.ignore_not_loaded and not vim.api.nvim_buf_is_loaded(buffer) then
+                ignored = true
+            end
+
+            -- NOTE: should we be more specific?
+            if vim.api.nvim_buf_get_option(buffer, "bufhidden") ~= "" then
+                ignored = true
+            end
+
+            -- always ignore terminals
+            if config.buffers.ignore_terminal and string.match(bufname, "term://.*") then
+                ignored = true
+            end
+
             if not ignored then
                 local name_hl = "SidebarNvimNormal"
                 local modified = ""
@@ -57,29 +75,27 @@ local function get_buffers(ctx)
                     modified = " *"
                 end
 
-                if bufname ~= "" and vim.api.nvim_buf_is_loaded(buffer) then
-                    -- sorting = "id"
-                    local order = buffer
-                    if config["buffers"].sorting == "name" then
-                        order = bufname
-                    end
-
-                    local numbers_text = {}
-                    if config.buffers.show_numbers then
-                        numbers_text = { text = buffer .. " ", hl = "SidebarNvimBuffersNumber" }
-                    end
-
-                    loclist_items[#loclist_items + 1] = {
-                        group = "buffers",
-                        left = {
-                            get_fileicon(bufname),
-                            numbers_text,
-                            { text = utils.filename(bufname) .. modified, hl = name_hl },
-                        },
-                        data = { buffer = buffer, filepath = bufname },
-                        order = order,
-                    }
+                -- sorting = "id"
+                local order = buffer
+                if config["buffers"].sorting == "name" then
+                    order = bufname
                 end
+
+                local numbers_text = {}
+                if config.buffers.show_numbers then
+                    numbers_text = { text = buffer .. " ", hl = "SidebarNvimBuffersNumber" }
+                end
+
+                loclist_items[#loclist_items + 1] = {
+                    group = "buffers",
+                    left = {
+                        get_fileicon(bufname),
+                        numbers_text,
+                        { text = utils.filename(bufname) .. modified, hl = name_hl },
+                    },
+                    data = { buffer = buffer, filepath = bufname },
+                    order = order,
+                }
             end
         end
     end

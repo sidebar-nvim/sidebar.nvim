@@ -23,13 +23,16 @@ end
 function M.setup(opts)
     opts = opts or {}
 
+    -- this keys should not be merged by tbl_deep_merge, they should be overriden completely
+    local full_override_keys = { "sections", "section_separator", "section_title_separator" }
+
     for key, value in pairs(opts) do
         check_deprecated_field(key)
 
         if key == "open" then
             M.open_on_start = value
         else
-            if type(value) ~= "table" or key == "sections" or key == "section_separator" then
+            if type(value) ~= "table" or vim.tbl_contains(full_override_keys, key) then
                 config[key] = value
             else
                 if type(config[key]) == "table" then
@@ -123,8 +126,10 @@ function M.is_open(opts)
 end
 
 function M.reset_highlight()
-    colors.setup()
-    renderer.render_hl(view.View.bufnr, {})
+    if M.setup_called then
+        colors.setup()
+        renderer.render_hl(view.View.bufnr, {})
+    end
 end
 
 function M._on_cursor_move(direction)

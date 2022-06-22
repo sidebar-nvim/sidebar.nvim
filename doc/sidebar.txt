@@ -1,4 +1,4 @@
-*sidebar.txt*            For NVIM v0.6.0            Last change: 2022 March 12
+*sidebar.txt*             For NVIM v0.6.0            Last change: 2022 June 21
 
 ==============================================================================
 Table of Contents                                  *sidebar-table-of-contents*
@@ -74,6 +74,7 @@ The following code block shows the defaults options:
         update_interval = 1000,
         sections = { "datetime", "git", "diagnostics" },
         section_separator = {"", "-----", ""},
+        section_title_separator = {""},
         containers = {
             attach_shell = "/bin/sh", show_all = true, interval = 5000,
         },
@@ -118,12 +119,27 @@ See |sidebar-builtin-sections| and |sidebar-custom-sections|
     a string, a table or a function. Default is `{"", "-----", ""}`
     >
         -- Using a function
-        function section_separator(section)
-            return "-----"
+        -- It needs to return a table
+        function section_separator(section, index)
+            return { "-----" }
         end
     <
     `section` is the section definition. See |sidebar-custom-sections| for more
     info
+    `index` count from the `sections` table
+- `section_title_separator` (string | table | function): Section title separator
+    mark. This is rendered between the section title and the section content. It
+    can be a string, a table or a function. Default is `{""}`
+    >
+        -- Using a function
+        -- It needs to return a table
+        function section_title_separator(section, index)
+            return { "-----" }
+        end
+    <
+    `section` is the section definition. See |sidebar-custom-sections| for more
+    info
+    `index` count from the `sections` table
 
 
 ==============================================================================
@@ -533,6 +549,8 @@ KEYBINDINGS ~
 
 │ key │      when       │             action             │
 │e    │hovering filename│open file in the previous window│
+│s    │hovering filename│stage files                     │
+│u    │hovering filename│unstage files                   │
 
 
 DIAGNOSTICS                                              *sidebar-diagnostics*
@@ -666,6 +684,8 @@ CONFIG ~
             ignored_buffers = {}, -- ignore buffers by regex
             sorting = "id", -- alternatively set it to "name" to sort by buffer name instead of buf id
             show_numbers = true, -- whether to also show the buffer numbers
+            ignore_not_loaded = false, -- whether to ignore not loaded buffers
+            ignore_terminal = true, -- whether to show terminal buffers in the list
         }
         ...
     })
@@ -744,6 +764,7 @@ KEYBINDINGS ~
 │             Highlight Group             │          Defaults To           │
 │_SidebarNvimSectionTitle_                │Directory                       │
 │_SidebarNvimSectionSeparator_            │Comment                         │
+│_SidebarNvimSectionTitleSeparator_       │Comment                         │
 │_SidebarNvimNormal_                      │Normal                          │
 │_SidebarNvimLabel_                       │Label                           │
 │_SidebarNvimComment_                     │Comment                         │
