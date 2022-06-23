@@ -31,8 +31,10 @@ function Loclist:new(o)
     o = vim.tbl_deep_extend("force", vim.deepcopy(Loclist.DEFAULT_OPTIONS), o or {}, {
         -- table(line_number -> group ref)
         _group_indexes = {},
-        -- table(line__number -> item ref)
+        -- table(line_number -> item ref)
         _location_indexes = {},
+        -- table(id -> line_number)
+        _line_by_ids = {},
         -- used to keep the group list stable
         _group_keys = {},
     })
@@ -56,6 +58,7 @@ end
 -- |--|- (string) item.left[n].text = "abc"
 -- |--|- (string) item.left[n].hl = "<highlight group>"
 -- |- (number) item.order items are sorted based on order within each group
+-- |- (any) item.id a unique id across the whole loclist, this is used for fast lookups. The id must also be unique between groups. If no id is specified, a random id is assigned
 function Loclist:add_item(item)
     if not self.groups[item.group] then
         self.groups[item.group] = { is_closed = self.groups_initially_closed or false }
@@ -63,6 +66,10 @@ function Loclist:add_item(item)
 
     if not vim.tbl_contains(self._group_keys, item.group) then
         table.insert(self._group_keys, item.group)
+    end
+
+    if item.id == nil then
+        item.id = math.random(1000000)
     end
 
     local group_tbl = self.groups[item.group]
@@ -169,6 +176,7 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
 
     for _, item in ipairs(group) do
         self._location_indexes[#section_lines] = item
+        self._line_by_ids[item.id] = #section_lines
         local line = ""
 
         if with_label then
@@ -241,6 +249,7 @@ end
 function Loclist:draw(ctx, section_lines, section_hl)
     self._group_indexes = {}
     self._location_indexes = {}
+    self._line_by_ids = {}
 
     if #self._group_keys == 1 and self.omit_single_group then
         self:draw_group(ctx, self._group_keys[1], false, section_lines, section_hl)
@@ -258,6 +267,14 @@ end
 function Loclist:get_location_at(line)
     local location = self._location_indexes[line]
     return location
+end
+
+-- returns the line of where the item id is placed
+-- if there is no item with the requested id, return nil.
+-- @see Loclist:add_item
+-- @param (any) id
+function Loclist:get_line_at_id(id)
+    return self._line_by_ids[id]
 end
 
 -- toggles the group open/close that is printed on line `line`
