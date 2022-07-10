@@ -117,7 +117,7 @@ local function get_lines_and_hl(sections_data)
         table.insert(lines, section_title)
 
         for _, line in ipairs(section_title_separator) do
-            table.insert(hl, { "SidebarNvimSectionTitleSeperator", #lines, 0, #line })
+            table.insert(hl, { "SidebarNvimSectionTitleSeparator", #lines, 0, #line })
             table.insert(lines, line)
         end
 

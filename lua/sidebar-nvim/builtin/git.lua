@@ -31,7 +31,7 @@ end
 -- parse line from git diff --numstat into a loclist item
 local function parse_git_diff(group, line)
     local t = vim.split(line, "\t")
-    local added, removed, filepath = t[1], t[2], t[3]
+    local added, removed, filepath = tonumber(t[1]), tonumber(t[2]), t[3]
     local extension = filepath:match("^.+%.(.+)$")
     local fileicon = ""
 
@@ -46,6 +46,18 @@ local function parse_git_diff(group, line)
     if filepath ~= "" then
         loclist:open_group(group)
 
+        local right = {}
+        if added > 0 then
+            groups.append(right,
+                { text = tostring(added), hl = "SidebarNvimGitStatusDiffAdded" })
+        end
+        if removed > 0 then
+            groups.append(right,
+                { text = tostring(removed), hl = "SidebarNvimGitStatusDiffRemoved" })
+        end
+        right = groups.append(
+            utils.intersperse(right, { text = " " }), { text = " " })
+
         table.insert(loclist_items, {
             group = group,
             left = {
@@ -58,22 +70,7 @@ local function parse_git_diff(group, line)
                     hl = "SidebarNvimGitStatusFileName",
                 },
             },
-            right = {
-                {
-                    text = added,
-                    hl = "SidebarNvimGitStatusDiffAdded",
-                },
-                {
-                    text = ", ",
-                },
-                {
-                    text = removed,
-                    hl = "SidebarNvimGitStatusDiffRemoved",
-                },
-                {
-                    text = " ",
-                },
-            },
+            right = right,
             filepath = filepath,
         })
     end

@@ -26,6 +26,7 @@ M.View = {
         foldcolumn = "0",
         cursorcolumn = false,
         colorcolumn = "0",
+        winhl = "Normal:SidebarNvimNormal,EndOfBuffer:SidebarNvimNormal",
     },
     bufopts = {
         { name = "swapfile", val = false },

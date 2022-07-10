@@ -33,7 +33,7 @@ function M.empty_message(text)
   local line = " " .. tostring(text)
   return {
     lines = { line },
-    hl = { { colors.links.SidebarNvimComment, 0, 0, #line } },
+    hl = { { "SidebarNvimComment", 0, 0, #line } },
   }
 end
 

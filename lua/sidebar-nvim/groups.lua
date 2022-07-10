@@ -61,9 +61,10 @@ function M.unzip(groups, lnum)
   local byte_length = 0
 
   for _, group in ipairs(groups) do
-    table.insert(hl, { group.hl, lnum, byte_length, -1 })
+    local current_length = #group.text
+    table.insert(hl, { group.hl, lnum, byte_length, byte_length + current_length })
     text = text .. group.text
-    byte_length = byte_length + #group.text
+    byte_length = byte_length + current_length
   end
 
   return text, hl
