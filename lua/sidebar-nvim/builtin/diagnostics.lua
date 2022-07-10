@@ -62,6 +62,8 @@ local function ingest_diagnostics(all_diagnostics)
 
     local loclist_items = {}
 
+    table.sort(all_diagnostics, function(a, b) return a.lnum < b.lnum end)
+
     for _, diag in pairs(all_diagnostics) do
         local filepath = diag.file
         local filename = vim.fn.fnamemodify(filepath, ":t")
