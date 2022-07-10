@@ -1,9 +1,9 @@
 local utils = require("sidebar-nvim.utils")
+local groups = require("sidebar-nvim.groups")
 local sidebar = require("sidebar-nvim")
 local Loclist = require("sidebar-nvim.components.loclist")
 local Debouncer = require("sidebar-nvim.debouncer")
 local config = require("sidebar-nvim.config")
-local luv = vim.loop
 local has_devicons, devicons = pcall(require, "nvim-web-devicons")
 
 local loclist = Loclist:new({
@@ -57,6 +57,8 @@ local function parse_git_diff(group, line)
                     text = utils.shortest_path(filepath) .. " ",
                     hl = "SidebarNvimGitStatusFileName",
                 },
+            },
+            right = {
                 {
                     text = added,
                     hl = "SidebarNvimGitStatusDiffAdded",
@@ -67,6 +69,9 @@ local function parse_git_diff(group, line)
                 {
                     text = removed,
                     hl = "SidebarNvimGitStatusDiffRemoved",
+                },
+                {
+                    text = " ",
                 },
             },
             filepath = filepath,

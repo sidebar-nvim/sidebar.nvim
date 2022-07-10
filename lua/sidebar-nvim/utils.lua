@@ -15,6 +15,20 @@ function M.reverse(list)
   return reversed
 end
 
+--- Insert a value between the elements of a list
+--- @param list table
+--- @param value any
+--- @return table
+function M.intersperse(list, value)
+  local result = {}
+  for i = 1, #list - 1 do
+    table.insert(result, list[i])
+    table.insert(result, value)
+  end
+  table.insert(result, list[#list])
+  return result
+end
+
 function M.empty_message(text)
   local line = " " .. tostring(text)
   return {
