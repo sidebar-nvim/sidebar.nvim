@@ -4,6 +4,17 @@ local M = {}
 local api = vim.api
 local luv = vim.loop
 
+--- Reverse the order of elements in some `list`.
+--- @param list table
+--- @return table reversed
+function M.reverse(list)
+  local reversed = {}
+  while #reversed < #list do
+    reversed[#reversed + 1] = list[#list - #reversed]
+  end
+  return reversed
+end
+
 function M.empty_message(text)
   local line = " " .. tostring(text)
   return {
@@ -35,13 +46,14 @@ function M.sidebar_nvim_cursor_move_callback(direction)
 end
 
 local function get_builtin_section(name)
-    local ret, section = pcall(require, "sidebar-nvim.builtin." .. name)
+    local ret, result = pcall(require, "sidebar-nvim.builtin." .. name)
     if not ret then
         M.echo_warning("error trying to load section: " .. name)
+        M.echo_warning(tostring(result))
         return nil
     end
 
-    return section
+    return result
 end
 
 function M.resolve_section(index, section)
@@ -116,7 +128,7 @@ function M.truncate(s, size)
     if length <= size then
         return s
     else
-        return s:sub(1, size) .. ".."
+        return s:sub(1, size) .. "…"
     end
 end
 

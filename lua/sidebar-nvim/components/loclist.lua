@@ -1,4 +1,5 @@
 local Component = require("sidebar-nvim.components.basic")
+local groups = require("sidebar-nvim.groups")
 
 local Loclist = {}
 
@@ -20,6 +21,10 @@ Loclist.DEFAULT_OPTIONS = {
     },
     -- initial indentation level
     indent = nil,
+    -- where to truncate, if applicable ("left" or "right")
+    truncate = nil,
+    -- the minimum width to truncate at
+    truncate_minimum = nil,
 }
 
 setmetatable(Loclist, { __index = Component })
@@ -137,6 +142,7 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
         return
     end
 
+    -- Draw group title
     if with_label then
         local icon = self.group_icon.opened
         if #group == 0 or group.is_closed then
@@ -169,73 +175,66 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
         return
     end
 
+    -- Draw group items
     for _, item in ipairs(group) do
         self._location_indexes[#section_lines] = item
-        local line = " "
+        local indent = " "
 
         if self.indent ~= nil then
-            line = self.indent
+            indent = self.indent
         elseif with_label then
-            line = "   "
+            indent = "   "
         end
 
-        if type(item.left) == "table" and #item.left ~= 0 then
-            for _, i in ipairs(item.left) do
-                if i ~= nil and i.text ~= nil then
-                    -- Calculate space left in line
-                    local space_left = ctx.width - #line
+        local left  = groups.normalize(groups.concat({ indent }, item.left))
+        local right = groups.normalize(item.right)
 
-                    -- Break if line is already full
-                    if space_left <= 0 then
-                        break
-                    end
+        local left_len = groups.length(left)
+        local right_len = groups.length(right)
 
-                    if i.hl then
-                        table.insert(section_hl, { i.hl, #section_lines, #line, -1 })
-                    else
-                        table.insert(section_hl, { "SidebarNvimNormal", #section_lines, #line, -1 })
+        local padding = ctx.width - left_len - right_len
+        local missing = -padding
+
+        local combined
+        if padding < 0 then
+            if self.truncate == "right" then
+                right = groups.slice_right(right, math.max(self.truncate_minimum or 0, right_len - missing) - 1)
+                right = #right > 0 and groups.append(right, { text = "…", hl  = right[#right].hl }) or right
+                right_len = groups.length(right)
+                padding = ctx.width - left_len - right_len
+                if padding < 0 then
+                    left = groups.slice_right(left, (left_len - (-padding)) - 2)
+                    if #left > 0 then
+                        left = groups.append(left, { text = "… ", hl  = left[#left].hl })
                     end
-                    line = line .. tostring(i.text):sub(1, space_left)
+                    left_len = groups.length(left)
+                end
+            else
+                left = groups.slice_right(left, math.max(self.truncate_minimum or 0, left_len - missing) - 2)
+                left = #left > 0 and groups.append(left, { text = "… ", hl  = left[#left].hl }) or left
+                left_len = groups.length(left)
+                padding = ctx.width - left_len - right_len
+                if padding < 0 then
+                    right = groups.slice_right(right, (right_len - (-padding)) - 1)
+                    if #right > 0 then
+                        right = groups.append(right, { text = "…", hl  = right[#right].hl })
+                    end
+                    right_len = groups.length(right)
                 end
             end
+            combined = groups.concat(left, right)
+        elseif padding > 0 then
+            local filler = { text = string.rep(" ", padding), hl = "SidebarNvimNormal" }
+            combined = groups.concat(left, { filler }, right)
+        else
+            combined = groups.concat(left, right)
         end
 
-        if type(item.right) == "table" and #item.right ~= 0 then
-            local temp_line = ""
-            local temp_hl = {}
-
-            for _, i in ipairs(item.right) do
-                if i ~= nil and i.text ~= nil then
-                    -- Calculate space left in line
-                    local space_left = ctx.width - #line - #temp_line - 1
-
-                    -- Break if line is already full
-                    if space_left <= 0 then
-                        break
-                    end
-
-                    if i.hl then
-                        table.insert(temp_hl, { i.hl, #section_lines, #line + #temp_line, -1 })
-                    else
-                        table.insert(temp_hl, { "SidebarNvimNormal", #section_lines, #line + #temp_line, -1 })
-                    end
-
-                    temp_line = temp_line .. i.text:sub(1, space_left)
-                end
-            end
-
-            -- Calculate offset and add empty space in the middle
-            local offset = ctx.width - #temp_line - #line
-            local gap = string.rep(" ", offset)
-            line = line .. gap .. temp_line
-
-            -- Add highlights accounting for offset
-            for _, hl in ipairs(temp_hl) do
-                table.insert(section_hl, { hl[1], hl[2], hl[3] + offset, hl[4] })
-            end
-        end
-
+        local line, hls = groups.unzip(combined, #section_lines)
         table.insert(section_lines, line)
+        for _, hl in ipairs(hls) do
+            table.insert(section_hl, hl)
+        end
     end
 end
 

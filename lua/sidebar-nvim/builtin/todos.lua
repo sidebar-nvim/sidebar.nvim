@@ -6,6 +6,9 @@ local luv = vim.loop
 local loclist = Loclist:new({
     groups_initially_closed = config.todos.initially_closed,
     show_empty_groups = false,
+    indent = " ",
+    truncate = "right",
+    truncate_minimum = 10,
 })
 
 -- Make sure all groups exist
@@ -22,7 +25,7 @@ local icons = {
     WARN = { text = "", hl = "SidebarNvimTodoIconWarn" },
     PERF = { text = "", hl = "SidebarNvimTodoIconPerf" },
     NOTE = { text = "", hl = "SidebarNvimTodoIconNote" },
-    FIX = { text = "", hl = "SidebarNvimTodoIconFix" },
+    FIX  = { text = "", hl = "SidebarNvimTodoIconFix" },
 }
 
 local current_path_ignored_cache = false
@@ -46,9 +49,6 @@ local function async_update(ctx)
 
     local todos = {}
 
-    local stdout = luv.new_pipe(false)
-    local stderr = luv.new_pipe(false)
-    local handle
     local cmd
     local args
     local keywords_regex = "(TODO|NOTE|FIX|PERF|HACK|WARN)"
@@ -67,11 +67,32 @@ local function async_update(ctx)
         args = { "grep", "-no", "--column", "-EI", keywords_regex .. ":.*" }
     end
 
-    handle = luv.spawn(cmd, {
-        args = args,
-        stdio = { nil, stdout, stderr },
-        cmd = luv.cwd(),
-    }, function()
+
+    utils.async_cmd(cmd, args, function(chunks)
+        for _, chunk in ipairs(chunks) do
+            for _, line in ipairs(vim.split(chunk, "\n")) do
+                if line ~= "" then
+                    local filepath, lnum, col, tag, text = line:match("^(.+):(%d+):(%d+):(%w+):(.*)$")
+
+                    if filepath and tag then
+                        if not todos[tag] then
+                            todos[tag] = {}
+                        end
+
+                        local category_tbl = todos[tag]
+
+                        category_tbl[#category_tbl + 1] = {
+                            filepath = filepath,
+                            lnum = lnum,
+                            col = col,
+                            tag = tag,
+                            text = text,
+                        }
+                    end
+                end
+            end
+        end
+
         local loclist_items = {}
         for _, items in pairs(todos) do
             for _, item in ipairs(items) do
@@ -79,10 +100,9 @@ local function async_update(ctx)
                     group = item.tag,
                     left = {
                         icons[item.tag],
-                        { text = " " .. item.lnum, hl = "SidebarNvimTodoLineNumber" },
-                        { text = ":" },
-                        { text = item.col, hl = "SidebarNvimTodoColNumber" },
-                        { text = utils.truncate(item.text, ctx.width / 2) },
+                        " ",
+                        -- { text = " " .. item.lnum, hl = "SidebarNvimTodoLineNumber" },
+                        { text = item.text },
                     },
                     right = {
                         {
@@ -97,59 +117,8 @@ local function async_update(ctx)
                 })
             end
         end
+
         loclist:set_items(loclist_items, { remove_groups = false })
-
-        luv.read_stop(stdout)
-        luv.read_stop(stderr)
-        stdout:close()
-        stderr:close()
-        handle:close()
-    end)
-
-    luv.read_start(stdout, function(err, data)
-        if data == nil then
-            return
-        end
-
-        for _, line in ipairs(vim.split(data, "\n")) do
-            if line ~= "" then
-                local filepath, lnum, col, tag, text = line:match("^(.+):(%d+):(%d+):(%w+):(.*)$")
-
-                if filepath and tag then
-                    if not todos[tag] then
-                        todos[tag] = {}
-                    end
-
-                    local category_tbl = todos[tag]
-
-                    category_tbl[#category_tbl + 1] = {
-                        filepath = filepath,
-                        lnum = lnum,
-                        col = col,
-                        tag = tag,
-                        text = text,
-                    }
-                end
-            end
-        end
-
-        if err ~= nil then
-            vim.schedule(function()
-                utils.echo_warning(err)
-            end)
-        end
-    end)
-
-    luv.read_start(stderr, function(err, data)
-        if data == nil then
-            return
-        end
-
-        if err ~= nil then
-            vim.schedule(function()
-                utils.echo_warning(err)
-            end)
-        end
     end)
 end
 
