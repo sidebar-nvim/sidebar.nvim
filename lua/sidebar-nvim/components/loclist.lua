@@ -17,7 +17,7 @@ Loclist.DEFAULT_OPTIONS = {
     -- highlight groups for each control element
     highlights = {
         group = "SidebarNvimLabel",
-        group_count = "SidebarNvimSectionTitle",
+        group_count = "SidebarNvimLabelCount",
     },
     -- initial indentation level
     indent = nil,
@@ -158,6 +158,7 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
         end
 
         table.insert(section_hl, { self.highlights.group, #section_lines, 0, #line })
+
         if self.show_group_count then
             table.insert(section_hl, { self.highlights.group_count, #section_lines, #line, -1 })
             local total = #group

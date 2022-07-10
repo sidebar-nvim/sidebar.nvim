@@ -8,6 +8,7 @@ M.links = {
     SidebarNvimSectionTitleSeparator = "Comment",
     SidebarNvimNormal = "Normal",
     SidebarNvimLabel = "Label",
+    SidebarNvimLabelCount = "Comment",
     SidebarNvimComment = "Comment",
     SidebarNvimLineNr = "LineNr",
     SidebarNvimKeyword = "Keyword",

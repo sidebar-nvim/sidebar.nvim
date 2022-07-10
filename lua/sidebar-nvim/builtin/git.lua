@@ -43,37 +43,43 @@ local function parse_git_diff(group, line)
         end
     end
 
-    if filepath ~= "" then
-        loclist:open_group(group)
-
-        local right = {}
-        if added > 0 then
-            groups.append(right,
-                { text = tostring(added), hl = "SidebarNvimGitStatusDiffAdded" })
-        end
-        if removed > 0 then
-            groups.append(right,
-                { text = tostring(removed), hl = "SidebarNvimGitStatusDiffRemoved" })
-        end
-        right = groups.append(
-            utils.intersperse(right, { text = " " }), { text = " " })
-
-        table.insert(loclist_items, {
-            group = group,
-            left = {
-                {
-                    text = fileicon .. " ",
-                    hl = "SidebarNvimGitStatusFileIcon",
-                },
-                {
-                    text = utils.shortest_path(filepath) .. " ",
-                    hl = "SidebarNvimGitStatusFileName",
-                },
-            },
-            right = right,
-            filepath = filepath,
-        })
+    if filepath == "" then
+        return
     end
+
+    loclist:open_group(group)
+
+    local right = {}
+    if added > 0 then
+        groups.append(right, { text = "+" .. tostring(added), hl = "SidebarNvimComment" })
+    end
+    if removed > 0 then
+        groups.append(right, { text = "-" .. tostring(removed), hl = "SidebarNvimComment" })
+    end
+    right = groups.append(utils.intersperse(right, { text = " " }), { text = " " })
+
+    local hl_filename =
+        group == "Staged"
+            and "SidebarNvimGitStatusDiffAdded" or
+        group == "Unstaged"
+            and "SidebarNvimGitStatusDiffRemoved" or
+                "SidebarNvimGitStatusFileName"
+
+    table.insert(loclist_items, {
+        group = group,
+        left = {
+            {
+                text = fileicon .. " ",
+                hl = "SidebarNvimGitStatusFileIcon",
+            },
+            {
+                text = utils.shortest_path(filepath) .. " ",
+                hl = hl_filename,
+            },
+        },
+        right = right,
+        filepath = filepath,
+    })
 end
 
 -- parse line from git status --porcelain into a loclist item
