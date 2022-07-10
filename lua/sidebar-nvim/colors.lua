@@ -9,7 +9,7 @@ end
 local function get_links()
     return {
         SidebarNvimSectionTitle = "Directory",
-        SidebarNvimSectionSeperator = "Comment",
+        SidebarNvimSectionSeparator = "VertSplit",
         SidebarNvimSectionTitleSeperator = "Comment",
         SidebarNvimNormal = "Normal",
         SidebarNvimLabel = "Label",
