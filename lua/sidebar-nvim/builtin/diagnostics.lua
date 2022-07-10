@@ -100,7 +100,11 @@ local function ingest_diagnostics(all_diagnostics)
     end, loclist.groups)
 
     loclist:set_items(loclist_items, { remove_groups = true })
-    loclist:close_all_groups()
+    if config.diagnostics.default_open then
+      loclist:open_all_groups()
+    else
+      loclist:close_all_groups()
+    end
 
     for group_name, is_closed in pairs(previous_state) do
         if loclist.groups[group_name] ~= nil then

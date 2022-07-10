@@ -19,7 +19,7 @@ M.section_title_separator = { "" }
 
 M.git = { icon = "" }
 
-M.diagnostics = { icon = "" }
+M.diagnostics = { icon = "", default_open = true }
 
 M.buffers = {
     icon = "",
