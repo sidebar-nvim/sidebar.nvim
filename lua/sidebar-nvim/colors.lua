@@ -2,21 +2,23 @@ local api = vim.api
 
 local M = {}
 
+M.links = {
+    SidebarNvimSectionTitle = "Directory",
+    SidebarNvimSectionSeparator = "VertSplit",
+    SidebarNvimSectionTitleSeperator = "Comment",
+    SidebarNvimNormal = "Normal",
+    SidebarNvimLabel = "Label",
+    SidebarNvimComment = "Comment",
+    SidebarNvimLineNr = "LineNr",
+    SidebarNvimKeyword = "Keyword",
+}
+
 local function get_hl_groups()
     return {}
 end
 
 local function get_links()
-    return {
-        SidebarNvimSectionTitle = "Directory",
-        SidebarNvimSectionSeparator = "VertSplit",
-        SidebarNvimSectionTitleSeperator = "Comment",
-        SidebarNvimNormal = "Normal",
-        SidebarNvimLabel = "Label",
-        SidebarNvimComment = "Comment",
-        SidebarNvimLineNr = "LineNr",
-        SidebarNvimKeyword = "Keyword",
-    }
+    return M.links
 end
 
 function M.def_hl_group(group, gui, fg, bg)

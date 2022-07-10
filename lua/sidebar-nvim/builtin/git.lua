@@ -197,7 +197,7 @@ return {
         loclist:draw(ctx, lines, hl)
 
         if #lines == 0 then
-            lines = { "<no changes>" }
+            return utils.empty_message("<no changes>")
         end
 
         return { lines = lines, hl = hl }

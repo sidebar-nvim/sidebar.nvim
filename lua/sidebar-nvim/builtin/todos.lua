@@ -167,7 +167,7 @@ return {
         loclist:draw(ctx, lines, hl)
 
         if #lines == 0 then
-            lines = { "<no TODOs>" }
+            return utils.empty_message("<no TODOs>")
         end
 
         return { lines = lines, hl = hl }

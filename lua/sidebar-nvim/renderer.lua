@@ -56,7 +56,7 @@ local function build_section_title(section)
         icon = icon()
     end
 
-    return icon .. " " .. section.title
+    return " " .. icon .. " " .. section.title
 end
 
 local function build_section_separator(section, index)

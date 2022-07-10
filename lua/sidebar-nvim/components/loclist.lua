@@ -141,7 +141,7 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
             icon = self.group_icon.closed
         end
 
-        local group_title = icon .. " " .. group_name
+        local group_title = " " .. icon .. " " .. group_name
 
         local line = group_title
 
@@ -169,10 +169,10 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
 
     for _, item in ipairs(group) do
         self._location_indexes[#section_lines] = item
-        local line = ""
+        local line = " "
 
         if with_label then
-            line = "  "
+            line = "   "
         end
 
         if type(item.left) == "table" and #item.left ~= 0 then

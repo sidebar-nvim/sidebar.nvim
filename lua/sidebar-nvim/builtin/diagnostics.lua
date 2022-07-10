@@ -1,5 +1,6 @@
 local Loclist = require("sidebar-nvim.components.loclist")
 local config = require("sidebar-nvim.config")
+local utils = require("sidebar-nvim.utils")
 
 local loclist = Loclist:new({})
 
@@ -100,7 +101,7 @@ return {
         loclist:draw(ctx, lines, hl)
 
         if lines == nil or #lines == 0 then
-            return "<no diagnostics>"
+            return utils.empty_message("<no diagnostics>")
         else
             return { lines = lines, hl = hl }
         end

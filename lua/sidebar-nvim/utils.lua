@@ -1,6 +1,16 @@
+local colors = require("sidebar-nvim.colors")
+
 local M = {}
 local api = vim.api
 local luv = vim.loop
+
+function M.empty_message(text)
+  local line = " " .. tostring(text)
+  return {
+    lines = { line },
+    hl = { { colors.links.SidebarNvimComment, 0, 0, #line } },
+  }
+end
 
 function M.echo_warning(msg)
     api.nvim_command("echohl WarningMsg")
