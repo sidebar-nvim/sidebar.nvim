@@ -48,6 +48,8 @@ end
 
 local function build_section_title(section)
     local icon = "#"
+    local title = section.title
+
     if section.icon ~= nil then
         icon = section.icon
     end
@@ -56,7 +58,11 @@ local function build_section_title(section)
         icon = icon()
     end
 
-    return " " .. icon .. " " .. section.title
+    if type(title) == "function" then
+        title = title()
+    end
+
+    return " " .. icon .. " " .. title
 end
 
 local function build_section_separator(section, index)

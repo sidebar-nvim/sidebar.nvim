@@ -19,6 +19,14 @@ loclist:add_group("Untracked")
 local loclist_items = {}
 local finished = 0
 local expected_job_count = 4
+local current_branch = nil
+local is_git_repo = true
+
+local function parse_git_branch(_, line)
+    if line == "" then return end
+    current_branch = line
+    is_git_repo = not vim.startswith(current_branch, 'fatal')
+end
 
 -- parse line from git diff --numstat into a loclist item
 local function parse_git_diff(group, line)
@@ -104,51 +112,19 @@ end
 
 -- execute async command and parse result into loclist items
 local function async_cmd(group, command, args, parse_fn)
-    local stdout = luv.new_pipe(false)
-    local stderr = luv.new_pipe(false)
+    utils.async_cmd(command, args, function(chunks)
+        for _, chunk in ipairs(chunks) do
+            for _, line in ipairs(vim.split(chunk, "\n")) do
+                if line ~= "" then
+                    parse_fn(group, line)
+                end
+            end
+        end
 
-    local handle
-    handle = luv.spawn(command, { args = args, stdio = { nil, stdout, stderr }, cwd = luv.cwd() }, function()
         finished = finished + 1
 
         if finished == expected_job_count then
             loclist:set_items(loclist_items, { remove_groups = false })
-        end
-
-        luv.read_stop(stdout)
-        luv.read_stop(stderr)
-        stdout:close()
-        stderr:close()
-        handle:close()
-    end)
-
-    luv.read_start(stdout, function(err, data)
-        if data == nil then
-            return
-        end
-
-        for _, line in ipairs(vim.split(data, "\n")) do
-            if line ~= "" then
-                parse_fn(group, line)
-            end
-        end
-
-        if err ~= nil then
-            vim.schedule(function()
-                utils.echo_warning(err)
-            end)
-        end
-    end)
-
-    luv.read_start(stderr, function(err, data)
-        if data == nil then
-            return
-        end
-
-        if err ~= nil then
-            vim.schedule(function()
-                utils.echo_warning(err)
-            end)
         end
     end)
 end
@@ -159,6 +135,7 @@ local function async_update(_)
 
     -- if add a new job, please update `expected_job_count` at the top
     -- TODO: investigate using coroutines to wait for all jobs and then update the loclist
+    async_cmd("Branch", "git", { "branch", "--show-current" }, parse_git_branch)
     async_cmd("Staged", "git", { "diff", "--numstat", "--staged", "--diff-filter=u" }, parse_git_diff)
     async_cmd("Unstaged", "git", { "diff", "--numstat", "--diff-filter=u" }, parse_git_diff)
     async_cmd("Unmerged", "git", { "diff", "--numstat", "--diff-filter=U" }, parse_git_diff)
@@ -168,7 +145,12 @@ end
 local async_update_debounced = Debouncer:new(async_update, 1000)
 
 return {
-    title = "Git Status",
+    title = function()
+        if current_branch == nil or not is_git_repo then
+            return "Git"
+        end
+        return "Git (" .. current_branch .. ")"
+    end,
     icon = config["git"].icon,
     setup = function(ctx)
         -- ShellCmdPost triggered after ":!<cmd>"
@@ -193,13 +175,17 @@ return {
         async_update_debounced:call(ctx)
     end,
     draw = function(ctx)
+        if not is_git_repo then
+            return utils.empty_message("Not in a git repository")
+        end
+
         local lines = {}
         local hl = {}
 
         loclist:draw(ctx, lines, hl)
 
         if #lines == 0 then
-            return utils.empty_message("<no changes>")
+            return utils.empty_message("Up to date")
         end
 
         return { lines = lines, hl = hl }
