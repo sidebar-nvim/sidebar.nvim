@@ -18,6 +18,8 @@ Loclist.DEFAULT_OPTIONS = {
         group = "SidebarNvimLabel",
         group_count = "SidebarNvimSectionTitle",
     },
+    -- initial indentation level
+    indent = nil,
 }
 
 setmetatable(Loclist, { __index = Component })
@@ -171,7 +173,9 @@ function Loclist:draw_group(ctx, group_name, with_label, section_lines, section_
         self._location_indexes[#section_lines] = item
         local line = " "
 
-        if with_label then
+        if self.indent ~= nil then
+            line = self.indent
+        elseif with_label then
             line = "   "
         end
 
