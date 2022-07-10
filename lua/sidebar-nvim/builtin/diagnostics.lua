@@ -22,6 +22,7 @@ local function get_diagnostics_native()
     local result = vim.diagnostic.get()
     for _, diag in ipairs(result) do
         diag.file = vim.api.nvim_buf_get_name(diag.bufnr)
+        diag.lnum = diag.lnum + 1
     end
     return result
 end
@@ -81,12 +82,12 @@ local function ingest_diagnostics(all_diagnostics)
             left = {
                 { text = icon .. " ", hl = "SidebarNvimLspDiagnostics" .. level },
                 {
-                    text = tostring(diag.lnum + 1) .. ' ',
+                    text = tostring(diag.lnum) .. ' ',
                     hl = "SidebarNvimLspDiagnosticsLineNumber",
                 },
                 { text = message },
             },
-            lnum = diag.lnum + 1,
+            lnum = diag.lnum,
             col = diag.col + 1,
             filepath = filepath,
         })
