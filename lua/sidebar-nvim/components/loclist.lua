@@ -23,7 +23,7 @@ Loclist.DEFAULT_OPTIONS = {
     indent = nil,
     -- where to truncate, if applicable ("left" or "right")
     truncate = nil,
-    -- the minimum width to truncate at
+    -- the minimum width to conserve for the truncated section
     truncate_minimum = nil,
 }
 

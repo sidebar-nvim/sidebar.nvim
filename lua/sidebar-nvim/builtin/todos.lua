@@ -1,7 +1,6 @@
 local utils = require("sidebar-nvim.utils")
 local Loclist = require("sidebar-nvim.components.loclist")
 local config = require("sidebar-nvim.config")
-local luv = vim.loop
 
 local loclist = Loclist:new({
     groups_initially_closed = config.todos.initially_closed,
@@ -41,7 +40,7 @@ local function is_current_path_ignored()
     return false
 end
 
-local function async_update(ctx)
+local function async_update()
     current_path_ignored_cache = is_current_path_ignored()
     if current_path_ignored_cache then
         return
@@ -169,12 +168,8 @@ return {
             vim.fn.cursor(location.lnum, location.col)
         end,
     },
-    setup = function(ctx)
-        async_update(ctx)
-    end,
-    update = function(ctx)
-        async_update(ctx)
-    end,
+    setup = async_update,
+    update = async_update,
     toggle_all = function()
         loclist:toggle_all_groups()
     end,

@@ -22,17 +22,17 @@ local history = { position = 0, groups = {} }
 local trash_dir = luv.os_homedir() .. "/.local/share/Trash/files/"
 
 local function get_fileicon(filename)
-    if has_devicons and devicons.has_loaded() then
-        local extension = filename:match("^.+%.(.+)$")
-        local fileicon, _ = devicons.get_icon_color(filename, extension)
-        local highlight = "SidebarNvimNormal"
-
-        if extension then
-            highlight = "DevIcon" .. extension
-        end
-        return { text = fileicon or icons["file"], hl = highlight }
+    if not has_devicons or not devicons.has_loaded() then
+        return { text = icons["file"] .. " " }
     end
-    return { text = icons["file"] .. " " }
+    local extension = filename:match("^.+%.(.+)$")
+    local fileicon, _ = devicons.get_icon_color(filename, extension)
+    local highlight = "SidebarNvimNormal"
+
+    if extension then
+        highlight = "DevIcon" .. extension
+    end
+    return { text = fileicon or icons["file"], hl = highlight }
 end
 
 -- scan directory recursively
@@ -101,67 +101,69 @@ end
 local function build_loclist(group, directory, level)
     local loclist_items = {}
 
-    if directory.children then
-        for _, node in ipairs(directory.children) do
-            if node.type == "file" then
-                local icon = get_fileicon(node.name)
-                local selected = { text = "" }
+    if not directory.children then
+        return loclist_items
+    end
 
-                if yanked_files[node.path] then
-                    selected = { text = " *", hl = "SidebarNvimFilesYanked" }
-                elseif cut_files[node.path] then
-                    selected = { text = " *", hl = "SidebarNvimFilesCut" }
-                end
+    for _, node in ipairs(directory.children) do
+        if node.type == "file" then
+            local icon = get_fileicon(node.name)
+            local selected = { text = "" }
 
-                loclist_items[#loclist_items + 1] = {
-                    group = group,
-                    left = {
-                        { text = string.rep("  ", level) .. icon.text .. " ", hl = icon.hl },
-                        { text = node.name },
-                        selected,
-                    },
-                    name = node.name,
-                    path = node.path,
-                    type = node.type,
-                    parent = node.parent,
-                    node = node,
-                }
-            elseif node.type == "directory" then
-                local icon
-                if open_directories[node.path] then
-                    icon = icons["directory_open"]
-                else
-                    icon = icons["directory_closed"]
-                end
-
-                local selected = { text = "" }
-
-                if yanked_files[node.path] then
-                    selected = { text = " *", hl = "SidebarNvimFilesYanked" }
-                elseif cut_files[node.path] then
-                    selected = { text = " *", hl = "SidebarNvimFilesCut" }
-                end
-
-                loclist_items[#loclist_items + 1] = {
-                    group = group,
-                    left = {
-                        {
-                            text = string.rep("  ", level) .. icon .. " " .. node.name,
-                            hl = "SidebarNvimFilesDirectory",
-                        },
-                        selected,
-                    },
-                    name = node.name,
-                    path = node.path,
-                    type = node.type,
-                    parent = node.parent,
-                    node = node,
-                }
+            if yanked_files[node.path] then
+                selected = { text = " *", hl = "SidebarNvimFilesYanked" }
+            elseif cut_files[node.path] then
+                selected = { text = " *", hl = "SidebarNvimFilesCut" }
             end
 
-            if node.type == "directory" and open_directories[node.path] then
-                vim.list_extend(loclist_items, build_loclist(group, node, level + 1))
+            loclist_items[#loclist_items + 1] = {
+                group = group,
+                left = {
+                    { text = string.rep("  ", level) .. icon.text .. " ", hl = icon.hl },
+                    { text = node.name },
+                    selected,
+                },
+                name = node.name,
+                path = node.path,
+                type = node.type,
+                parent = node.parent,
+                node = node,
+            }
+        elseif node.type == "directory" then
+            local icon
+            if open_directories[node.path] then
+                icon = icons["directory_open"]
+            else
+                icon = icons["directory_closed"]
             end
+
+            local selected = { text = "" }
+
+            if yanked_files[node.path] then
+                selected = { text = " *", hl = "SidebarNvimFilesYanked" }
+            elseif cut_files[node.path] then
+                selected = { text = " *", hl = "SidebarNvimFilesCut" }
+            end
+
+            loclist_items[#loclist_items + 1] = {
+                group = group,
+                left = {
+                    {
+                        text = string.rep("  ", level) .. icon .. " " .. node.name,
+                        hl = "SidebarNvimFilesDirectory",
+                    },
+                    selected,
+                },
+                name = node.name,
+                path = node.path,
+                type = node.type,
+                parent = node.parent,
+                node = node,
+            }
+        end
+
+        if node.type == "directory" and open_directories[node.path] then
+            vim.list_extend(loclist_items, build_loclist(group, node, level + 1))
         end
     end
     return loclist_items
@@ -268,7 +270,7 @@ return {
             [[
           augroup sidebar_nvim_files_update
               autocmd!
-              autocmd ShellCmdPost * lua require'sidebar-nvim.builtin.files'.update()
+              autocmd ShellCmdPost    * lua require'sidebar-nvim.builtin.files'.update()
               autocmd BufLeave term://* lua require'sidebar-nvim.builtin.files'.update()
           augroup END
           ]],
@@ -277,7 +279,7 @@ return {
     end,
     update = function(_)
         local cwd = vim.fn.getcwd()
-        local group = utils.shortest_path(cwd)
+        local group = utils.shorten_path(cwd)
 
         open_directories[cwd] = true
 
