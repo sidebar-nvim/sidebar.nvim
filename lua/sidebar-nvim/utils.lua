@@ -1,4 +1,3 @@
-local colors = require("sidebar-nvim.colors")
 
 local M = {}
 local api = vim.api
