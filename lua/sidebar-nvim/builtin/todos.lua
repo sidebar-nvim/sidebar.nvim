@@ -129,7 +129,7 @@ return {
         local hl = {}
 
         if current_path_ignored_cache then
-            lines = { "<path ignored>" }
+            lines = { utils.empty_message("<path ignored>") }
         end
 
         loclist:draw(ctx, lines, hl)
