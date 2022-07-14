@@ -256,6 +256,13 @@ function Loclist:draw(ctx, section_lines, section_hl)
     end
 end
 
+-- returns if there is a group at the line number specified
+-- @param (number) line
+function Loclist:is_group(line)
+    local group = self._group_indexes[line]
+    return group ~= nil
+end
+
 -- returns the location specified in the location printed on line `line`
 -- if the line does not have a location rendered, return nil
 -- @param (number) line

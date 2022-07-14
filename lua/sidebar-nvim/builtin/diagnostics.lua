@@ -173,18 +173,22 @@ return {
         },
     },
     bindings = {
-        ["t"] = function(line)
-            loclist:toggle_group_at(line)
+        ["r"] = function()
+            loclist:clear({ remove_groups = true })
         end,
-        ["e"] = function(line)
-            local location = loclist:get_location_at(line)
-            if location == nil then
-                return
+        ["o"] = function(line)
+            if loclist:is_group(line) then
+                loclist:toggle_group_at(line)
+            else
+                local location = loclist:get_location_at(line)
+                if location == nil then
+                    return
+                end
+                -- TODO: I believe there is a better way to do this, but I haven't had the time to do investigate
+                vim.cmd("wincmd p")
+                vim.cmd("e " .. location.filepath)
+                vim.fn.cursor(location.lnum, location.col)
             end
-            -- TODO: I believe there is a better way to do this, but I haven't had the time to do investigate
-            vim.cmd("wincmd p")
-            vim.cmd("e " .. location.filepath)
-            vim.fn.cursor(location.lnum, location.col)
         end,
     },
 }
