@@ -15,9 +15,6 @@ function M.length(groups)
   local result = 0
 
   for _, group in ipairs(groups) do
-    if group.text == nil then
-      print(vim.inspect(groups))
-    end
     result = result + strwidth(group.text)
   end
 
