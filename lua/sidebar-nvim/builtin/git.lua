@@ -1,12 +1,14 @@
 local utils = require("sidebar-nvim.utils")
+local groups = require("sidebar-nvim.groups")
 local sidebar = require("sidebar-nvim")
 local Loclist = require("sidebar-nvim.components.loclist")
 local Debouncer = require("sidebar-nvim.debouncer")
 local config = require("sidebar-nvim.config")
-local luv = vim.loop
 local has_devicons, devicons = pcall(require, "nvim-web-devicons")
 
-local loclist = Loclist:new({})
+local loclist = Loclist:new({
+  show_empty_groups = false,
+})
 
 -- Make sure all groups exist
 loclist:add_group("Staged")
@@ -17,11 +19,19 @@ loclist:add_group("Untracked")
 local loclist_items = {}
 local finished = 0
 local expected_job_count = 4
+local current_branch = nil
+local is_git_repo = true
+
+local function parse_git_branch(_, line)
+    if line == "" then return end
+    current_branch = line
+    is_git_repo = not vim.startswith(current_branch, 'fatal')
+end
 
 -- parse line from git diff --numstat into a loclist item
 local function parse_git_diff(group, line)
     local t = vim.split(line, "\t")
-    local added, removed, filepath = t[1], t[2], t[3]
+    local added, removed, filepath = tonumber(t[1]), tonumber(t[2]), t[3]
     local extension = filepath:match("^.+%.(.+)$")
     local fileicon = ""
 
@@ -33,35 +43,43 @@ local function parse_git_diff(group, line)
         end
     end
 
-    if filepath ~= "" then
-        loclist:open_group(group)
-
-        table.insert(loclist_items, {
-            group = group,
-            left = {
-                {
-                    text = fileicon .. " ",
-                    hl = "SidebarNvimGitStatusFileIcon",
-                },
-                {
-                    text = utils.shortest_path(filepath) .. " ",
-                    hl = "SidebarNvimGitStatusFileName",
-                },
-                {
-                    text = added,
-                    hl = "SidebarNvimGitStatusDiffAdded",
-                },
-                {
-                    text = ", ",
-                },
-                {
-                    text = removed,
-                    hl = "SidebarNvimGitStatusDiffRemoved",
-                },
-            },
-            filepath = filepath,
-        })
+    if filepath == "" then
+        return
     end
+
+    loclist:open_group(group)
+
+    local right = {}
+    if added > 0 then
+        groups.append(right, { text = "+" .. tostring(added), hl = "SidebarNvimComment" })
+    end
+    if removed > 0 then
+        groups.append(right, { text = "-" .. tostring(removed), hl = "SidebarNvimComment" })
+    end
+    right = groups.append(utils.intersperse(right, { text = " " }), { text = " " })
+
+    local hl_filename =
+        group == "Staged"
+            and "SidebarNvimGitStatusDiffAdded" or
+        group == "Unstaged"
+            and "SidebarNvimGitStatusDiffRemoved" or
+                "SidebarNvimGitStatusFileName"
+
+    table.insert(loclist_items, {
+        group = group,
+        left = {
+            {
+                text = fileicon .. " ",
+                hl = "SidebarNvimGitStatusFileIcon",
+            },
+            {
+                text = utils.shortest_path(filepath) .. " ",
+                hl = hl_filename,
+            },
+        },
+        right = right,
+        filepath = filepath,
+    })
 end
 
 -- parse line from git status --porcelain into a loclist item
@@ -102,51 +120,19 @@ end
 
 -- execute async command and parse result into loclist items
 local function async_cmd(group, command, args, parse_fn)
-    local stdout = luv.new_pipe(false)
-    local stderr = luv.new_pipe(false)
+    utils.async_cmd(command, args, function(chunks)
+        for _, chunk in ipairs(chunks) do
+            for _, line in ipairs(vim.split(chunk, "\n")) do
+                if line ~= "" then
+                    parse_fn(group, line)
+                end
+            end
+        end
 
-    local handle
-    handle = luv.spawn(command, { args = args, stdio = { nil, stdout, stderr }, cwd = luv.cwd() }, function()
         finished = finished + 1
 
         if finished == expected_job_count then
             loclist:set_items(loclist_items, { remove_groups = false })
-        end
-
-        luv.read_stop(stdout)
-        luv.read_stop(stderr)
-        stdout:close()
-        stderr:close()
-        handle:close()
-    end)
-
-    luv.read_start(stdout, function(err, data)
-        if data == nil then
-            return
-        end
-
-        for _, line in ipairs(vim.split(data, "\n")) do
-            if line ~= "" then
-                parse_fn(group, line)
-            end
-        end
-
-        if err ~= nil then
-            vim.schedule(function()
-                utils.echo_warning(err)
-            end)
-        end
-    end)
-
-    luv.read_start(stderr, function(err, data)
-        if data == nil then
-            return
-        end
-
-        if err ~= nil then
-            vim.schedule(function()
-                utils.echo_warning(err)
-            end)
         end
     end)
 end
@@ -157,6 +143,7 @@ local function async_update(_)
 
     -- if add a new job, please update `expected_job_count` at the top
     -- TODO: investigate using coroutines to wait for all jobs and then update the loclist
+    async_cmd("Branch", "git", { "branch", "--show-current" }, parse_git_branch)
     async_cmd("Staged", "git", { "diff", "--numstat", "--staged", "--diff-filter=u" }, parse_git_diff)
     async_cmd("Unstaged", "git", { "diff", "--numstat", "--diff-filter=u" }, parse_git_diff)
     async_cmd("Unmerged", "git", { "diff", "--numstat", "--diff-filter=U" }, parse_git_diff)
@@ -166,7 +153,12 @@ end
 local async_update_debounced = Debouncer:new(async_update, 1000)
 
 return {
-    title = "Git Status",
+    title = function()
+        if current_branch == nil or not is_git_repo then
+            return "Git"
+        end
+        return "Git (" .. current_branch .. ")"
+    end,
     icon = config["git"].icon,
     setup = function(ctx)
         -- ShellCmdPost triggered after ":!<cmd>"
@@ -191,13 +183,17 @@ return {
         async_update_debounced:call(ctx)
     end,
     draw = function(ctx)
+        if not is_git_repo then
+            return utils.empty_message("Not in a git repository")
+        end
+
         local lines = {}
         local hl = {}
 
         loclist:draw(ctx, lines, hl)
 
         if #lines == 0 then
-            lines = { "<no changes>" }
+            return utils.empty_message("Up to date")
         end
 
         return { lines = lines, hl = hl }

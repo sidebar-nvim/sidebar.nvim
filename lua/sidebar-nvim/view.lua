@@ -21,11 +21,12 @@ M.View = {
         winfixheight = true,
         foldenable = false,
         spell = false,
-        signcolumn = "yes",
+        signcolumn = "no",
         foldmethod = "manual",
         foldcolumn = "0",
         cursorcolumn = false,
         colorcolumn = "0",
+        winhl = "Normal:SidebarNvimNormal,EndOfBuffer:SidebarNvimNormal",
     },
     bufopts = {
         { name = "swapfile", val = false },

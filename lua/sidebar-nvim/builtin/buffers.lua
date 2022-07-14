@@ -104,7 +104,7 @@ local function get_buffers(ctx)
     loclist:draw(ctx, lines, hl)
 
     if lines == nil or #lines == 0 then
-        return "<no buffers>"
+        return utils.empty_message("<no buffers>")
     else
         return { lines = lines, hl = hl }
     end

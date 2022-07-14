@@ -51,14 +51,13 @@ return {
 
         if not is_config_valid then
             for _, msg in ipairs(config_error_messages) do
-                table.insert(lines, msg)
+                table.insert(lines, " " .. msg)
             end
             return { lines = lines, hl = hl }
         end
 
         if not config.datetime or not config.datetime.clocks or #config.datetime.clocks == 0 then
-            table.insert(lines, "<no clocks>")
-            return { lines = lines, hl = hl }
+            return utils.empty_message("<no clocks>")
         end
 
         local clocks_num = #config.datetime.clocks
@@ -74,10 +73,10 @@ return {
             end
 
             table.insert(hl, { "SidebarNvimDatetimeClockName", #lines, 0, -1 })
-            table.insert(lines, "# " .. (clock.name or clock.offset or clock.tz))
+            table.insert(lines, " # " .. (clock.name or clock.offset or clock.tz))
 
             table.insert(hl, { "SidebarNvimDatetimeClockValue", #lines, 0, -1 })
-            table.insert(lines, clock_value)
+            table.insert(lines, " " .. clock_value)
 
             if i < clocks_num then
                 table.insert(lines, "")
