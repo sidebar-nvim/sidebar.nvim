@@ -206,23 +206,50 @@ local function copy_file(src, dest, confirm_overwrite)
     end)
 end
 
+local function get_length(iter)
+    local length = 0
+    for _ in iter do
+        length = length + 1
+    end
+    return length
+end
+
 local function create_file(dest)
+
+
+
     if luv.fs_access(dest, "r") ~= false then
         vim.schedule(function()
             utils.echo_warning('file "' .. dest .. '" already exists.')
         end)
         return
     end
+    local is_file = not dest:match("/" .. "$")
+    local last_path_length = get_length(utils.path_split(dest))
+    local now_length = 0
+    local now_check_path = ""
 
-    luv.fs_open(dest, "w", 420, function(err, file)
-        if err ~= nil then
-            vim.schedule(function()
-                utils.echo_warning(err)
+    for path in utils.path_split(dest) do
+        now_length = now_length + 1
+        now_check_path = now_check_path .. path
+        if is_file and now_length == last_path_length then
+            luv.fs_open(dest, "w", 420, function(err, file)
+                if err ~= nil then
+                    vim.schedule(function()
+                        utils.echo_warning(err)
+                    end)
+                else
+                    luv.fs_close(file)
+                end
             end)
-        else
-            luv.fs_close(file)
+        else if not utils.file_exist(now_check_path) then
+                local success = luv.fs_mkdir(now_check_path, 493)
+                if not success then
+                    utils.echo_warning('Could not create directory "' .. now_check_path)
+                end
+            end
         end
-    end)
+    end
 end
 
 local function delete_file(src, trash, confirm_deletion)
@@ -260,6 +287,7 @@ local function move_file(src, dest, confirm_overwrite)
         end
     end)
 end
+
 return {
     title = "Files",
     icon = config["files"].icon,
@@ -271,7 +299,7 @@ return {
               autocmd ShellCmdPost * lua require'sidebar-nvim.builtin.files'.update()
               autocmd BufLeave term://* lua require'sidebar-nvim.builtin.files'.update()
           augroup END
-          ]],
+          ]] ,
             false
         )
     end,

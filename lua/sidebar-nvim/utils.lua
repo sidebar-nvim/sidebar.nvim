@@ -2,6 +2,8 @@ local M = {}
 local api = vim.api
 local luv = vim.loop
 
+local path_separator = "/"
+
 function M.echo_warning(msg)
     api.nvim_command("echohl WarningMsg")
     api.nvim_command("echom '[SidebarNvim] " .. msg:gsub("'", "''") .. "'")
@@ -98,6 +100,15 @@ end
 function M.filename(path)
     local split = vim.split(path, "/")
     return split[#split]
+end
+
+function M.file_exist(path)
+    local _, err = luv.fs_stat(path)
+    return err == nil
+end
+
+function M.path_split(path)
+    return path:gmatch(path_separator .. "[^" .. path_separator .. "]+")
 end
 
 function M.truncate(s, size)
