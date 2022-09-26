@@ -216,30 +216,24 @@ local function create_file(dest)
 
     local is_file = not dest:match("/" .. "$")
     local parent_folders = vim.fn.fnamemodify(dest, ":h")
-    local now_check_path = ""
-    local now_check_path_parent = ""
 
-    for path in utils.path_split(dest) do
-        now_check_path = now_check_path .. path
-        now_check_path_parent = vim.fn.fnamemodify(now_check_path, ":h")
-
-        if is_file and now_check_path_parent == parent_folders then
-            luv.fs_open(dest, "w", 420, function(err, file)
-                if err ~= nil then
-                    vim.schedule(function()
-                        utils.echo_warning(err)
-                    end)
-                else
-                    luv.fs_close(file)
-                end
-            end)
-        else if not utils.file_exist(now_check_path) then
-                local success = luv.fs_mkdir(now_check_path, 493)
-                if not success then
-                    utils.echo_warning('Could not create directory ' .. now_check_path)
-                end
-            end
+    if not utils.file_exist(parent_folders) then
+        local success = vim.fn.mkdir(parent_folders, "p")
+        if not success then
+            utils.echo_warning('Could not create directory ' .. parent_folders)
         end
+    end
+
+    if is_file then
+        luv.fs_open(dest, "w", 420, function(err, file)
+            if err ~= nil then
+                vim.schedule(function()
+                    utils.echo_warning(err)
+                end)
+            else
+                luv.fs_close(file)
+            end
+        end)
     end
 end
 
