@@ -12,17 +12,19 @@ local function get_fileicon(filename)
         local extension = filename:match("^.+%.(.+)$")
 
         local fileicon = ""
-        local icon, _ = devicons.get_icon_color(filename, extension)
+        local icon, highlight = devicons.get_icon(filename, extension)
         if icon then
             fileicon = icon
         end
 
-        local highlight = "SidebarNvimNormal"
-
-        if extension then
-            highlight = "DevIcon" .. extension
+        if not highlight then
+            highlight = "SidebarNvimNormal"
         end
-        return { text = "  " .. fileicon .. " ", hl = highlight }
+
+        return {
+            text = "  " .. fileicon .. " ",
+            hl = highlight,
+        }
     else
         return { text = "   " }
     end

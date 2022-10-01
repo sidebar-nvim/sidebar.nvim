@@ -24,12 +24,14 @@ local function parse_git_diff(group, line)
     local added, removed, filepath = t[1], t[2], t[3]
     local extension = filepath:match("^.+%.(.+)$")
     local fileicon = ""
+    local filehighlight = "SidebarNvimGitStatusFileIcon"
 
     if has_devicons and devicons.has_loaded() then
-        local icon, _ = devicons.get_icon_color(filepath, extension)
+        local icon, highlight = devicons.get_icon(filepath, extension)
 
         if icon then
             fileicon = icon
+            filehighlight = highlight
         end
     end
 
@@ -41,7 +43,7 @@ local function parse_git_diff(group, line)
             left = {
                 {
                     text = fileicon .. " ",
-                    hl = "SidebarNvimGitStatusFileIcon",
+                    hl = filehighlight,
                 },
                 {
                     text = utils.shortest_path(filepath) .. " ",

@@ -24,11 +24,10 @@ local trash_dir = luv.os_homedir() .. "/.local/share/Trash/files/"
 local function get_fileicon(filename)
     if has_devicons and devicons.has_loaded() then
         local extension = filename:match("^.+%.(.+)$")
-        local fileicon, _ = devicons.get_icon_color(filename, extension)
-        local highlight = "SidebarNvimNormal"
+        local fileicon, highlight = devicons.get_icon(filename, extension)
 
-        if extension then
-            highlight = "DevIcon" .. extension
+        if not highlight then
+            highlight = "SidebarNvimNormal"
         end
         return { text = fileicon or icons["file"], hl = highlight }
     end
