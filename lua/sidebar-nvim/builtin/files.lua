@@ -205,6 +205,14 @@ local function copy_file(src, dest, confirm_overwrite)
     end)
 end
 
+-- create directory by dest
+local function create_dir(dest)
+    local success = vim.fn.mkdir(dest, "p")
+    if not success then
+        utils.echo_warning("Could not create directory " .. dest)
+    end
+end
+
 local function create_file(dest)
     if luv.fs_access(dest, "r") ~= false then
         vim.schedule(function()
@@ -217,10 +225,7 @@ local function create_file(dest)
     local parent_folders = vim.fn.fnamemodify(dest, ":h")
 
     if not utils.file_exist(parent_folders) then
-        local success = vim.fn.mkdir(parent_folders, "p")
-        if not success then
-            utils.echo_warning("Could not create directory " .. parent_folders)
-        end
+        create_dir(parent_folders)
     end
 
     if is_file then
@@ -243,6 +248,10 @@ local function delete_file(src, trash, confirm_deletion)
         if delete ~= "y" then
             return
         end
+    end
+
+    if not utils.file_exist(trash) then
+        create_dir(trash)
     end
 
     luv.fs_rename(src, trash, function(err, _)
@@ -283,7 +292,7 @@ return {
               autocmd ShellCmdPost * lua require'sidebar-nvim.builtin.files'.update()
               autocmd BufLeave term://* lua require'sidebar-nvim.builtin.files'.update()
           augroup END
-          ]],
+          ]] ,
             false
         )
     end,
