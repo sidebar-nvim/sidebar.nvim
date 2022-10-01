@@ -214,13 +214,13 @@ local function create_file(dest)
         return
     end
 
-    local is_file = not dest:match("/" .. "$")
+    local is_file = not dest:match("/$")
     local parent_folders = vim.fn.fnamemodify(dest, ":h")
 
     if not utils.file_exist(parent_folders) then
         local success = vim.fn.mkdir(parent_folders, "p")
         if not success then
-            utils.echo_warning('Could not create directory ' .. parent_folders)
+            utils.echo_warning("Could not create directory " .. parent_folders)
         end
     end
 
@@ -284,7 +284,7 @@ return {
               autocmd ShellCmdPost * lua require'sidebar-nvim.builtin.files'.update()
               autocmd BufLeave term://* lua require'sidebar-nvim.builtin.files'.update()
           augroup END
-          ]] ,
+          ]],
             false
         )
     end,
