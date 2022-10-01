@@ -51,7 +51,8 @@ local function async_update(ctx)
     local handle
     local cmd
     local args
-    local keywords_regex = "(TODO|NOTE|FIX|PERF|HACK|WARN)"
+    local keywords_regex = [[(TODO|NOTE|FIX|PERF|HACK|WARN)]]
+    local regex_end = [[\s*(\(.*\))?:.*]]
 
     -- Use ripgrep by default, if it's installed
     if vim.fn.executable("rg") == 1 then
@@ -60,11 +61,11 @@ local function async_update(ctx)
             "--no-hidden",
             "--column",
             "--only-matching",
-            keywords_regex .. ":.*",
+            keywords_regex .. regex_end,
         }
     else
         cmd = "git"
-        args = { "grep", "-no", "--column", "-EI", keywords_regex .. ":.*" }
+        args = { "grep", "-no", "--column", "-EI", keywords_regex .. regex_end }
     end
 
     handle = luv.spawn(cmd, {
@@ -113,9 +114,14 @@ local function async_update(ctx)
 
         for _, line in ipairs(vim.split(data, "\n")) do
             if line ~= "" then
-                local filepath, lnum, col, tag, text = line:match("^(.+):(%d+):(%d+):(%w+):(.*)$")
+                local filepath, lnum, col, tag, text = line:match("^(.+):(%d+):(%d+):([%w%(%)]+):(.*)$")
 
                 if filepath and tag then
+                    local tag_with_scope = { tag:match("(%w+)%(.*%)") }
+                    if #tag_with_scope > 0 then
+                        tag = tag_with_scope[1]
+                    end
+
                     if not todos[tag] then
                         todos[tag] = {}
                     end
