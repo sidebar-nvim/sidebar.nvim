@@ -34,15 +34,14 @@ local function get_builtin_section(name)
     return section
 end
 
-function M.resolve_section(index, section)
+function M.resolve_section(section)
     if type(section) == "string" then
         return get_builtin_section(section)
     elseif type(section) == "table" then
         return section
     end
 
-    M.echo_warning("invalid SidebarNvim section at: index=" .. index .. " section=" .. section)
-    return nil
+    error("could not resolve section")
 end
 
 function M.is_instance(o, class)

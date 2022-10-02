@@ -98,15 +98,10 @@ function M.setup()
         vim.bo[M.View.bufnr][opt.name] = opt.val
     end
 
-    vim.api.nvim_exec(
-        [[
-augroup sidebar_nvim_prevent_buffer_override
-    autocmd!
-    autocmd BufWinEnter * lua require('sidebar-nvim.view')._prevent_buffer_override()
-augroup END
-]],
-        false
-    )
+    vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
+        group = vim.api.nvim_create_augroup("sidebar_nvim_prevent_buffer_override", { clear = true }),
+        callback = M._prevent_buffer_override,
+    })
 end
 
 local goto_tbl = { right = "h", left = "l", top = "j", bottom = "k" }
@@ -119,12 +114,12 @@ function M._prevent_buffer_override()
             return
         end
 
-        vim.cmd("buffer " .. M.View.bufnr)
+        vim.cmd.buffer(M.View.bufnr)
 
         if #vim.api.nvim_list_wins() < 2 then
-            vim.cmd("vsplit")
+            vim.cmd.vsplit()
         else
-            vim.cmd("wincmd " .. goto_tbl[M.View.side])
+            vim.cmd.wincmd(goto_tbl[M.View.side])
         end
 
         -- copy target window options
@@ -134,7 +129,7 @@ function M._prevent_buffer_override()
         end
 
         -- change the buffer will override the target window with the sidebar window opts
-        vim.cmd("buffer " .. curbuf)
+        vim.cmd.buffer(curbuf)
 
         -- revert the changes made when changing buffer
         for key, value in pairs(winopts_target) do
@@ -143,12 +138,6 @@ function M._prevent_buffer_override()
 
         M.resize()
     end)
-end
-
-function M.win_open(opts)
-    -- TODO: [deprecated] to remove
-    utils.echo_warning("view.win_open() is now deprecated, please use 'require('sidebar-nvim').is_open()'")
-    return M.is_win_open(opts)
 end
 
 -- @param opts table
@@ -229,13 +218,13 @@ function M.open(options)
     local winnr = a.nvim_get_current_win()
     local tabpage = a.nvim_get_current_tabpage()
     M.View.tabpages[tabpage] = vim.tbl_extend("force", M.View.tabpages[tabpage] or {}, { winnr = winnr })
-    vim.cmd("buffer " .. M.View.bufnr)
+    vim.cmd.buffer(M.View.bufnr)
     for k, v in pairs(M.View.winopts) do
         set_local(k, v)
     end
-    vim.cmd(":wincmd =")
+    vim.cmd.wincmd("=")
     if not options.focus then
-        vim.cmd("wincmd p")
+        vim.cmd.wincmd("p")
     end
 end
 
@@ -257,8 +246,8 @@ function M.close()
 end
 
 --- Returns the window number for sidebar-nvim within the tabpage specified
----@param tabpage number: (optional) the number of the chosen tabpage. Defaults to current tabpage.
----@return number
+---@param tabpage number|nil: (optional) the number of the chosen tabpage. Defaults to current tabpage.
+---@return number | nil
 function M.get_winnr(tabpage)
     tabpage = tabpage or a.nvim_get_current_tabpage()
     local tabinfo = M.View.tabpages[tabpage]

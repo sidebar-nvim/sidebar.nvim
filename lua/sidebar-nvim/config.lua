@@ -11,7 +11,7 @@ M.update_interval = 1000
 
 M.enable_profile = false
 
-M.sections = { "datetime", "git", "diagnostics" }
+M.sections = { default = { "datetime", "git", "diagnostics" } }
 
 M.section_separator = { "", "-----", "" }
 
