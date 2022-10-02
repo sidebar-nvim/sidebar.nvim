@@ -105,6 +105,11 @@ function M.file_exist(path)
     return err == nil
 end
 
+function M.win_check()
+    local has = vim.fn.has
+    return (has('win16') or has('win32') or has('win64')) == 1
+end
+
 function M.truncate(s, size)
     local length = #s
 
