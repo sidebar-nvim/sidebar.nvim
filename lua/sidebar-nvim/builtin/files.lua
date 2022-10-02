@@ -19,7 +19,6 @@ local cut_files = {}
 local open_directories = {}
 
 local history = { position = 0, groups = {} }
-local trash_dir = luv.os_homedir() .. "/.local/share/Trash/files/"
 
 local function get_fileicon(filename)
     if has_devicons and devicons.has_loaded() then
@@ -241,7 +240,11 @@ local function create_file(dest)
     end
 end
 
-local function delete_file(src, trash, confirm_deletion)
+local function delete_file(src, confirm_deletion)
+    local window = utils.win_check()
+    local window_delete_cmd = "rmdir /s /q"
+    local success
+
     if confirm_deletion then
         local delete = vim.fn.input('delete file "' .. src .. '"? y/n: ')
 
@@ -250,17 +253,16 @@ local function delete_file(src, trash, confirm_deletion)
         end
     end
 
-    if not utils.file_exist(trash) then
-        create_dir(trash)
+    if window then
+        success = vim.fn.system(window_delete_cmd .. src)
+    else
+        success = vim.fn.delete(src, "rf")
     end
 
-    luv.fs_rename(src, trash, function(err, _)
-        if err ~= nil then
-            vim.schedule(function()
-                utils.echo_warning(err)
-            end)
-        end
-    end)
+    if not success then
+        utils.echo_warning("Could not delete " .. src)
+    end
+
 end
 
 local function move_file(src, dest, confirm_overwrite)
@@ -333,13 +335,9 @@ return {
             local operation
             operation = {
                 exec = function()
-                    delete_file(operation.src, operation.dest, true)
-                end,
-                undo = function()
-                    move_file(operation.dest, operation.src, true)
+                    delete_file(operation.src, true)
                 end,
                 src = location.node.path,
-                dest = trash_dir .. location.node.name,
             }
             local group = { executed = false, operations = { operation } }
 
@@ -395,7 +393,7 @@ return {
                         copy_file(operation.src, operation.dest, true)
                     end,
                     undo = function()
-                        delete_file(operation.dest, trash_dir .. utils.filename(operation.src), true)
+                        delete_file(operation.dest, true)
                     end,
                     src = path,
                     dest = dest_dir .. "/" .. utils.filename(path),
@@ -457,7 +455,7 @@ return {
                     create_file(operation.dest)
                 end,
                 undo = function()
-                    delete_file(operation.dest, trash_dir .. name, true)
+                    delete_file(operation.dest, true)
                 end,
                 src = nil,
                 dest = parent .. "/" .. name,
