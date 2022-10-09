@@ -34,8 +34,6 @@ M.symbols = { icon = "ƒ" }
 
 M.containers = { icon = "", use_podman = false, attach_shell = "/bin/sh", show_all = true, interval = 5000 }
 
-M.datetime = { icon = "", format = "%a %b %d, %H:%M", clocks = { { name = "local" } } }
-
 M.todos = { icon = "", ignored_paths = { "~" }, initially_closed = false }
 
 M.files = { icon = "", show_hidden = false, ignored_paths = { "%.git$" } }

@@ -1,151 +1,108 @@
+local logger = require("sidebar-nvim.logger")
 local view = require("sidebar-nvim.view")
 local config = require("sidebar-nvim.config")
-local utils = require("sidebar-nvim.utils")
 local profile = require("sidebar-nvim.profile")
+local pasync = require("sidebar-nvim.lib.async")
+local LineBuilder = require("sidebar-nvim.lib.line_builder")
+local state = require("sidebar-nvim.state")
 
-local api = vim.api
+local api = pasync.api
 
-local namespace_id = api.nvim_create_namespace("SidebarNvimHighlights")
+local M = {
+    hl_namespace_id = nil,
+    extmarks_namespace_id = nil,
+}
 
-local M = {}
-
--- extracted from this PR: https://github.com/sidebar-nvim/sidebar.nvim/pull/41
--- thanks @lambdahands
-local function sanitize_lines(lines)
-    local lines_ = {}
-    for _, line_ in ipairs(lines) do
-        local line = string.gsub(line_, "[\n\r]", " ")
-        table.insert(lines_, line)
-    end
-    return lines_
+function M.setup()
+    M.hl_namespace_id = api.nvim_create_namespace("SidebarNvimHighlights")
+    M.extmarks_namespace_id = api.nvim_create_namespace("SidebarNvimExtmarks")
 end
 
-local function expand_section_lines(section_lines, lines_offset)
-    if type(section_lines) == "string" then
-        return vim.split(section_lines, "\n"), nil
-    elseif type(section_lines) == "table" and section_lines.lines == nil then
-        return sanitize_lines(section_lines), nil
+function M.clear()
+    -- TODO: delete extmarks?
+end
+
+-- @private
+local function get_extmark_by_id(id)
+    local mark = api.nvim_buf_get_extmark_by_id(view.View.bufnr, M.extmarks_namespace_id, id, { details = true })
+    local row, col, details = mark[1], mark[2], mark[3]
+
+    if details then
+        details.start_row = row
+        details.start_col = col
     end
 
-    -- we have here section_lines = { lines = string|table of strings, hl = table }
+    return details
+end
 
-    local section_hl = section_lines.hl or {}
-    section_lines = section_lines.lines
+-- @private
+local function get_last_extmark(tab_name)
+    local id = nil
 
-    if type(section_lines) == "string" then
-        section_lines = vim.split(section_lines, "\n")
+    for i, section in ipairs(state.tabs[tab_name] or {}) do
+        if section.state.extmark_id then
+            id = section.state.extmark_id
+            break
+        end
+    end
+
+    if not id then
+        return nil
+    end
+
+    return get_extmark_by_id(id)
+end
+
+function M.draw_section(changes, max_width, tab_name, section_index, section, data)
+    -- NOTE: we're passing section index everywhere, maybe it's time for a log span thing (tracing)
+    logger:debug("drawing section", { tab_name = tab_name, section_index = section_index })
+
+    local start_row = 0
+
+    if section.state.extmark_id then
+        local extmark = get_extmark_by_id(section.state.extmark_id)
+        if extmark then
+            start_row = extmark.start_row
+        else
+            logger:error("error trying to find extmark", {
+                namespace_id = M.extmarks_namespace_id,
+                extmark = "not found",
+                section_index = section_index,
+                id = section.state.extmark_id or "invalid section extmark id",
+                start_row = start_row,
+            })
+        end
+    -- get the last known position in the buffer
     else
-        section_lines = sanitize_lines(section_lines)
+        local last_extmark = get_last_extmark(tab_name)
+        if last_extmark then
+            start_row = last_extmark.end_row
+        end
     end
 
-    -- we must offset the hl lines so it matches the current section position
-    for _, hl_entry in ipairs(section_hl) do
-        hl_entry[2] = hl_entry[2] + lines_offset
-    end
+    local end_row = start_row + #data
 
-    return section_lines, section_hl
-end
-
-local function build_section_title(section)
-    local icon = "#"
-    if section.icon ~= nil then
-        icon = section.icon
-    end
-
-    if type(icon) == "function" then
-        icon = icon()
-    end
-
-    return icon .. " " .. section.title
-end
-
-local function build_section_separator(section, index)
-    if type(config.section_separator) == "string" then
-        return { config.section_separator }
-    end
-
-    if type(config.section_separator) == "table" then
-        return config.section_separator
-    end
-
-    if type(config.section_separator) ~= "function" then
-        utils.echo_warning("'section_separator' must be string, table or function")
-        return
-    end
-
-    return config.section_separator(section, index)
-end
-
-local function build_section_title_separator(section, index)
-    if type(config.section_title_separator) == "string" then
-        return { config.section_title_separator }
-    end
-
-    if type(config.section_title_separator) == "table" then
-        return config.section_title_separator
-    end
-
-    if type(config.section_title_separator) ~= "function" then
-        utils.echo_warning("'section_title_separator' must be false, string, table or function")
-        return
-    end
-
-    return config.section_title_separator(section, index)
-end
-
-local function get_lines_and_hl(sections_data)
     local lines = {}
-    local hl = {}
-    local section_line_indexes = {}
+    local hls = {}
 
-    for index, data in ipairs(sections_data) do
-        local section_title = build_section_title(data.section)
-        local section_title_length = 1
+    for _, line in ipairs(data) do
+        local current_line, current_hl = LineBuilder.build_from_table(line, max_width)
 
-        table.insert(hl, { "SidebarNvimSectionTitle", #lines, 0, #section_title })
-
-        local section_title_separator = build_section_title_separator(data.section, index)
-
-        local section_content_start = #lines + section_title_length + #section_title_separator + 1
-        local section_title_start = #lines + section_title_length
-        table.insert(lines, section_title)
-
-        for _, line in ipairs(section_title_separator) do
-            table.insert(hl, { "SidebarNvimSectionTitleSeperator", #lines, 0, #line })
-            table.insert(lines, line)
-        end
-
-        local section_lines, section_hl = expand_section_lines(data.lines, #lines)
-
-        table.insert(section_line_indexes, {
-            content_start = section_content_start,
-            content_length = #section_lines,
-            section_start = section_title_start,
-            section_length = #section_lines + section_title_length + #section_title_separator + 1,
-        })
-
-        for _, line in ipairs(section_lines) do
-            table.insert(lines, line)
-        end
-
-        for _, hl_entry in ipairs(section_hl or {}) do
-            table.insert(hl, hl_entry)
-        end
-
-        if index ~= #sections_data then
-            local separator = build_section_separator(data.section, index)
-
-            for _, line in ipairs(separator) do
-                table.insert(hl, { "SidebarNvimSectionSeperator", #lines, 0, #line })
-                table.insert(lines, line)
-            end
-        end
+        table.insert(lines, current_line)
+        table.insert(hls, current_hl)
     end
 
-    return lines, hl, section_line_indexes
+    local change = {
+        start_row = start_row,
+        end_row = end_row,
+        lines = lines,
+        hls = hls,
+        section = section,
+    }
+    table.insert(changes, change)
 end
 
-function M.draw(sections_data)
+function M.draw(tab_name, section_index, section, data)
     return profile.run("view.render", function()
         if not api.nvim_buf_is_loaded(view.View.bufnr) then
             return
@@ -156,17 +113,33 @@ function M.draw(sections_data)
             cursor = api.nvim_win_get_cursor(view.get_winnr())
         end
 
-        local lines, hl, section_line_indexes = get_lines_and_hl(sections_data)
+        local max_width = view.get_width()
+
+        local changes = {}
+
+        M.draw_section(changes, max_width, tab_name, section_index, section, data)
 
         api.nvim_buf_set_option(view.View.bufnr, "modifiable", true)
-        api.nvim_buf_set_lines(view.View.bufnr, 0, -1, false, lines)
-        M.render_hl(view.View.bufnr, hl)
+        for _, change in ipairs(changes) do
+            api.nvim_buf_set_lines(view.View.bufnr, change.start_row, change.end_row, false, change.lines)
+
+            section.state.extmark_id =
+                api.nvim_buf_set_extmark(view.View.bufnr, M.extmarks_namespace_id, change.start_row, 0, {
+                    id = section.state.extmark_id,
+                    end_row = change.end_row,
+                    end_col = 0,
+                    ephemeral = false,
+                })
+
+            M.render_hl(view.View.bufnr, change.hls, change.start_row, change.end_row)
+        end
         api.nvim_buf_set_option(view.View.bufnr, "modifiable", false)
 
         if view.is_win_open() then
-            if cursor and #lines >= cursor[1] then
-                api.nvim_win_set_cursor(view.get_winnr(), cursor)
-            end
+            -- TODO: do we still need this?
+            -- if cursor and #lines >= cursor[1] then
+            --     api.nvim_win_set_cursor(view.get_winnr(), cursor)
+            -- end
             if cursor then
                 api.nvim_win_set_option(view.get_winnr(), "wrap", false)
             end
@@ -176,17 +149,27 @@ function M.draw(sections_data)
             end
         end
 
-        return section_line_indexes
+        M.invalidated = false
     end)
 end
 
-function M.render_hl(bufnr, hl)
+function M.render_hl(bufnr, hls, start_row, end_row)
     if not api.nvim_buf_is_loaded(bufnr) then
         return
     end
-    api.nvim_buf_clear_namespace(bufnr, namespace_id, 0, -1)
-    for _, data in ipairs(hl) do
-        api.nvim_buf_add_highlight(bufnr, namespace_id, data[1], data[2], data[3], data[4])
+    api.nvim_buf_clear_namespace(bufnr, M.hl_namespace_id, start_row, end_row)
+
+    for line_offset, line_hls in ipairs(hls) do
+        for _, hl in ipairs(line_hls) do
+            api.nvim_buf_add_highlight(
+                bufnr,
+                M.hl_namespace_id,
+                hl.group,
+                start_row + line_offset - 1,
+                hl.start_col,
+                hl.start_col + hl.length
+            )
+        end
     end
 end
 
