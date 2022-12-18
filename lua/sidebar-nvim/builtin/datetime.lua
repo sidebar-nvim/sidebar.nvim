@@ -54,7 +54,7 @@ function datetime:validate_config()
     return true, {}
 end
 
-function datetime:update()
+function datetime:draw_content()
     local lines = {}
 
     local is_config_valid, config_error_messages = self:validate_config()

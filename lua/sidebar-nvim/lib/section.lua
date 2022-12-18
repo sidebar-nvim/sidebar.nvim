@@ -44,20 +44,26 @@ function Section:get_icon()
 end
 
 function Section:get_header()
-    return LineBuilder:new():left(self:get_icon() .. " " .. self:get_title())
+    return { LineBuilder:new():left(self:get_icon() .. " " .. self:get_title()), LineBuilder:empty() }
+end
+
+function Section:get_footer()
+    return { LineBuilder:empty() }
 end
 
 -- @param ctx table
-function Section:update(ctx)
+function Section:draw_content(ctx)
     return {}
 end
 
 function Section:draw(ctx)
-    local ret = {
-        self:get_header(),
-    }
+    local ret = self:get_header()
 
-    for _, line in ipairs(self:update(ctx)) do
+    for _, line in ipairs(self:draw_content(ctx)) do
+        table.insert(ret, line)
+    end
+
+    for _, line in ipairs(self:get_footer()) do
         table.insert(ret, line)
     end
 

@@ -1,11 +1,37 @@
+local Section = require("sidebar-nvim.lib.section")
+local LineBuilder = require("sidebar-nvim.lib.line_builder")
+local reloaders = require("sidebar-nvim.lib.reloaders")
+local pasync = require("sidebar-nvim.lib.async")
 local utils = require("sidebar-nvim.utils")
 local view = require("sidebar-nvim.view")
 local Loclist = require("sidebar-nvim.components.loclist")
 local config = require("sidebar-nvim.config")
 local has_devicons, devicons = pcall(require, "nvim-web-devicons")
 
+local api = pasync.api
+
 local loclist = Loclist:new({ omit_single_group = true })
 local loclist_items = {}
+
+local buffers = Section:new({
+    title = "Buffers",
+    icon = "",
+    ignored_buffers = {},
+    sorting = "id",
+    show_numbers = true,
+    ignore_not_loaded = false,
+    ignore_terminal = true,
+
+    reloaders = { reloaders.autocmd({ "BufAdd", "BufDelete", "BufEnter", "BufLeave" }, "*") },
+
+    highlights = {
+        groups = {},
+        links = {
+            SidebarNvimBuffersActive = "SidebarNvimSectionTitle",
+            SidebarNvimBuffersNumber = "SIdebarnvimLineNr",
+        },
+    },
+})
 
 local function get_fileicon(filename)
     if has_devicons and devicons.has_loaded() then
@@ -30,16 +56,16 @@ local function get_fileicon(filename)
     end
 end
 
-local function get_buffers(ctx)
+function buffers:update(ctx)
     local lines = {}
     local hl = {}
-    local current_buffer = vim.api.nvim_get_current_buf()
+    local current_buffer = api.nvim_get_current_buf()
     loclist_items = {}
 
-    for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
+    for _, buffer in ipairs(api.nvim_list_bufs()) do
         if buffer ~= view.View.bufnr then
             local ignored = false
-            local bufname = vim.api.nvim_buf_get_name(buffer)
+            local bufname = api.nvim_buf_get_name(buffer)
 
             for _, ignored_buffer in ipairs(config.buffers.ignored_buffers or {}) do
                 if string.match(bufname, ignored_buffer) then
@@ -51,12 +77,12 @@ local function get_buffers(ctx)
                 ignored = true
             end
 
-            if config.buffers.ignore_not_loaded and not vim.api.nvim_buf_is_loaded(buffer) then
+            if config.buffers.ignore_not_loaded and not api.nvim_buf_is_loaded(buffer) then
                 ignored = true
             end
 
             -- NOTE: should we be more specific?
-            if vim.api.nvim_buf_get_option(buffer, "bufhidden") ~= "" then
+            if api.nvim_buf_get_option(buffer, "bufhidden") ~= "" then
                 ignored = true
             end
 
@@ -73,7 +99,7 @@ local function get_buffers(ctx)
                     name_hl = "SidebarNvimBuffersActive"
                 end
 
-                if vim.api.nvim_buf_get_option(buffer, "modified") then
+                if api.nvim_buf_get_option(buffer, "modified") then
                     modified = " *"
                 end
 
@@ -118,13 +144,6 @@ return {
     draw = function(ctx)
         return get_buffers(ctx)
     end,
-    highlights = {
-        groups = {},
-        links = {
-            SidebarNvimBuffersActive = "SidebarNvimSectionTitle",
-            SidebarNvimBuffersNumber = "SIdebarnvimLineNr",
-        },
-    },
     bindings = {
         ["d"] = function(line)
             local location = loclist:get_location_at(line)

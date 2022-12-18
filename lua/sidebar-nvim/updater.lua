@@ -9,9 +9,9 @@ local renderer = require("sidebar-nvim.renderer")
 
 local api = pasync.api
 
-local M = {}
-
-M._updates_listener_tx = nil
+local M = {
+    _updates_listener_tx = nil,
+}
 
 -- @private
 local function section_draw(tab_name, section_index, section, data)
@@ -24,7 +24,7 @@ end
 local function section_update(tab_name, section_index, section, logger_props, is_sync)
     local ctx = { width = view.get_width() }
 
-    local ok, data = pcall(section.update, section, ctx)
+    local ok, data = pcall(section.draw, section, ctx)
     if not ok then
         logger:error(
             data,
@@ -70,6 +70,7 @@ function M.setup()
             end
 
             local section = section_or_err
+            assert(section)
 
             local reloaders = section.reloaders or {}
 
@@ -130,7 +131,6 @@ function M._start_updates_listener()
 
         while true do
             local ret = rx.recv()
-
             local tab_name = ret.tab_name
             local section_index = ret.section_index
             local data = ret.data

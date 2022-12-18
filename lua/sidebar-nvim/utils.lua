@@ -8,18 +8,6 @@ function M.echo_warning(msg)
     api.nvim_command("echohl None")
 end
 
-function M.escape_keycode(key)
-    return key:gsub("<", "["):gsub(">", "]")
-end
-
-function M.unescape_keycode(key)
-    return key:gsub("%[", "<"):gsub("%]", ">")
-end
-
-function M.sidebar_nvim_callback(key)
-    return string.format(":lua require('sidebar-nvim.lib').on_keypress('%s')<CR>", M.escape_keycode(key))
-end
-
 function M.sidebar_nvim_cursor_move_callback(direction)
     return string.format(":lua require('sidebar-nvim')._on_cursor_move('%s')<CR>", direction)
 end

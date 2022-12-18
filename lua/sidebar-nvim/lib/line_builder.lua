@@ -9,8 +9,9 @@ local LineBuilder = {}
 
 LineBuilder.__index = LineBuilder
 
-function LineBuilder:new()
+function LineBuilder:new(keybindings)
     local obj = vim.deepcopy(LineBuilderProps)
+    obj.keybindings = keybindings
 
     obj = setmetatable(obj, self)
 
