@@ -3,15 +3,17 @@ local LineBuilderProps = {
         left = {},
         right = {},
     },
+
+    keymaps = {},
 }
 
 local LineBuilder = {}
 
 LineBuilder.__index = LineBuilder
 
-function LineBuilder:new(keybindings)
+function LineBuilder:new(opts)
     local obj = vim.deepcopy(LineBuilderProps)
-    obj.keybindings = keybindings
+    obj.keymaps = (opts or {}).keymaps or {}
 
     obj = setmetatable(obj, self)
 

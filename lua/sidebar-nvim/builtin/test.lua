@@ -14,9 +14,11 @@ local test_section = Section:new({
 function test_section:draw_content()
     return {
         LineBuilder:new({
-            u = function()
-                self.value = self.value + 1
-            end,
+            keymaps = {
+                u = function()
+                    self.value = self.value + 1
+                end,
+            },
         }):left(string.format("value: %d", self.value)),
     }
 end

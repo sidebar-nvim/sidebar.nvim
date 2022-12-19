@@ -98,6 +98,12 @@ function M.setup()
                 reloader(group_id, cb)
             end
 
+            section.state.invalidate_cb = function()
+                pasync.run(function()
+                    section_update(tab_name, section_index, section, { requester = "user-invalidate" })
+                end)
+            end
+
             table.insert(tab, section)
         end
     end

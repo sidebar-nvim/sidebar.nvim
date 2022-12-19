@@ -10,6 +10,7 @@ local SectionProps = {
     },
     state = {
         extmark_id = nil,
+        invalidate_cb = nil,
     },
 }
 
@@ -68,6 +69,12 @@ function Section:draw(ctx)
     end
 
     return ret
+end
+
+function Section:invalidate()
+    if self.state.invalidate_cb then
+        self.state.invalidate_cb()
+    end
 end
 
 return Section

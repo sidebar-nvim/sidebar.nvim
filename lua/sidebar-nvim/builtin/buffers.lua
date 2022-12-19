@@ -2,16 +2,12 @@ local Section = require("sidebar-nvim.lib.section")
 local LineBuilder = require("sidebar-nvim.lib.line_builder")
 local reloaders = require("sidebar-nvim.lib.reloaders")
 local pasync = require("sidebar-nvim.lib.async")
+local Loclist = require("sidebar-nvim.lib.loclist")
 local utils = require("sidebar-nvim.utils")
 local view = require("sidebar-nvim.view")
-local Loclist = require("sidebar-nvim.components.loclist")
-local config = require("sidebar-nvim.config")
 local has_devicons, devicons = pcall(require, "nvim-web-devicons")
 
 local api = pasync.api
-
-local loclist = Loclist:new({ omit_single_group = true })
-local loclist_items = {}
 
 local buffers = Section:new({
     title = "Buffers",
@@ -47,27 +43,57 @@ local function get_fileicon(filename)
             highlight = "SidebarNvimNormal"
         end
 
-        return {
-            text = "  " .. fileicon .. " ",
-            hl = highlight,
-        }
-    else
-        return { text = "   " }
+        return "  " .. fileicon .. " ", highlight
     end
+
+    return "   ", ""
 end
 
-function buffers:update(ctx)
-    local lines = {}
-    local hl = {}
+local function create_keymaps(bufnr, filepath)
+    local keymaps = {
+        ["d"] = function()
+            local is_modified = vim.api.nvim_buf_get_option(bufnr, "modified")
+
+            if is_modified then
+                local action = vim.fn.input('file "' .. filepath .. '" has been modified. [w]rite/[d]iscard/[c]ancel: ')
+
+                if action == "w" then
+                    vim.api.nvim_buf_call(bufnr, function()
+                        vim.cmd("silent! w")
+                    end)
+                    vim.api.nvim_buf_delete(bufnr, { force = true })
+                elseif action == "d" then
+                    vim.api.nvim_buf_delete(bufnr, { force = true })
+                end
+            else
+                vim.api.nvim_buf_delete(bufnr, { force = true })
+            end
+        end,
+        ["e"] = function()
+            vim.cmd("wincmd p")
+            vim.cmd("e " .. filepath)
+        end,
+        ["w"] = function()
+            vim.api.nvim_buf_call(bufnr, function()
+                vim.cmd("silent! w")
+            end)
+        end,
+    }
+
+    return keymaps
+end
+
+function buffers:draw_content()
     local current_buffer = api.nvim_get_current_buf()
-    loclist_items = {}
+
+    local loclist_items = {}
 
     for _, buffer in ipairs(api.nvim_list_bufs()) do
         if buffer ~= view.View.bufnr then
             local ignored = false
             local bufname = api.nvim_buf_get_name(buffer)
 
-            for _, ignored_buffer in ipairs(config.buffers.ignored_buffers or {}) do
+            for _, ignored_buffer in ipairs(self.ignored_buffers or {}) do
                 if string.match(bufname, ignored_buffer) then
                     ignored = true
                 end
@@ -77,7 +103,7 @@ function buffers:update(ctx)
                 ignored = true
             end
 
-            if config.buffers.ignore_not_loaded and not api.nvim_buf_is_loaded(buffer) then
+            if self.ignore_not_loaded and not api.nvim_buf_is_loaded(buffer) then
                 ignored = true
             end
 
@@ -87,7 +113,7 @@ function buffers:update(ctx)
             end
 
             -- always ignore terminals
-            if config.buffers.ignore_terminal and string.match(bufname, "term://.*") then
+            if self.ignore_terminal and string.match(bufname, "term://.*") then
                 ignored = true
             end
 
@@ -103,94 +129,42 @@ function buffers:update(ctx)
                     modified = " *"
                 end
 
-                -- sorting = "id"
-                local order = buffer
-                if config["buffers"].sorting == "name" then
-                    order = bufname
+                local icon, icon_hl = get_fileicon(bufname)
+                local line = LineBuilder:new({ keymaps = create_keymaps(buffer, bufname) }):left(icon, icon_hl)
+
+                if self.show_numbers then
+                    line = line:left(buffer .. " ", "SidebarNvimBuffersNumber")
                 end
 
-                local numbers_text = {}
-                if config.buffers.show_numbers then
-                    numbers_text = { text = buffer .. " ", hl = "SidebarNvimBuffersNumber" }
-                end
+                line = line:left(utils.filename(bufname) .. modified, name_hl)
 
-                loclist_items[#loclist_items + 1] = {
-                    group = "buffers",
-                    left = {
-                        get_fileicon(bufname),
-                        numbers_text,
-                        { text = utils.filename(bufname) .. modified, hl = name_hl },
-                    },
-                    data = { buffer = buffer, filepath = bufname },
-                    order = order,
-                }
+                table.insert(loclist_items, {
+                    bufnr = buffer,
+                    bufname = bufname,
+                    line = line,
+                })
             end
         end
     end
 
-    loclist:set_items(loclist_items, { remove_groups = false })
-    loclist:draw(ctx, lines, hl)
-
-    if lines == nil or #lines == 0 then
-        return "<no buffers>"
-    else
-        return { lines = lines, hl = hl }
+    -- sorting = "id"
+    local cmp_fn = function(a, b)
+        return a.bufnr < b.bufnr
     end
+    if self.sorting == "name" then
+        cmp_fn = function(a, b)
+            return a.bufname < b.bufname
+        end
+    end
+
+    table.sort(loclist_items, cmp_fn)
+
+    local items = vim.tbl_map(function(item)
+        return item.line
+    end, loclist_items)
+
+    local loclist = Loclist:new({ buffers = { items = items } }, { omit_single_group = true })
+    return loclist:draw()
 end
 
-return {
-    title = "Buffers",
-    icon = config["buffers"].icon,
-    draw = function(ctx)
-        return get_buffers(ctx)
-    end,
-    bindings = {
-        ["d"] = function(line)
-            local location = loclist:get_location_at(line)
-
-            if location == nil then
-                return
-            end
-
-            local buffer = location.data.buffer
-            local is_modified = vim.api.nvim_buf_get_option(buffer, "modified")
-
-            if is_modified then
-                local action = vim.fn.input(
-                    'file "' .. location.data.filepath .. '" has been modified. [w]rite/[d]iscard/[c]ancel: '
-                )
-
-                if action == "w" then
-                    vim.api.nvim_buf_call(buffer, function()
-                        vim.cmd("silent! w")
-                    end)
-                    vim.api.nvim_buf_delete(buffer, { force = true })
-                elseif action == "d" then
-                    vim.api.nvim_buf_delete(buffer, { force = true })
-                end
-            else
-                vim.api.nvim_buf_delete(buffer, { force = true })
-            end
-        end,
-        ["e"] = function(line)
-            local location = loclist:get_location_at(line)
-            if location == nil then
-                return
-            end
-
-            vim.cmd("wincmd p")
-            vim.cmd("e " .. location.data.filepath)
-        end,
-        ["w"] = function(line)
-            local location = loclist:get_location_at(line)
-
-            if location == nil then
-                return
-            end
-
-            vim.api.nvim_buf_call(location.data.buffer, function()
-                vim.cmd("silent! w")
-            end)
-        end,
-    },
-}
+return buffers

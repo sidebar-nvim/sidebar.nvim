@@ -16,14 +16,19 @@ describe("Section", function()
 
     it("get header", function()
         local section = Section:new({ title = "test", icon = "#" })
-        eq(LineBuilder:new():left("# test"), section:get_header())
+        eq({ LineBuilder:new():left("# test"), LineBuilder:empty() }, section:get_header())
+    end)
+
+    it("get footer", function()
+        local section = Section:new({ title = "test", icon = "#" })
+        eq({ LineBuilder:empty() }, section:get_footer())
     end)
 
     it("override", function()
         local section1 = Section:new({ title = "test", icon = "#" })
         local section2 = section1:with({ title = "test2" })
-        eq(LineBuilder:new():left("# test"), section1:get_header())
-        eq(LineBuilder:new():left("# test2"), section2:get_header())
+        eq({ LineBuilder:new():left("# test"), LineBuilder:empty() }, section1:get_header())
+        eq({ LineBuilder:new():left("# test2"), LineBuilder:empty() }, section2:get_header())
     end)
 
     it("overrides highlights", function()

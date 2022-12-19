@@ -31,4 +31,11 @@ describe("LineBuilder", function()
         eq(120 - #"test2", hl[2].start_col)
         eq(#"test2", hl[1].length)
     end)
+
+    it("compare LineBuilder", function()
+        local l1 = LineBuilder:new():left("test1", "hl1"):right("test2", "hl2")
+        local l2 = LineBuilder:new():left("test1", "hl1"):right("test2", "hl2")
+
+        eq(l1, l2)
+    end)
 end)

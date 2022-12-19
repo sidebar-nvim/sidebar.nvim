@@ -12,17 +12,16 @@ local M = {
     hl_namespace_id = nil,
     extmarks_namespace_id = nil,
     -- these are also extmarks, but used for storing location of each callback
-    keybindings_namespace_id = nil,
+    keymaps_namespace_id = nil,
 
     -- tab -> key -> extmarks id -> cb
-    -- TODO: continue here
-    keybindings_map = {},
+    keymaps_map = {},
 }
 
 function M.setup()
     M.hl_namespace_id = api.nvim_create_namespace("SidebarNvimHighlights")
     M.extmarks_namespace_id = api.nvim_create_namespace("SidebarNvimExtmarks")
-    M.keybindings_namespace_id = api.nvim_create_namespace("SidebarNvimExtmarksKeybindings")
+    M.keymaps_namespace_id = api.nvim_create_namespace("SidebarNvimExtmarksKeymaps")
 end
 
 function M.clear()
@@ -91,14 +90,20 @@ function M.draw_section(changes, max_width, tab_name, section_index, section, da
 
     local lines = {}
     local hls = {}
-    local keybindings = {}
+    local keymaps = {}
 
     for _, line in ipairs(data) do
         local current_line, current_hl = LineBuilder.build_from_table(line, max_width)
 
         table.insert(lines, current_line)
         table.insert(hls, current_hl)
-        table.insert(keybindings, line.keybindings)
+
+        local current_keymaps = {}
+        for key, cb in pairs(line.keymaps or {}) do
+            table.insert(current_keymaps, { key = key, cb = cb, start_col = 0, length = #current_line })
+        end
+
+        table.insert(keymaps, current_keymaps)
     end
 
     local change = {
@@ -107,7 +112,7 @@ function M.draw_section(changes, max_width, tab_name, section_index, section, da
         lines = lines,
         hls = hls,
         section = section,
-        keybindings = keybindings,
+        keymaps = keymaps,
     }
     table.insert(changes, change)
 end
@@ -142,7 +147,14 @@ function M.draw(tab_name, section_index, section, data)
                 })
 
             M.render_hl(view.View.bufnr, change.hls, change.start_row, change.end_row)
-            M.attach_keybindings(change.section, view.View.bufnr, change.keybindings, change.start_row, change.end_row)
+            M.attach_keymaps(
+                tab_name,
+                change.section,
+                view.View.bufnr,
+                change.keymaps,
+                change.start_row,
+                change.end_row
+            )
         end
         api.nvim_buf_set_option(view.View.bufnr, "modifiable", false)
 
@@ -184,25 +196,52 @@ function M.render_hl(bufnr, hls, start_row, end_row)
     end
 end
 
-function M.attach_keybindings(section, bufnr, keybindings, start_row, end_row)
+local function update_keymaps_map(tab_name, section, extmark_id, key, cb)
+    M.keymaps_map[tab_name] = M.keymaps_map[tab_name] or {}
+    M.keymaps_map[tab_name][key] = M.keymaps_map[tab_name][key] or {}
+
+    M.keymaps_map[tab_name][key][extmark_id] = { cb = cb, section = section }
+
+    vim.keymap.set("n", key, function()
+        local cursor = vim.api.nvim_win_get_cursor(0)
+
+        cursor = { cursor[1] - 1, 0 }
+
+        local extmarks = vim.api.nvim_buf_get_extmarks(view.View.bufnr, M.keymaps_namespace_id, cursor, cursor, {})
+
+        local known_ids = M.keymaps_map[state.active_tab][key]
+
+        for _, extmark in ipairs(extmarks) do
+            local id = extmark[1]
+            local kb = known_ids[id]
+            if kb and kb.cb then
+                pasync.run(function()
+                    kb.cb(kb.section)
+                    kb.section:invalidate()
+                end)
+            end
+        end
+    end, { buffer = view.View.bufnr, silent = true, nowait = true, desc = "SidebarNvim section keybinding" })
+end
+
+function M.attach_keymaps(tab_name, section, bufnr, keymaps, start_row, end_row)
     if not api.nvim_buf_is_loaded(bufnr) then
         return
     end
-    api.nvim_buf_clear_namespace(bufnr, M.keybindings_namespace_id, start_row, end_row)
+    api.nvim_buf_clear_namespace(bufnr, M.keymaps_namespace_id, start_row, end_row)
 
-    section.state.keybinding_extmark_map = {}
-
-    for line_offset, line_kbs in ipairs(keybindings) do
-        for key, cb in ipairs(line_kbs) do
+    for line_offset, line_kbs in ipairs(keymaps) do
+        for _, kb in ipairs(line_kbs) do
             local line_index = start_row + line_offset - 1
-            local extmark_id = api.nvim_buf_set_extmark(view.View.bufnr, M.keybindings_namespace_id, line_index, 0, {})
+            local extmark_id = api.nvim_buf_set_extmark(
+                view.View.bufnr,
+                M.keymaps_namespace_id,
+                line_index,
+                kb.start_col,
+                { end_col = kb.start_col + kb.length }
+            )
 
-            section.state.keybinding_extmark_map[extmark_id] = cb
-
-            vim.keymap.set("n", key, function()
-                -- TODO: get all extmarks under cursor using extmarks_namespace_id
-                -- TODO: iterate over the list of sections and see
-            end, { buffer = view.View.bufnr, silent = true, nowait = true })
+            update_keymaps_map(tab_name, section, extmark_id, kb.key, kb.cb)
         end
     end
 end

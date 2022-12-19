@@ -9,8 +9,6 @@ local LocListProps = {
     show_empty_groups = true,
     -- if there's a single group, skip rendering the group controls
     omit_single_group = false,
-    -- initial state of the groups
-    groups_initially_closed = false,
     -- highlight groups for each control element
     highlights = {
         group_name = "SidebarNvimLabel",
@@ -20,6 +18,8 @@ local LocListProps = {
 }
 
 local LocList = {}
+
+LocList.__index = LocList
 
 function LocList:new(groups, opts)
     local obj = vim.tbl_extend("force", {}, LocListProps, opts or {})
@@ -34,7 +34,7 @@ end
 function LocList:draw_group(ctx, name, with_name)
     local group = self.groups[name]
 
-    if #group == 0 and not self.show_empty_groups then
+    if #group.items == 0 and not self.show_empty_groups then
         return {}
     end
 
@@ -44,7 +44,7 @@ function LocList:draw_group(ctx, name, with_name)
 
     if with_name then
         local icon = self.group_icon_set.opened
-        if #group == 0 or group_is_closed then
+        if #group.items == 0 or group_is_closed then
             icon = self.group_icon_set.closed
         end
 
@@ -55,10 +55,15 @@ function LocList:draw_group(ctx, name, with_name)
             icon_hl = group.icon.hl or icon_hl
         end
 
-        local line = LineBuilder:new():left(icon, icon_hl):left(" "):left(name, group.hl)
+        local line = LineBuilder:new({
+            keymaps = group.keymaps,
+        })
+            :left(icon, icon_hl)
+            :left(" ")
+            :left(name, group.hl or self.highlights.group_name)
 
         if self.show_group_count then
-            local total = (#group).tostring()
+            local total = #group.items
             if total > 99 then
                 total = "++"
             end
@@ -89,7 +94,7 @@ function LocList:draw(ctx)
     local ret = {}
 
     for _, name in ipairs(group_keys) do
-        for _, line in self:draw_group(ctx, name, true) do
+        for _, line in ipairs(self:draw_group(ctx, name, true)) do
             table.insert(ret, line)
         end
     end
