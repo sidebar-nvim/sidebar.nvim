@@ -21,20 +21,9 @@ M.git = { icon = "" }
 
 M.diagnostics = { icon = "" }
 
-M.buffers = {
-    icon = "",
-    ignored_buffers = {},
-    sorting = "id",
-    show_numbers = true,
-    ignore_not_loaded = false,
-    ignore_terminal = true,
-}
-
 M.symbols = { icon = "ƒ" }
 
 M.containers = { icon = "", use_podman = false, attach_shell = "/bin/sh", show_all = true, interval = 5000 }
-
-M.todos = { icon = "", ignored_paths = { "~" }, initially_closed = false }
 
 M.files = { icon = "", show_hidden = false, ignored_paths = { "%.git$" } }
 

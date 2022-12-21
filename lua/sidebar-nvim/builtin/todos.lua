@@ -1,29 +1,61 @@
+local Section = require("sidebar-nvim.lib.section")
+local LineBuilder = require("sidebar-nvim.lib.line_builder")
+local reloaders = require("sidebar-nvim.lib.reloaders")
+local pasync = require("sidebar-nvim.lib.async")
+local Job = require("sidebar-nvim.lib.async.job")
+local Loclist = require("sidebar-nvim.lib.loclist")
 local utils = require("sidebar-nvim.utils")
-local Loclist = require("sidebar-nvim.components.loclist")
-local config = require("sidebar-nvim.config")
 local luv = vim.loop
 
-local loclist = Loclist:new({
-    groups_initially_closed = config.todos.initially_closed,
-    show_empty_groups = false,
+local todos = Section:new({
+    title = "TODOs",
+    icon = "",
+    ignored_paths = { "~" },
+    initially_closed = false,
+
+    state = {},
+
+    icons = {
+        TODO = { text = "", hl = "SidebarNvimTodoIconTodo" },
+        HACK = { text = "", hl = "SidebarNvimTodoIconHack" },
+        WARN = { text = "", hl = "SidebarNvimTodoIconWarn" },
+        PERF = { text = "", hl = "SidebarNvimTodoIconPerf" },
+        NOTE = { text = "", hl = "SidebarNvimTodoIconNote" },
+        FIX = { text = "", hl = "SidebarNvimTodoIconFix" },
+    },
+
+    highlights = {
+        groups = {},
+        links = {
+            SidebarNvimTodoFilename = "SidebarNvimLineNr",
+            SidebarNvimTodoLineNumber = "SidebarNvimLineNr",
+            SidebarNvimTodoColNumber = "SidebarNvimLineNr",
+            SidebarNvimTodoIconTodo = "DiagnosticInfo",
+            SidebarNvimTodoIconHack = "DiagnosticWarning",
+            SidebarNvimTodoIconWarn = "DiagnosticWarning",
+            SidebarNvimTodoIconPerf = "DiagnosticError",
+            SidebarNvimTodoIconNote = "DiagnosticHint",
+            SidebarNvimTodoIconFix = "DiagnosticError",
+        },
+    },
 })
 
--- Make sure all groups exist
-loclist:add_group("TODO")
-loclist:add_group("HACK")
-loclist:add_group("WARN")
-loclist:add_group("PERF")
-loclist:add_group("NOTE")
-loclist:add_group("FIX")
+function todos:draw_content()
+    local groups = {
+        TODO = {},
+        HACK = {},
+        WARN = {},
+        PERF = {},
+        NOTE = {},
+        FIX = {},
+    }
 
-local icons = {
-    TODO = { text = "", hl = "SidebarNvimTodoIconTodo" },
-    HACK = { text = "", hl = "SidebarNvimTodoIconHack" },
-    WARN = { text = "", hl = "SidebarNvimTodoIconWarn" },
-    PERF = { text = "", hl = "SidebarNvimTodoIconPerf" },
-    NOTE = { text = "", hl = "SidebarNvimTodoIconNote" },
-    FIX = { text = "", hl = "SidebarNvimTodoIconFix" },
-}
+    local loclist = Loclist:new(groups, {
+        show_empty_groups = false,
+    })
+
+    return loclist:draw()
+end
 
 local current_path_ignored_cache = false
 
@@ -178,20 +210,6 @@ return {
 
         return { lines = lines, hl = hl }
     end,
-    highlights = {
-        groups = {},
-        links = {
-            SidebarNvimTodoFilename = "SidebarNvimLineNr",
-            SidebarNvimTodoLineNumber = "SidebarNvimLineNr",
-            SidebarNvimTodoColNumber = "SidebarNvimLineNr",
-            SidebarNvimTodoIconTodo = "DiagnosticInfo",
-            SidebarNvimTodoIconHack = "DiagnosticWarning",
-            SidebarNvimTodoIconWarn = "DiagnosticWarning",
-            SidebarNvimTodoIconPerf = "DiagnosticError",
-            SidebarNvimTodoIconNote = "DiagnosticHint",
-            SidebarNvimTodoIconFix = "DiagnosticError",
-        },
-    },
     bindings = {
         ["t"] = function(line)
             loclist:toggle_group_at(line)

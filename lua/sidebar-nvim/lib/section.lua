@@ -8,7 +8,7 @@ local SectionProps = {
         groups = {},
         links = {},
     },
-    state = {
+    _internal_state = {
         extmark_id = nil,
         invalidate_cb = nil,
     },
@@ -24,7 +24,7 @@ function Section:new(opts)
         vim.deepcopy(SectionProps),
         self,
         opts or {},
-        { state = vim.deepcopy(SectionProps.state) }
+        { _internal_state = vim.deepcopy(SectionProps._internal_state) }
     )
 
     local obj = setmetatable(opts, self)
@@ -72,8 +72,8 @@ function Section:draw(ctx)
 end
 
 function Section:invalidate()
-    if self.state.invalidate_cb then
-        self.state.invalidate_cb()
+    if self._internal_state.invalidate_cb then
+        self._internal_state.invalidate_cb()
     end
 end
 

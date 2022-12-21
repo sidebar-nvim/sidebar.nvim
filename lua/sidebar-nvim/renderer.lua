@@ -46,8 +46,8 @@ local function get_last_extmark(tab_name)
     local id = nil
 
     for i, section in ipairs(state.tabs[tab_name] or {}) do
-        if section.state.extmark_id then
-            id = section.state.extmark_id
+        if section._internal_state.extmark_id then
+            id = section._internal_state.extmark_id
             break
         end
     end
@@ -65,8 +65,8 @@ function M.draw_section(changes, max_width, tab_name, section_index, section, da
 
     local start_row = 0
 
-    if section.state.extmark_id then
-        local extmark = get_extmark_by_id(section.state.extmark_id)
+    if section._internal_state.extmark_id then
+        local extmark = get_extmark_by_id(section._internal_state.extmark_id)
         if extmark then
             start_row = extmark.start_row
         else
@@ -74,7 +74,7 @@ function M.draw_section(changes, max_width, tab_name, section_index, section, da
                 namespace_id = M.extmarks_namespace_id,
                 extmark = "not found",
                 section_index = section_index,
-                id = section.state.extmark_id or "invalid section extmark id",
+                id = section._internal_state.extmark_id or "invalid section extmark id",
                 start_row = start_row,
             })
         end
@@ -138,9 +138,9 @@ function M.draw(tab_name, section_index, section, data)
         for _, change in ipairs(changes) do
             api.nvim_buf_set_lines(view.View.bufnr, change.start_row, change.end_row, false, change.lines)
 
-            section.state.extmark_id =
+            section._internal_state.extmark_id =
                 api.nvim_buf_set_extmark(view.View.bufnr, M.extmarks_namespace_id, change.start_row, 0, {
-                    id = section.state.extmark_id,
+                    id = section._internal_state.extmark_id,
                     end_row = change.end_row,
                     end_col = 0,
                     ephemeral = false,

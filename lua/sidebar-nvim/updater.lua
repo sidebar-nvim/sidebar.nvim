@@ -98,7 +98,7 @@ function M.setup()
                 reloader(group_id, cb)
             end
 
-            section.state.invalidate_cb = function()
+            section._internal_state.invalidate_cb = function()
                 pasync.run(function()
                     section_update(tab_name, section_index, section, { requester = "user-invalidate" })
                 end)
@@ -119,13 +119,11 @@ function M.update()
         return
     end
 
-    pasync.run(function()
-        for tab_name, sections in pairs(state.tabs) do
-            for section_index, section in ipairs(sections) do
-                section_update(tab_name, section_index, section, {}, true)
-            end
+    for tab_name, sections in pairs(state.tabs) do
+        for section_index, section in ipairs(sections) do
+            section_update(tab_name, section_index, section, {}, true)
         end
-    end)
+    end
 end
 
 function M._start_updates_listener()

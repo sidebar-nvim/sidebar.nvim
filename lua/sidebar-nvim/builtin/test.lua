@@ -6,8 +6,9 @@ local test_section = Section:new({
     title = "test",
     icon = "#",
 
-    reloaders = {},
+    reloaders = { reloaders.file_changed("test.txt") },
 
+    format = "value: %d",
     value = 0,
 })
 
@@ -19,7 +20,7 @@ function test_section:draw_content()
                     self.value = self.value + 1
                 end,
             },
-        }):left(string.format("value: %d", self.value)),
+        }):left(string.format(self.format, self.value)),
     }
 end
 

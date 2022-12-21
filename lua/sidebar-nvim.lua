@@ -4,6 +4,7 @@ local view = require("sidebar-nvim.view")
 local updater = require("sidebar-nvim.updater")
 local config = require("sidebar-nvim.config")
 local renderer = require("sidebar-nvim.renderer")
+local logger = require("sidebar-nvim.logger")
 
 local M = {}
 
@@ -13,6 +14,8 @@ function M.setup(opts)
     for key, value in pairs(opts) do
         config[key] = value
     end
+
+    logger:setup(config.logger)
 
     colors.setup()
 
