@@ -44,11 +44,11 @@ function Section:get_icon()
     return self.icon
 end
 
-function Section:get_header()
+function Section:draw_header()
     return { LineBuilder:new():left(self:get_icon() .. " " .. self:get_title()), LineBuilder:empty() }
 end
 
-function Section:get_footer()
+function Section:draw_footer()
     return { LineBuilder:empty() }
 end
 
@@ -58,13 +58,13 @@ function Section:draw_content(ctx)
 end
 
 function Section:draw(ctx)
-    local ret = self:get_header()
+    local ret = self:draw_header()
 
     for _, line in ipairs(self:draw_content(ctx)) do
         table.insert(ret, line)
     end
 
-    for _, line in ipairs(self:get_footer()) do
+    for _, line in ipairs(self:draw_footer()) do
         table.insert(ret, line)
     end
 

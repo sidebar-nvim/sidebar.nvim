@@ -69,4 +69,20 @@ describe("Renderer", function()
     it_snapshot("draw: set_lines", function()
         draw_all()
     end)
+
+    it_snapshot("draw: custom hls", function()
+        state.tabs.default[1] = TestSection:with({
+            draw_header = function()
+                return { LineBuilder:new():left("header", "header_hl"):left("22", "hl22") }
+            end,
+            draw_footer = function()
+                return { LineBuilder:new():left("footer", "footer_hl") }
+            end,
+            draw_content = function()
+                return { LineBuilder:new():left("custom_hl", "hl1"):right("custom_hl_2", "hl2") }
+            end,
+        })
+
+        draw_all()
+    end)
 end)

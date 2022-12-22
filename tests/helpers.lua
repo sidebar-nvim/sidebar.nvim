@@ -45,51 +45,60 @@ function Helpers.create_test_section(id)
     return section
 end
 
-local function read_file(filename)
-    local err, fd = async.uv.fs_open(filename, "r", 438)
-    assert(not err, err)
-
-    local stat
-    err, stat = async.uv.fs_fstat(fd)
-    assert(not err, err)
-
-    local data
-    err, data = async.uv.fs_read(fd, stat.size, 0)
-    assert(not err, err)
-
-    err = async.uv.fs_close(fd)
-    assert(not err, err)
-
-    return data
-end
-
-function Helpers.test_snapshot(test_name)
-    local snapshot_filename =
-        string.format("__snapshots__/%s.snap", test_name:gsub("%s", "_"):gsub(":", "_"):gsub("/", "_"))
-
-    local view = require("sidebar-nvim.view")
-    local lines = async.api.nvim_buf_get_lines(view.View.bufnr, 0, -1, false)
-    lines = table.concat(lines, "\n")
-
-    if async.fn.filereadable(async.fn.expand(snapshot_filename)) == 1 then
-        local data = read_file(snapshot_filename)
+local function check_snapsot_lines(filename, lines)
+    if async.fn.filereadable(async.fn.expand(filename)) == 1 then
+        local data = async.fs.read_file(filename)
 
         assert(data == lines, vim.diff(data, lines, { result_type = "unified" }))
         return
     end
 
     -- create snapshot
-    print("snapshot does not exist, creating new one")
-    async.fn.mkdir(async.fn.fnamemodify(snapshot_filename, ":h"), "p")
+    print("lines snapshot does not exist, creating new one")
+    async.fn.mkdir(async.fn.fnamemodify(filename, ":h"), "p")
 
-    local err, fd = async.uv.fs_open(snapshot_filename, "w", 438)
-    assert(not err, err)
+    async.fs.write_file(filename, lines)
+end
 
-    err = async.uv.fs_write(fd, lines)
-    assert(not err, err)
+local function check_snapsot_hls(filename, hls)
+    if async.fn.filereadable(async.fn.expand(filename)) == 1 then
+        local data = vim.json.decode(async.fs.read_file(filename))
 
-    err = async.uv.fs_close(fd)
-    assert(not err, err)
+        assert.is.same(data, hls)
+        return
+    end
+
+    -- create snapshot
+    print("hl snapshot does not exist, creating new one")
+    async.fn.mkdir(async.fn.fnamemodify(filename, ":h"), "p")
+
+    async.fs.write_file(filename, vim.json.encode(hls))
+end
+
+function Helpers.test_snapshot(test_name, opts)
+    opts = vim.tbl_extend("force", { with_hl = true }, opts or {})
+
+    local base_filename = test_name:gsub("%s", "_"):gsub(":", "_"):gsub("/", "_")
+
+    local snapshot_filename_lines = string.format("__snapshots__/%s_lines.snap", base_filename)
+
+    local snapshot_filename_hl = string.format("__snapshots__/%s_hls.snap", base_filename)
+
+    local view = require("sidebar-nvim.view")
+    local renderer = require("sidebar-nvim.renderer")
+
+    local lines = async.api.nvim_buf_get_lines(view.View.bufnr, 0, -1, false)
+    lines = table.concat(lines, "\n")
+
+    check_snapsot_lines(snapshot_filename_lines, lines)
+
+    if not opts.with_hl then
+        return
+    end
+
+    local hls = async.api.nvim_buf_get_extmarks(view.View.bufnr, renderer.hl_namespace_id, 0, -1, { details = true })
+
+    check_snapsot_hls(snapshot_filename_hl, hls)
 end
 
 function Helpers.it_snapshot_wrapper(it, prefix)
