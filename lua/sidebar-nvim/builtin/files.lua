@@ -1,27 +1,50 @@
+local Section = require("sidebar-nvim.lib.section")
+local LineBuilder = require("sidebar-nvim.lib.line_builder")
+local reloaders = require("sidebar-nvim.lib.reloaders")
+local async = require("sidebar-nvim.lib.async")
+local Loclist = require("sidebar-nvim.lib.loclist")
 local utils = require("sidebar-nvim.utils")
-local Loclist = require("sidebar-nvim.components.loclist")
-local config = require("sidebar-nvim.config")
 local has_devicons, devicons = pcall(require, "nvim-web-devicons")
-local luv = vim.loop
 
-local loclist = Loclist:new({ omit_single_group = false, show_group_count = false })
+local api = async.api
 
-local icons = {
-    directory_closed = "",
-    directory_open = "",
-    file = "",
-    closed = "",
-    opened = "",
-}
+local files = Section:new({
+    title = "Files",
+    icon = "",
+    show_hidden = false,
+    ignored_paths = { "%.git$" },
 
-local yanked_files = {}
-local cut_files = {}
-local open_directories = {}
+    tree_icons = {
+        directory_closed = "",
+        directory_open = "",
+        file = "",
+        closed = "",
+        opened = "",
+    },
 
-local history = { position = 0, groups = {} }
-local trash_dir = luv.os_homedir() .. "/.local/share/Trash/files/"
+    yanked_files = {},
+    cut_files = {},
+    open_directories = {},
 
-local function get_fileicon(filename)
+    history = { position = 0, groups = {} },
+    trash_dir = vim.loop.os_homedir() .. "/.local/share/Trash/files/",
+
+    reloaders = {
+        reloaders.autocmd({ "BufLeave" }, "*"),
+        reloaders.autocmd({ "ShellCmdPost" }, "term://*"),
+    },
+
+    highlights = {
+        groups = {},
+        links = {
+            SidebarNvimFilesDirectory = "SidebarNvimSectionTitle",
+            SidebarNvimFilesYanked = "SidebarNvimLabel",
+            SidebarNvimFilesCut = "DiagnosticError",
+        },
+    },
+})
+
+function files:get_fileicon(filename)
     if has_devicons and devicons.has_loaded() then
         local extension = filename:match("^.+%.(.+)$")
         local fileicon, highlight = devicons.get_icon(filename, extension)
@@ -29,34 +52,27 @@ local function get_fileicon(filename)
         if not highlight then
             highlight = "SidebarNvimNormal"
         end
-        return { text = fileicon or icons["file"], hl = highlight }
+        return { text = fileicon or self.tree_icons["file"], hl = highlight }
     end
-    return { text = icons["file"] .. " " }
+    return { text = self.tree_icons["file"] .. " " }
 end
 
 -- scan directory recursively
-local function scan_dir(directory)
-    if not open_directories[directory] then
+function files:scan_dir(directory)
+    if not self.open_directories[directory] then
         return
     end
 
-    local show_hidden = config.files.show_hidden
-    local handle = luv.fs_scandir(directory)
+    local show_hidden = self.show_hidden
     local children = {}
     local children_directories = {}
     local children_files = {}
 
-    while handle do
-        local filename, filetype = luv.fs_scandir_next(handle)
-
-        if not filename then
-            break
-        end
-
+    for filename, filetype in vim.fs.dir(directory) do
         local path = directory .. "/" .. filename
         local ignored = false
 
-        for _, ignored_path in ipairs(config.files.ignored_paths or {}) do
+        for _, ignored_path in ipairs(self.ignored_paths or {}) do
             if string.match(path, ignored_path) then
                 ignored = true
             end
@@ -77,7 +93,7 @@ local function scan_dir(directory)
                         type = "directory",
                         path = path,
                         parent = directory,
-                        children = scan_dir(directory .. "/" .. filename),
+                        children = self:scan_dir(directory .. "/" .. filename),
                     })
                 end
             end
@@ -97,13 +113,13 @@ local function scan_dir(directory)
     return children
 end
 
-local function build_loclist(group, directory, level)
-    local loclist_items = {}
+function files:build_loclist(directory, level)
+    local items = {}
 
     if directory.children then
         for _, node in ipairs(directory.children) do
             if node.type == "file" then
-                local icon = get_fileicon(node.name)
+                local icon = self:get_fileicon(node.name)
                 local selected = { text = "" }
 
                 if yanked_files[node.path] then
@@ -112,64 +128,43 @@ local function build_loclist(group, directory, level)
                     selected = { text = " *", hl = "SidebarNvimFilesCut" }
                 end
 
-                loclist_items[#loclist_items + 1] = {
-                    group = group,
-                    left = {
-                        { text = string.rep("  ", level) .. icon.text .. " ", hl = icon.hl },
-                        { text = node.name },
-                        selected,
-                    },
-                    name = node.name,
-                    path = node.path,
-                    type = node.type,
-                    parent = node.parent,
-                    node = node,
-                }
+                table.insert(
+                    items,
+                    LineBuilder:new(self:create_keymaps(node))
+                        :left(string.rep("  ", level) .. icon.text .. " ", icon.hl)
+                        :left(node.name)
+                        :left(selected.text, selected.hl)
+                )
             elseif node.type == "directory" then
                 local icon
-                if open_directories[node.path] then
-                    icon = icons["directory_open"]
+                if self.open_directories[node.path] then
+                    icon = self.tree_icons["directory_open"]
                 else
-                    icon = icons["directory_closed"]
+                    icon = self.tree_icons["directory_closed"]
                 end
 
                 local selected = { text = "" }
 
-                if yanked_files[node.path] then
+                if self.yanked_files[node.path] then
                     selected = { text = " *", hl = "SidebarNvimFilesYanked" }
                 elseif cut_files[node.path] then
                     selected = { text = " *", hl = "SidebarNvimFilesCut" }
                 end
 
-                loclist_items[#loclist_items + 1] = {
-                    group = group,
-                    left = {
-                        {
-                            text = string.rep("  ", level) .. icon .. " " .. node.name,
-                            hl = "SidebarNvimFilesDirectory",
-                        },
-                        selected,
-                    },
-                    name = node.name,
-                    path = node.path,
-                    type = node.type,
-                    parent = node.parent,
-                    node = node,
-                }
+                table.insert(
+                    items,
+                    LineBuilder:new(self:create_keymaps(node))
+                        :left(string.rep("  ", level) .. icon .. " " .. node.name, "SidebarNvimFilesDirectory")
+                        :left(selected.text, selected.hl)
+                )
             end
 
-            if node.type == "directory" and open_directories[node.path] then
-                vim.list_extend(loclist_items, build_loclist(group, node, level + 1))
+            if node.type == "directory" and self.open_directories[node.path] then
+                vim.list_extend(items, self:build_loclist(node, level + 1))
             end
         end
     end
-    return loclist_items
-end
-
-local function update(group, directory)
-    local node = { path = directory, children = scan_dir(directory) }
-
-    loclist:set_items(build_loclist(group, node, 0), { remove_groups = true })
+    return items
 end
 
 local function exec(group)
@@ -272,55 +267,10 @@ local function move_file(src, dest, confirm_overwrite)
     end)
 end
 
-return {
-    title = "Files",
-    icon = config["files"].icon,
-    setup = function(_)
-        vim.api.nvim_exec(
-            [[
-          augroup sidebar_nvim_files_update
-              autocmd!
-              autocmd ShellCmdPost * lua require'sidebar-nvim.builtin.files'.update()
-              autocmd BufLeave term://* lua require'sidebar-nvim.builtin.files'.update()
-          augroup END
-          ]],
-            false
-        )
-    end,
-    update = function(_)
-        local cwd = vim.fn.getcwd()
-        local group = utils.shortest_path(cwd)
-
-        open_directories[cwd] = true
-
-        update(group, cwd)
-    end,
-    draw = function(ctx)
-        local lines = {}
-        local hl = {}
-
-        loclist:draw(ctx, lines, hl)
-
-        return { lines = lines, hl = hl }
-    end,
-
-    highlights = {
-        groups = {},
-        links = {
-            SidebarNvimFilesDirectory = "SidebarNvimSectionTitle",
-            SidebarNvimFilesYanked = "SidebarNvimLabel",
-            SidebarNvimFilesCut = "DiagnosticError",
-        },
-    },
-
-    bindings = {
+function files:create_keymaps(node)
+    local keymaps = {
         -- delete
-        ["d"] = function(line)
-            local location = loclist:get_location_at(line)
-            if location == nil then
-                return
-            end
-
+        ["d"] = function()
             local operation
             operation = {
                 exec = function()
@@ -329,64 +279,49 @@ return {
                 undo = function()
                     move_file(operation.dest, operation.src, true)
                 end,
-                src = location.node.path,
-                dest = trash_dir .. location.node.name,
+                src = node.path,
+                dest = self.trash_dir .. node.name,
             }
             local group = { executed = false, operations = { operation } }
 
-            history.position = history.position + 1
-            history.groups = vim.list_slice(history.groups, 1, history.position)
-            history.groups[history.position] = group
+            self.history.position = self.history.position + 1
+            self.history.groups = vim.list_slice(self.history.groups, 1, self.history.position)
+            self.history.groups[self.history.position] = group
 
             exec(group)
         end,
         -- yank
-        ["y"] = function(line)
-            local location = loclist:get_location_at(line)
-            if location == nil then
-                return
-            end
-
-            yanked_files[location.node.path] = true
-            cut_files = {}
+        ["y"] = function()
+            self.yanked_files[node.path] = true
+            self.cut_files = {}
         end,
         -- cut
-        ["x"] = function(line)
-            local location = loclist:get_location_at(line)
-            if location == nil then
-                return
-            end
-
-            cut_files[location.node.path] = true
-            yanked_files = {}
+        ["x"] = function()
+            self.cut_files[node.path] = true
+            self.yanked_files = {}
         end,
         -- paste
-        ["p"] = function(line)
-            local location = loclist:get_location_at(line)
-            if location == nil then
-                return
-            end
-
+        ["p"] = function()
             local dest_dir
 
-            if location.node.type == "directory" then
-                dest_dir = location.node.path
+            if node.type == "directory" then
+                dest_dir = node.path
             else
-                dest_dir = location.node.parent
+                dest_dir = node.parent
             end
 
-            open_directories[dest_dir] = true
+            self.open_directories[dest_dir] = true
 
             local group = { executed = false, operations = {} }
 
-            for path, _ in pairs(yanked_files) do
+            for path, _ in pairs(self.yanked_files) do
                 local operation
                 operation = {
                     exec = function()
                         copy_file(operation.src, operation.dest, true)
                     end,
                     undo = function()
-                        delete_file(operation.dest, trash_dir .. utils.filename(operation.src), true)
+                        delete_file(operation.dest, self.trash_dir .. utils.filename(operation.src), true)
                     end,
                     src = path,
                     dest = dest_dir .. "/" .. utils.filename(path),
@@ -394,7 +329,7 @@ return {
                 table.insert(group.operations, operation)
             end
 
-            for path, _ in pairs(cut_files) do
+            for path, _ in pairs(self.cut_files) do
                 local operation
                 operation = {
                     exec = function()
@@ -408,31 +343,26 @@ return {
                 }
                 table.insert(group.operations, operation)
             end
-            history.position = history.position + 1
-            history.groups = vim.list_slice(history.groups, 1, history.position)
-            history.groups[history.position] = group
+            self.history.position = self.history.position + 1
+            self.history.groups = vim.list_slice(self.history.groups, 1, self.history.position)
+            self.history.groups[self.history.position] = group
 
-            yanked_files = {}
-            cut_files = {}
+            self.yanked_files = {}
+            self.cut_files = {}
 
             exec(group)
         end,
         -- create
-        ["c"] = function(line)
-            local location = loclist:get_location_at(line)
-            if location == nil then
-                return
-            end
-
+        ["c"] = function()
             local parent
 
-            if location.type == "directory" then
-                parent = location.path
+            if node.type == "directory" then
+                parent = node.path
             else
-                parent = location.parent
+                parent = node.parent
             end
 
-            open_directories[parent] = true
+            self.open_directories[parent] = true
 
             local name = vim.fn.input("file name: ")
 
@@ -448,7 +378,7 @@ return {
                     create_file(operation.dest)
                 end,
                 undo = function()
-                    delete_file(operation.dest, trash_dir .. name, true)
+                    delete_file(operation.dest, self.trash_dir .. name, true)
                 end,
                 src = nil,
                 dest = parent .. "/" .. name,
@@ -456,39 +386,28 @@ return {
 
             local group = { executed = false, operations = { operation } }
 
-            history.position = history.position + 1
-            history.groups = vim.list_slice(history.groups, 1, history.position)
-            history.groups[history.position] = group
+            self.history.position = self.history.position + 1
+            self.history.groups = vim.list_slice(self.history.groups, 1, self.history.position)
+            self.history.groups[self.history.position] = group
 
             exec(group)
         end,
         -- open current file
-        ["e"] = function(line)
-            local location = loclist:get_location_at(line)
-            if location == nil then
-                return
-            end
-
-            if location.type == "file" then
+        ["e"] = function()
+            if node.type == "file" then
                 vim.cmd("wincmd p")
-                vim.cmd("e " .. location.node.path)
+                vim.cmd("e " .. node.path)
             else
-                if open_directories[location.node.path] == nil then
-                    open_directories[location.node.path] = true
+                if self.open_directories[node.path] == nil then
+                    self.open_directories[node.path] = true
                 else
-                    open_directories[location.node.path] = nil
+                    self.open_directories[node.path] = nil
                 end
             end
         end,
         -- rename
-        ["r"] = function(line)
-            local location = loclist:get_location_at(line)
-
-            if location == nil then
-                return
-            end
-
-            local new_name = vim.fn.input('rename file "' .. location.node.name .. '" to: ')
+        ["r"] = function()
+            local new_name = vim.fn.input('rename file "' .. node.name .. '" to: ')
             local operation
 
             operation = {
@@ -498,47 +417,63 @@ return {
                 undo = function()
                     move_file(operation.dest, operation.src, true)
                 end,
-                src = location.node.path,
-                dest = location.node.parent .. "/" .. new_name,
+                src = node.path,
+                dest = node.parent .. "/" .. new_name,
             }
 
             local group = { executed = false, operations = { operation } }
 
-            history.position = history.position + 1
-            history.groups = vim.list_slice(history.groups, 1, history.position)
-            history.groups[history.position] = group
+            self.history.position = self.history.position + 1
+            self.history.groups = vim.list_slice(self.history.groups, 1, self.history.position)
+            self.history.groups[self.history.position] = group
 
             exec(group)
         end,
         -- undo
         ["u"] = function(_)
-            if history.position > 0 then
-                undo(history.groups[history.position])
-                history.position = history.position - 1
+            if self.history.position > 0 then
+                undo(self.history.groups[self.history.position])
+                self.history.position = self.history.position - 1
             end
         end,
         -- redo
         ["<C-r>"] = function(_)
-            if history.position < #history.groups then
-                history.position = history.position + 1
-                exec(history.groups[history.position])
+            if self.history.position < #self.history.groups then
+                self.history.position = self.history.position + 1
+                exec(self.history.groups[self.history.position])
             end
         end,
-        ["<CR>"] = function(line)
-            local location = loclist:get_location_at(line)
-            if location == nil then
-                return
-            end
-            if location.node.type == "file" then
+        ["<CR>"] = function()
+            if node.type == "file" then
                 vim.cmd("wincmd p")
-                vim.cmd("e " .. location.node.path)
+                vim.cmd("e " .. node.path)
             else
-                if open_directories[location.node.path] == nil then
-                    open_directories[location.node.path] = true
+                if self.open_directories[node.path] == nil then
+                    self.open_directories[node.path] = true
                 else
-                    open_directories[location.node.path] = nil
+                    self.open_directories[node.path] = nil
                 end
             end
         end,
-    },
-}
+    }
+
+    return keymaps
+end
+
+function files:draw_content()
+    local cwd = api.fn.getcwd()
+    local group_name = utils.shortest_path(cwd)
+
+    self.open_directories[cwd] = true
+
+    local node = { path = cwd, children = self:scan_dir(cwd) }
+
+    local groups = {
+        [group_name] = { items = self:build_loclist(node, 0), is_closed = not self.open_directories[cwd] },
+    }
+
+    local loclist = Loclist:new(groups, { omit_single_group = false, show_group_count = false })
+    return loclist:draw()
+end
+
+return files

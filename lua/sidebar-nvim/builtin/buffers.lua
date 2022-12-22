@@ -1,13 +1,13 @@
 local Section = require("sidebar-nvim.lib.section")
 local LineBuilder = require("sidebar-nvim.lib.line_builder")
 local reloaders = require("sidebar-nvim.lib.reloaders")
-local pasync = require("sidebar-nvim.lib.async")
+local async = require("sidebar-nvim.lib.async")
 local Loclist = require("sidebar-nvim.lib.loclist")
 local utils = require("sidebar-nvim.utils")
 local view = require("sidebar-nvim.view")
 local has_devicons, devicons = pcall(require, "nvim-web-devicons")
 
-local api = pasync.api
+local api = async.api
 
 local buffers = Section:new({
     title = "Buffers",
