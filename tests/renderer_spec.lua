@@ -59,6 +59,7 @@ describe("Renderer", function()
 
     it("second draw: with extmarks", function()
         draw_all()
+        draw_all()
 
         for i, section in ipairs(state.tabs.default) do
             eq(section._internal_state.extmark_id, i)
@@ -67,6 +68,5 @@ describe("Renderer", function()
 
     it_snapshot("draw: set_lines", function()
         draw_all()
-        assert(false, "this is broken, snapshot should contain 3 sections, but only 2 are being showed")
     end)
 end)

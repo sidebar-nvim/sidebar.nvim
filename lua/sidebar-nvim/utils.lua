@@ -19,7 +19,7 @@ local function get_builtin_section(name)
         return nil
     end
 
-    return section
+    return section:new()
 end
 
 function M.resolve_section(section)

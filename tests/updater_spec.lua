@@ -37,6 +37,11 @@ describe("Updater", function()
             total_mocked_sections = total_mocked_sections + 1
         end
 
+        -- builtin section
+        table.insert(sections, "test")
+        table.insert(sections, "test")
+        total_mocked_sections = total_mocked_sections + 2
+
         config.sections = { default = sections, test_tab = { Helpers.create_test_section(1) } }
         total_mocked_sections = total_mocked_sections + 1
 
@@ -50,8 +55,8 @@ describe("Updater", function()
     end)
 
     it("setup", function()
-        eq(#config.sections.default, 3)
-        eq(#state.tabs.default, 3)
+        eq(#config.sections.default, 5)
+        eq(#state.tabs.default, 5)
 
         eq(#config.sections.test_tab, 1)
         eq(#state.tabs.test_tab, 1)
@@ -65,6 +70,8 @@ describe("Updater", function()
 
             eq(type(section._internal_state.invalidate_cb), "function")
         end
+
+        assert.are.not_same(state.tabs.default[4]._internal_state, state.tabs.default[5]._internal_state)
 
         -- check if update lister is setup
         assert.is.truthy(updater._updates_listener_tx)

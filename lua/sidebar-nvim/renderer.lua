@@ -43,14 +43,11 @@ end
 
 -- @private
 local function get_last_extmark(tab_name)
-    local id = nil
+    local ids = vim.tbl_map(function(section)
+        return section._internal_state.extmark_id
+    end, state.tabs[tab_name])
 
-    for i, section in ipairs(state.tabs[tab_name] or {}) do
-        if section._internal_state.extmark_id then
-            id = section._internal_state.extmark_id
-            break
-        end
-    end
+    local id = #ids > 0 and ids[#ids] or nil
 
     if not id then
         return nil
@@ -59,7 +56,7 @@ local function get_last_extmark(tab_name)
     return get_extmark_by_id(id)
 end
 
-function M.draw_section(changes, max_width, tab_name, section_index, section, data)
+function M.draw_section(max_width, tab_name, section_index, section, data)
     -- TODO: we're passing section index everywhere, maybe it's time for a log span thing (tracing)
     logger:debug("drawing section", { tab_name = tab_name, section_index = section_index })
 
@@ -111,10 +108,25 @@ function M.draw_section(changes, max_width, tab_name, section_index, section, da
         end_row = end_row,
         lines = lines,
         hls = hls,
-        section = section,
         keymaps = keymaps,
     }
-    table.insert(changes, change)
+
+    api.nvim_buf_set_option(view.View.bufnr, "modifiable", true)
+
+    api.nvim_buf_set_lines(view.View.bufnr, change.start_row, change.end_row, false, change.lines)
+
+    section._internal_state.extmark_id =
+        api.nvim_buf_set_extmark(view.View.bufnr, M.extmarks_namespace_id, change.start_row, 0, {
+            id = section._internal_state.extmark_id,
+            end_row = change.end_row,
+            end_col = 0,
+            ephemeral = false,
+        })
+
+    M.render_hl(view.View.bufnr, change.hls, change.start_row, change.end_row)
+    M.attach_keymaps(tab_name, section, view.View.bufnr, change.keymaps, change.start_row, change.end_row)
+
+    api.nvim_buf_set_option(view.View.bufnr, "modifiable", false)
 end
 
 function M.draw(tab_name, section_index, section, data)
@@ -130,33 +142,7 @@ function M.draw(tab_name, section_index, section, data)
 
         local max_width = view.get_width()
 
-        local changes = {}
-
-        M.draw_section(changes, max_width, tab_name, section_index, section, data)
-
-        api.nvim_buf_set_option(view.View.bufnr, "modifiable", true)
-        for _, change in ipairs(changes) do
-            api.nvim_buf_set_lines(view.View.bufnr, change.start_row, change.end_row, false, change.lines)
-
-            section._internal_state.extmark_id =
-                api.nvim_buf_set_extmark(view.View.bufnr, M.extmarks_namespace_id, change.start_row, 0, {
-                    id = section._internal_state.extmark_id,
-                    end_row = change.end_row,
-                    end_col = 0,
-                    ephemeral = false,
-                })
-
-            M.render_hl(view.View.bufnr, change.hls, change.start_row, change.end_row)
-            M.attach_keymaps(
-                tab_name,
-                change.section,
-                view.View.bufnr,
-                change.keymaps,
-                change.start_row,
-                change.end_row
-            )
-        end
-        api.nvim_buf_set_option(view.View.bufnr, "modifiable", false)
+        M.draw_section(max_width, tab_name, section_index, section, data)
 
         if view.is_win_open() then
             -- TODO: do we still need this?
