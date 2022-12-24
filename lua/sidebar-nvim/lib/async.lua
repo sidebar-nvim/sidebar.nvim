@@ -86,4 +86,16 @@ helpers.fs = {
     end,
 }
 
+helpers.ui = {
+    -- wraps vim.ui.input into vim.schedule so it can safely run between coroutines, but still calls 'cb' inside a coroutine
+    input = vim.schedule_wrap(function(opts, cb)
+        vim.ui.input(opts, function(...)
+            local args = { ... }
+            async.run(function()
+                cb(unpack(args))
+            end)
+        end)
+    end),
+}
+
 return M
