@@ -8,6 +8,7 @@ local SectionProps = {
         groups = {},
         links = {},
     },
+    keymaps = {},
     _internal_state = {
         extmark_id = nil,
         invalidate_cb = nil,
@@ -75,6 +76,29 @@ function Section:invalidate()
     if self._internal_state.invalidate_cb then
         self._internal_state.invalidate_cb()
     end
+end
+
+function Section:bind_keymaps(args, opts)
+    opts = opts or {}
+
+    if type(opts.filter) == "table" then
+        local filter_table = opts.filter
+        opts.filter = function(key)
+            return not vim.tbl_contains(filter_table, key)
+        end
+    end
+
+    local keymaps = {}
+
+    for action_name, key in pairs(self.keymaps) do
+        if not opts.filter or opts.filter(key) then
+            keymaps[key] = function()
+                self[action_name](self, unpack(args or {}))
+            end
+        end
+    end
+
+    return keymaps
 end
 
 return Section

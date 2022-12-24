@@ -10,16 +10,20 @@ local test_section = Section:new({
 
     format = "value: %d",
     value = 0,
+
+    keymaps = {
+        increment_value = "u",
+    },
 })
+
+function test_section:increment_value()
+    self.value = self.value + 1
+end
 
 function test_section:draw_content()
     return {
         LineBuilder:new({
-            keymaps = {
-                u = function()
-                    self.value = self.value + 1
-                end,
-            },
+            keymaps = self:bind_keymaps(),
         }):left(string.format(self.format, self.value)),
     }
 end

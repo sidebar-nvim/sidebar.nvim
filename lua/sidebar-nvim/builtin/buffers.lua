@@ -27,6 +27,12 @@ local buffers = Section:new({
             SidebarNvimBuffersNumber = "SIdebarnvimLineNr",
         },
     },
+
+    keymaps = {
+        delete_buffer = "d",
+        edit_buffer = "e",
+        write_buffer = "w",
+    },
 })
 
 local function get_fileicon(filename)
@@ -49,14 +55,13 @@ local function get_fileicon(filename)
     return "   ", ""
 end
 
-local function create_keymaps(bufnr, filepath)
-    local keymaps = {
-        ["d"] = function()
-            local is_modified = vim.api.nvim_buf_get_option(bufnr, "modified")
+function buffers:delete_buffer(bufnr, bufname)
+    local is_modified = vim.api.nvim_buf_get_option(bufnr, "modified")
 
-            if is_modified then
-                local action = vim.fn.input('file "' .. filepath .. '" has been modified. [w]rite/[d]iscard/[c]ancel: ')
-
+    if is_modified then
+        vim.ui.input(
+            { prompt = 'file "' .. bufname .. '" has been modified. [w]rite/[d]iscard/[c]ancel: ' },
+            function(action)
                 if action == "w" then
                     vim.api.nvim_buf_call(bufnr, function()
                         vim.cmd("silent! w")
@@ -65,22 +70,23 @@ local function create_keymaps(bufnr, filepath)
                 elseif action == "d" then
                     vim.api.nvim_buf_delete(bufnr, { force = true })
                 end
-            else
-                vim.api.nvim_buf_delete(bufnr, { force = true })
             end
-        end,
-        ["e"] = function()
-            vim.cmd("wincmd p")
-            vim.cmd("e " .. filepath)
-        end,
-        ["w"] = function()
-            vim.api.nvim_buf_call(bufnr, function()
-                vim.cmd("silent! w")
-            end)
-        end,
-    }
+        )
+        return
+    end
 
-    return keymaps
+    vim.api.nvim_buf_delete(bufnr, { force = true })
+end
+
+function buffers:edit_buffer(_, bufname)
+    vim.cmd("wincmd p")
+    vim.cmd("e " .. bufname)
+end
+
+function buffers:write_buffer(bufnr)
+    vim.api.nvim_buf_call(bufnr, function()
+        vim.cmd("silent! w")
+    end)
 end
 
 function buffers:draw_content()
@@ -130,7 +136,7 @@ function buffers:draw_content()
                 end
 
                 local icon, icon_hl = get_fileicon(bufname)
-                local line = LineBuilder:new({ keymaps = create_keymaps(buffer, bufname) }):left(icon, icon_hl)
+                local line = LineBuilder:new({ keymaps = self:bind_keymaps({ buffer, bufname }) }):left(icon, icon_hl)
 
                 if self.show_numbers then
                     line = line:left(buffer .. " ", "SidebarNvimBuffersNumber")

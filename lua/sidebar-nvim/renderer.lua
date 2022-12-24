@@ -208,7 +208,7 @@ local function update_keymaps_map(tab_name, section, extmark_id, key, cb)
             local kb = known_ids[id]
             if kb and kb.cb then
                 pasync.run(function()
-                    kb.cb(kb.section)
+                    kb.cb()
                     kb.section:invalidate()
                 end)
             end

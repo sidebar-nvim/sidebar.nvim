@@ -41,6 +41,21 @@ local files = Section:new({
             SidebarNvimFilesCut = "DiagnosticError",
         },
     },
+
+    keymaps = {
+        file_delete = "d",
+        file_copy = "y",
+        file_cut = "c",
+        file_paste = "p",
+        file_create = "c",
+        file_edit = "e",
+        file_rename = "r",
+
+        path_open = "<CR>",
+
+        undo = "u",
+        redo = "<C-r>",
+    },
 })
 
 function files:get_fileicon(filename)
@@ -127,7 +142,7 @@ function files:build_loclist(directory, level)
 
             table.insert(
                 items,
-                LineBuilder:new({ keymaps = self:create_keymaps(node) })
+                LineBuilder:new({ keymaps = self:bind_keymaps({ node }) })
                     :left(string.rep("  ", level) .. icon.text .. " ", icon.hl)
                     :left(node.name)
                     :left(selected.text, selected.hl)
@@ -150,7 +165,7 @@ function files:build_loclist(directory, level)
 
             table.insert(
                 items,
-                LineBuilder:new({ keymaps = self:create_keymaps(node) })
+                LineBuilder:new({ keymaps = self:bind_keymaps({ node }) })
                     :left(string.rep("  ", level) .. icon .. " " .. node.name, "SidebarNvimFilesDirectory")
                     :left(selected.text, selected.hl)
             )
@@ -288,206 +303,198 @@ local function move_file(src, dest, confirm_overwrite)
     move_cb()
 end
 
-function files:create_keymaps(node)
-    local keymaps = {
-        -- delete
-        ["d"] = function()
-            local operation
-            operation = {
-                exec = function()
-                    delete_file(operation.src, operation.dest, true)
-                end,
-                undo = function()
-                    move_file(operation.dest, operation.src, true)
-                end,
-                src = node.path,
-                dest = self.trash_dir .. node.name,
-            }
-            local group = { executed = false, operations = { operation } }
-
-            self.history.position = self.history.position + 1
-            self.history.groups = vim.list_slice(self.history.groups, 1, self.history.position)
-            self.history.groups[self.history.position] = group
-
-            exec(group)
+function files:file_delete(node)
+    local operation
+    operation = {
+        exec = function()
+            delete_file(operation.src, operation.dest, true)
         end,
-        -- yank
-        ["y"] = function()
-            self.yanked_files[node.path] = true
-            self.cut_files = {}
+        undo = function()
+            move_file(operation.dest, operation.src, true)
         end,
-        -- cut
-        ["x"] = function()
-            self.cut_files[node.path] = true
-            self.yanked_files = {}
-        end,
-        -- paste
-        ["p"] = function()
-            local dest_dir
-
-            if node.type == "directory" then
-                dest_dir = node.path
-            else
-                dest_dir = node.parent
-            end
-
-            self.open_directories[dest_dir] = true
-
-            local group = { executed = false, operations = {} }
-
-            for path, _ in pairs(self.yanked_files) do
-                local operation
-                operation = {
-                    exec = function()
-                        copy_file(operation.src, operation.dest, true)
-                    end,
-                    undo = function()
-                        delete_file(operation.dest, self.trash_dir .. utils.filename(operation.src), true)
-                    end,
-                    src = path,
-                    dest = dest_dir .. "/" .. utils.filename(path),
-                }
-                table.insert(group.operations, operation)
-            end
-
-            for path, _ in pairs(self.cut_files) do
-                local operation
-                operation = {
-                    exec = function()
-                        move_file(operation.src, operation.dest, true)
-                    end,
-                    undo = function()
-                        move_file(operation.dest, operation.src, true)
-                    end,
-                    src = path,
-                    dest = dest_dir .. "/" .. utils.filename(path),
-                }
-                table.insert(group.operations, operation)
-            end
-            self.history.position = self.history.position + 1
-            self.history.groups = vim.list_slice(self.history.groups, 1, self.history.position)
-            self.history.groups[self.history.position] = group
-
-            self.yanked_files = {}
-            self.cut_files = {}
-
-            exec(group)
-        end,
-        -- create
-        ["c"] = function()
-            local parent
-
-            if node.type == "directory" then
-                parent = node.path
-            else
-                parent = node.parent
-            end
-
-            self.open_directories[parent] = true
-
-            async.ui.input({ prompt = "file name: " }, function(name)
-                if not name or string.len(vim.trim(name)) == 0 then
-                    return
-                end
-
-                local operation
-
-                operation = {
-                    success = true,
-                    exec = function()
-                        create_file(operation.dest)
-                    end,
-                    undo = function()
-                        delete_file(operation.dest, self.trash_dir .. name, true)
-                    end,
-                    src = nil,
-                    dest = parent .. "/" .. name,
-                }
-
-                local group = { executed = false, operations = { operation } }
-
-                self.history.position = self.history.position + 1
-                self.history.groups = vim.list_slice(self.history.groups, 1, self.history.position)
-                self.history.groups[self.history.position] = group
-
-                exec(group)
-
-                self:invalidate()
-            end)
-        end,
-        -- open current file
-        ["e"] = function()
-            if node.type == "file" then
-                vim.cmd("wincmd p")
-                vim.cmd("e " .. node.path)
-            else
-                if self.open_directories[node.path] == nil then
-                    self.open_directories[node.path] = true
-                else
-                    self.open_directories[node.path] = nil
-                end
-            end
-        end,
-        -- rename
-        ["r"] = function()
-            async.ui.input({ prompt = 'rename file "' .. node.name .. '" to: ' }, function(new_name)
-                if not new_name then
-                    return
-                end
-
-                local operation
-
-                operation = {
-                    exec = function()
-                        move_file(operation.src, operation.dest, true)
-                    end,
-                    undo = function()
-                        move_file(operation.dest, operation.src, true)
-                    end,
-                    src = node.path,
-                    dest = node.parent .. "/" .. new_name,
-                }
-
-                local group = { executed = false, operations = { operation } }
-
-                self.history.position = self.history.position + 1
-                self.history.groups = vim.list_slice(self.history.groups, 1, self.history.position)
-                self.history.groups[self.history.position] = group
-
-                exec(group)
-            end)
-        end,
-        -- TODO: undo and redo are not line-based, but rather section-based 🤔
-        -- so here they only work if the cursor is hovering a loclist line
-        -- undo
-        ["u"] = function(_)
-            if self.history.position > 0 then
-                undo(self.history.groups[self.history.position])
-                self.history.position = self.history.position - 1
-            end
-        end,
-        -- redo
-        ["<C-r>"] = function(_)
-            if self.history.position < #self.history.groups then
-                self.history.position = self.history.position + 1
-                exec(self.history.groups[self.history.position])
-            end
-        end,
-        ["<CR>"] = function()
-            if node.type == "file" then
-                vim.cmd("wincmd p")
-                vim.cmd("e " .. node.path)
-            else
-                if self.open_directories[node.path] == nil then
-                    self.open_directories[node.path] = true
-                else
-                    self.open_directories[node.path] = nil
-                end
-            end
-        end,
+        src = node.path,
+        dest = self.trash_dir .. node.name,
     }
+    local group = { executed = false, operations = { operation } }
 
-    return keymaps
+    self.history.position = self.history.position + 1
+    self.history.groups = vim.list_slice(self.history.groups, 1, self.history.position)
+    self.history.groups[self.history.position] = group
+
+    exec(group)
+end
+
+function files:file_copy(node)
+    self.yanked_files[node.path] = true
+    self.cut_files = {}
+end
+
+function files:file_cut(node)
+    self.cut_files[node.path] = true
+    self.yanked_files = {}
+end
+
+function files:file_paste(node)
+    local dest_dir
+
+    if node.type == "directory" then
+        dest_dir = node.path
+    else
+        dest_dir = node.parent
+    end
+
+    self.open_directories[dest_dir] = true
+
+    local group = { executed = false, operations = {} }
+
+    for path, _ in pairs(self.yanked_files) do
+        local operation
+        operation = {
+            exec = function()
+                copy_file(operation.src, operation.dest, true)
+            end,
+            undo = function()
+                delete_file(operation.dest, self.trash_dir .. utils.filename(operation.src), true)
+            end,
+            src = path,
+            dest = dest_dir .. "/" .. utils.filename(path),
+        }
+        table.insert(group.operations, operation)
+    end
+
+    for path, _ in pairs(self.cut_files) do
+        local operation
+        operation = {
+            exec = function()
+                move_file(operation.src, operation.dest, true)
+            end,
+            undo = function()
+                move_file(operation.dest, operation.src, true)
+            end,
+            src = path,
+            dest = dest_dir .. "/" .. utils.filename(path),
+        }
+        table.insert(group.operations, operation)
+    end
+    self.history.position = self.history.position + 1
+    self.history.groups = vim.list_slice(self.history.groups, 1, self.history.position)
+    self.history.groups[self.history.position] = group
+
+    self.yanked_files = {}
+    self.cut_files = {}
+
+    exec(group)
+end
+
+function files:file_create(node)
+    local parent
+
+    if node.type == "directory" then
+        parent = node.path
+    else
+        parent = node.parent
+    end
+
+    self.open_directories[parent] = true
+
+    async.ui.input({ prompt = "file name: " }, function(name)
+        if not name or string.len(vim.trim(name)) == 0 then
+            return
+        end
+
+        local operation
+
+        operation = {
+            success = true,
+            exec = function()
+                create_file(operation.dest)
+            end,
+            undo = function()
+                delete_file(operation.dest, self.trash_dir .. name, true)
+            end,
+            src = nil,
+            dest = parent .. "/" .. name,
+        }
+
+        local group = { executed = false, operations = { operation } }
+
+        self.history.position = self.history.position + 1
+        self.history.groups = vim.list_slice(self.history.groups, 1, self.history.position)
+        self.history.groups[self.history.position] = group
+
+        exec(group)
+
+        self:invalidate()
+    end)
+end
+
+function files:file_edit(node)
+    if node.type == "file" then
+        vim.cmd("wincmd p")
+        vim.cmd("e " .. node.path)
+    else
+        if self.open_directories[node.path] == nil then
+            self.open_directories[node.path] = true
+        else
+            self.open_directories[node.path] = nil
+        end
+    end
+end
+
+function files:file_rename(node)
+    async.ui.input({ prompt = 'rename file "' .. node.name .. '" to: ' }, function(new_name)
+        if not new_name then
+            return
+        end
+
+        local operation
+
+        operation = {
+            exec = function()
+                move_file(operation.src, operation.dest, true)
+            end,
+            undo = function()
+                move_file(operation.dest, operation.src, true)
+            end,
+            src = node.path,
+            dest = node.parent .. "/" .. new_name,
+        }
+
+        local group = { executed = false, operations = { operation } }
+
+        self.history.position = self.history.position + 1
+        self.history.groups = vim.list_slice(self.history.groups, 1, self.history.position)
+        self.history.groups[self.history.position] = group
+
+        exec(group)
+    end)
+end
+
+function files:undo()
+    if self.history.position > 0 then
+        undo(self.history.groups[self.history.position])
+        self.history.position = self.history.position - 1
+    end
+end
+
+function files:redo()
+    if self.history.position < #self.history.groups then
+        self.history.position = self.history.position + 1
+        exec(self.history.groups[self.history.position])
+    end
+end
+
+function files:path_open(node)
+    if node.type == "file" then
+        vim.cmd("wincmd p")
+        vim.cmd("e " .. node.path)
+    else
+        if self.open_directories[node.path] == nil then
+            self.open_directories[node.path] = true
+        else
+            self.open_directories[node.path] = nil
+        end
+    end
 end
 
 function files:draw_content()

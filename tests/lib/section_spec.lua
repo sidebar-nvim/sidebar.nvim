@@ -2,6 +2,7 @@ local LineBuilder = require("sidebar-nvim.lib.line_builder")
 local Section = require("sidebar-nvim.lib.section")
 
 local eq = assert.are.same
+local spy = require("luassert.spy")
 
 describe("Section", function()
     it("get title", function()
@@ -74,5 +75,43 @@ describe("Section", function()
         section2._internal_state.extmark_id = 2
         eq({ extmark_id = 2 }, section2._internal_state)
         eq({ extmark_id = 1 }, section1._internal_state)
+    end)
+
+    it("binds keymaps", function()
+        local section = Section:new({
+            title = "test",
+            icon = "#",
+
+            keymaps = {
+                my_action_1 = "a",
+                my_action_2 = "b",
+                my_action_3 = "<CR>",
+            },
+        })
+
+        section.my_action_1 = spy.new(function() end)
+        section.my_action_2 = spy.new(function() end)
+        section.my_action_3 = spy.new(function() end)
+
+        local ret = section:bind_keymaps({ "value1", 42, true })
+        eq(#vim.tbl_keys(ret), 3)
+
+        ret.a()
+        assert.spy(section.my_action_1).was.called(1)
+        assert.spy(section.my_action_2).was.called(0)
+        assert.spy(section.my_action_3).was.called(0)
+        assert.spy(section.my_action_1).was.called_with(section, "value1", 42, true)
+
+        ret.b()
+        assert.spy(section.my_action_1).was.called(1)
+        assert.spy(section.my_action_2).was.called(1)
+        assert.spy(section.my_action_3).was.called(0)
+        assert.spy(section.my_action_2).was.called_with(section, "value1", 42, true)
+
+        ret["<CR>"]()
+        assert.spy(section.my_action_1).was.called(1)
+        assert.spy(section.my_action_2).was.called(1)
+        assert.spy(section.my_action_3).was.called(1)
+        assert.spy(section.my_action_3).was.called_with(section, "value1", 42, true)
     end)
 end)
