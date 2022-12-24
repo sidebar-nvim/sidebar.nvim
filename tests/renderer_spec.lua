@@ -35,9 +35,13 @@ describe("Renderer", function()
         renderer.keymaps_namespace_id = nil
     end)
 
+    local function draw(index, section)
+        renderer.draw("default", index, section, section:draw())
+    end
+
     local function draw_all()
         for i, section in ipairs(state.tabs.default) do
-            renderer.draw("default", i, section, section:draw())
+            draw(i, section)
         end
     end
 
@@ -84,5 +88,56 @@ describe("Renderer", function()
         })
 
         draw_all()
+    end)
+
+    it_snapshot("section increasing size should move the next one below", function()
+        local section = state.tabs.default[2]
+
+        -- first draw
+        draw_all()
+
+        -- increase size
+        section.draw_content = function()
+            local ret = {}
+
+            for i = 1, 5 do
+                table.insert(ret, LineBuilder:new():left(i))
+            end
+
+            return ret
+        end
+
+        draw(2, section)
+    end)
+
+    it_snapshot("section increasing size should move the next one below: decreasing", function()
+        local section = state.tabs.default[2]
+
+        -- first draw
+        draw_all()
+
+        -- increase size
+        section.draw_content = function()
+            local ret = {}
+
+            for i = 1, 5 do
+                table.insert(ret, LineBuilder:new():left(i))
+            end
+
+            return ret
+        end
+
+        draw(2, section)
+
+        -- decrease size
+        section.draw_content = function()
+            local ret = {}
+
+            table.insert(ret, LineBuilder:new():left(1))
+
+            return ret
+        end
+
+        draw(2, section)
     end)
 end)

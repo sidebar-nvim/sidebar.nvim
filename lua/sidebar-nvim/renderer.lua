@@ -61,11 +61,15 @@ function M.draw_section(max_width, tab_name, section_index, section, data)
     logger:debug("drawing section", { tab_name = tab_name, section_index = section_index })
 
     local start_row = 0
+    -- we need this to make proper replacements and make neovim move things correctly
+    -- otherwise it will just replace the next sections
+    local previous_end_row = nil
 
     if section._internal_state.extmark_id then
         local extmark = get_extmark_by_id(section._internal_state.extmark_id)
         if extmark then
             start_row = extmark.start_row
+            previous_end_row = extmark.end_row
         else
             logger:error("error trying to find extmark", {
                 namespace_id = M.extmarks_namespace_id,
@@ -81,9 +85,10 @@ function M.draw_section(max_width, tab_name, section_index, section, data)
         if last_extmark then
             start_row = last_extmark.end_row
         end
-    end
 
-    local end_row = start_row + #data
+        -- since we don't have the old end_row yet, we calculate the initial end_row based on the length
+        previous_end_row = start_row + #data
+    end
 
     local lines = {}
     local hls = {}
@@ -105,7 +110,8 @@ function M.draw_section(max_width, tab_name, section_index, section, data)
 
     local change = {
         start_row = start_row,
-        end_row = end_row,
+        previous_end_row = previous_end_row,
+        end_row = start_row + #data,
         lines = lines,
         hls = hls,
         keymaps = keymaps,
@@ -113,7 +119,7 @@ function M.draw_section(max_width, tab_name, section_index, section, data)
 
     api.nvim_buf_set_option(view.View.bufnr, "modifiable", true)
 
-    api.nvim_buf_set_lines(view.View.bufnr, change.start_row, change.end_row, false, change.lines)
+    api.nvim_buf_set_lines(view.View.bufnr, change.start_row, change.previous_end_row, false, change.lines)
 
     section._internal_state.extmark_id =
         api.nvim_buf_set_extmark(view.View.bufnr, M.extmarks_namespace_id, change.start_row, 0, {
