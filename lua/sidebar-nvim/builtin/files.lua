@@ -58,6 +58,15 @@ local files = Section:new({
     },
 })
 
+function files:get_default_keymaps()
+    return self:bind_keymaps({}, {
+        filter = function(key)
+            -- we only want "undo" and "redo", every other action is line-based and don't really make sense if the cursor is not on top of a node
+            return vim.tbl_contains({ "undo", "redo" }, key)
+        end,
+    })
+end
+
 function files:get_fileicon(filename)
     if has_devicons and devicons.has_loaded() then
         local extension = filename:match("^.+%.(.+)$")
@@ -142,7 +151,7 @@ function files:build_loclist(directory, level)
 
             table.insert(
                 items,
-                LineBuilder:new({ keymaps = self:bind_keymaps({ node }) })
+                LineBuilder:new({ keymaps = self:bind_keymaps({ node }, { filter = { "redo", "undo" } }) })
                     :left(string.rep("  ", level) .. icon.text .. " ", icon.hl)
                     :left(node.name)
                     :left(selected.text, selected.hl)
@@ -165,7 +174,7 @@ function files:build_loclist(directory, level)
 
             table.insert(
                 items,
-                LineBuilder:new({ keymaps = self:bind_keymaps({ node }) })
+                LineBuilder:new({ keymaps = self:bind_keymaps({ node }, { filter = { "redo", "undo" } }) })
                     :left(string.rep("  ", level) .. icon .. " " .. node.name, "SidebarNvimFilesDirectory")
                     :left(selected.text, selected.hl)
             )

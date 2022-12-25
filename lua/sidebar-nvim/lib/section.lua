@@ -101,4 +101,8 @@ function Section:bind_keymaps(args, opts)
     return keymaps
 end
 
+function Section:get_default_keymaps()
+    return {}
+end
+
 return Section
