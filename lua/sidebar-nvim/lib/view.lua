@@ -51,7 +51,7 @@ local ViewProps = {
         -- tab id -> winnr
         winnr = {},
 
-        -- section_extmark_id -> key -> keymap_extmark_id -> cb
+        -- keymap_extmark_id -> key -> cb
         keymaps = {},
     },
 }
@@ -136,9 +136,6 @@ local function start_sections(view, sections)
         end
 
         local section = section_or_err
-        if not section then
-            print(vim.inspect({ index = section_index, data = section_data, ok = ok or "falsy" }))
-        end
         assert(section, "invalid section! index:" .. section_index)
 
         local reloaders = section.reloaders or {}
@@ -477,7 +474,7 @@ function View:draw_section(max_width, section_index, section, data)
 
         local current_keymaps = {}
         for key, cb in pairs(line.keymaps or {}) do
-            table.insert(current_keymaps, { key = key, cb = cb, start_col = 0, length = #current_line })
+            table.insert(current_keymaps, { key = key, cb = cb, start_col = 0, end_col = #current_line })
         end
 
         table.insert(keymaps, current_keymaps)
@@ -512,9 +509,8 @@ function View:draw_section(max_width, section_index, section, data)
 
     self:render_hl(change.hls, change.start_row, change.end_row)
 
+    -- TODO: maybe not clean and reuse old extmarks?
     api.nvim_buf_clear_namespace(self._internal_state.bufnr, ns.keymaps_namespace_id, change.start_row, change.end_row)
-    -- clear old keymaps
-    self._internal_state.keymaps[section._internal_state.extmark_id] = {}
 
     self:attach_change_keymaps(section, change.keymaps, change.start_row, change.end_row)
     self:attach_section_keymaps(section, change.start_row, change.end_row, 0, 0)
@@ -541,12 +537,8 @@ end
 
 -- @private
 function View:update_keymaps_map(section, extmark_id, key, cb)
-    self._internal_state.keymaps[section._internal_state.extmark_id] = self._internal_state.keymaps[section._internal_state.extmark_id]
-        or {}
-    self._internal_state.keymaps[section._internal_state.extmark_id][key] = self._internal_state.keymaps[section._internal_state.extmark_id][key]
-        or {}
-
-    self._internal_state.keymaps[section._internal_state.extmark_id][key][extmark_id] = { cb = cb, section = section }
+    self._internal_state.keymaps[extmark_id] = self._internal_state.keymaps[extmark_id] or {}
+    self._internal_state.keymaps[extmark_id][key] = { cb = cb, section = section }
 
     vim.keymap.set("n", key, function()
         local cursor = vim.api.nvim_win_get_cursor(0)
@@ -554,42 +546,40 @@ function View:update_keymaps_map(section, extmark_id, key, cb)
         local cursor_row = cursor[1] - 1
         local cursor_col = cursor[2]
 
-        local section_extmark_ids = self._internal_state.keymaps
+        local extmarks = vim.api.nvim_buf_get_extmarks(
+            self._internal_state.bufnr,
+            ns.keymaps_namespace_id,
+            0,
+            -1,
+            { details = true }
+        )
 
-        for _, known_ids_per_key in pairs(section_extmark_ids) do
-            local known_ids = known_ids_per_key[key] or {}
+        for _, extmark in ipairs(extmarks) do
+            local id = extmark[1]
 
-            for id, kb in pairs(known_ids) do
-                local extmark = vim.api.nvim_buf_get_extmark_by_id(
-                    self._internal_state.bufnr,
-                    ns.keymaps_namespace_id,
-                    id,
-                    { details = true }
-                )
-
-                -- if not extmark or #extmark == 0 then
-                --     goto continue
-                -- end
-
-                local start_row = extmark[1]
-                local end_row = extmark[3].end_row or extmark[1]
-                local start_col = extmark[2]
-                local end_col = extmark[3].end_col or extmark[2]
-
-                if
-                    cursor_row >= start_row
-                    and cursor_row <= end_row
-                    and cursor_col >= start_col
-                    and cursor_col <= end_col
-                then
-                    async.run(function()
-                        kb.cb()
-                        kb.section:invalidate()
-                    end)
-                end
-
-                -- ::continue::
+            local kb = (self._internal_state.keymaps[id] or {})[key]
+            if not kb then
+                goto continue
             end
+
+            local start_row = extmark[2]
+            local end_row = extmark[4].end_row or extmark[2]
+            local start_col = extmark[3]
+            local end_col = extmark[4].end_col or extmark[3]
+
+            -- based on this: https://github.com/neovim/neovim/pull/21393/files#diff-7a0fd644bfc20cec6b227e43716f4e27a46e8a65d76c73933a3d288940f8080bR115-R117
+            if
+                (cursor_row >= start_row and cursor_row <= end_row) -- within the rows of the extmark
+                and (cursor_row > start_row or cursor_col >= start_col) -- either not the first row, or in range of the col
+                and (cursor_row < end_row or cursor_col < end_col) -- either not in the last row or in range of the col
+            then
+                async.run(function()
+                    kb.cb()
+                    kb.section:invalidate()
+                end)
+            end
+
+            ::continue::
         end
     end, {
         buffer = self._internal_state.bufnr,
@@ -610,7 +600,6 @@ function View:attach_change_keymaps(section, keymaps, start_row, end_row)
                 ns.keymaps_namespace_id,
                 line_index,
                 kb.start_col,
-                -- NOTE: end_col = length?
                 { end_col = kb.end_col, end_row = line_index }
             )
 

@@ -110,17 +110,17 @@ describe("View: keymaps", function()
         eq(#extmarks, 6)
 
         -- this is the row in which the line of our test section will end up
-        send_keymap("a", 2, 0)
+        send_keymap("a", 3, 0)
         assert.spy(cb_1).was.called(1)
         assert.spy(cb_2).was.called(0)
         assert.spy(cb_3).was.called(0)
 
-        send_keymap("b", 6, 0)
+        send_keymap("b", 7, 0)
         assert.spy(cb_1).was.called(1)
         assert.spy(cb_2).was.called(1)
         assert.spy(cb_3).was.called(0)
 
-        send_keymap("c", 10, 0)
+        send_keymap("c", 11, 0)
         assert.spy(cb_1).was.called(1)
         assert.spy(cb_2).was.called(1)
         assert.spy(cb_3).was.called(1)
@@ -143,33 +143,33 @@ describe("View: keymaps", function()
         eq(6, #extmarks)
 
         -- this is the row in which the line of our test section will end up
-        send_keymap("a", 2, 0)
+        send_keymap("a", 3, 0)
         assert.spy(cb_1).was.called(1)
         assert.spy(cb_2).was.called(0)
         assert.spy(cb_3).was.called(0)
         assert.spy(cb_s).was.called(0)
 
-        send_keymap("b", 6, 0)
+        send_keymap("b", 7, 0)
         assert.spy(cb_1).was.called(1)
         assert.spy(cb_2).was.called(1)
         assert.spy(cb_3).was.called(0)
         assert.spy(cb_s).was.called(0)
 
-        send_keymap("c", 10, 0)
+        send_keymap("c", 11, 0)
         assert.spy(cb_1).was.called(1)
         assert.spy(cb_2).was.called(1)
         assert.spy(cb_3).was.called(1)
         assert.spy(cb_s).was.called(0)
 
-        send_keymap("u", 1, 0)
+        send_keymap("u", 2, 0)
         assert.spy(cb_1).was.called(1)
         assert.spy(cb_2).was.called(1)
         assert.spy(cb_3).was.called(1)
         assert.spy(cb_s).was.called(0)
 
-        local start_row = 4
+        local start_row = 5
         local calls = 0
-        for row = start_row, start_row + 3 do
+        for row = start_row, start_row + 2 do
             calls = calls + 1
             send_keymap("u", row, 0)
             assert.spy(cb_1).was.called(1)
@@ -187,9 +187,9 @@ describe("View: keymaps", function()
 
         eq(#extmarks, 6)
 
-        for i = 1, 10 do
+        for i = 1, 5 do
             -- this is the row in which the line of our test section will end up
-            send_keymap("a", 2, 0)
+            send_keymap("a", 3, 0)
             assert.spy(cb_1).was.called(i)
             async.util.sleep(500)
         end

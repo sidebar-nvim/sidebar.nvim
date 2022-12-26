@@ -83,15 +83,15 @@ function Section:bind_keymaps(args, opts)
 
     if type(opts.filter) == "table" then
         local filter_table = opts.filter
-        opts.filter = function(key)
-            return not vim.tbl_contains(filter_table, key)
+        opts.filter = function(action_name)
+            return vim.tbl_contains(filter_table, action_name)
         end
     end
 
     local keymaps = {}
 
     for action_name, key in pairs(self.keymaps) do
-        if not opts.filter or opts.filter(key) then
+        if not opts.filter or opts.filter(action_name) then
             keymaps[key] = function()
                 self[action_name](self, unpack(args or {}))
             end

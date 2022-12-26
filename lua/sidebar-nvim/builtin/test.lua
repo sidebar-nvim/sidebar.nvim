@@ -26,13 +26,13 @@ function test_section:increment_value_2()
 end
 
 function test_section:get_default_keymaps()
-    return self:bind_keymaps({}, { filter = { "increment_value" } })
+    return self:bind_keymaps({}, { filter = { "increment_value_2" } })
 end
 
 function test_section:draw_content()
     return {
         LineBuilder:new({
-            keymaps = self:bind_keymaps({}, { filter = { "increment_value_2" } }),
+            keymaps = self:bind_keymaps({}, { filter = { "increment_value" } }),
         }):left(string.format(self.format, self.value)),
     }
 end
