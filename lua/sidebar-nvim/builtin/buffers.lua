@@ -4,7 +4,6 @@ local reloaders = require("sidebar-nvim.lib.reloaders")
 local async = require("sidebar-nvim.lib.async")
 local Loclist = require("sidebar-nvim.lib.loclist")
 local utils = require("sidebar-nvim.utils")
-local view = require("sidebar-nvim.view")
 local has_devicons, devicons = pcall(require, "nvim-web-devicons")
 
 local api = async.api
@@ -89,13 +88,13 @@ function buffers:write_buffer(bufnr)
     end)
 end
 
-function buffers:draw_content()
+function buffers:draw_content(ctx)
     local current_buffer = api.nvim_get_current_buf()
 
     local loclist_items = {}
 
     for _, buffer in ipairs(api.nvim_list_bufs()) do
-        if buffer ~= view.View.bufnr then
+        if buffer ~= ctx.view:get_bufnr() then
             local ignored = false
             local bufname = api.nvim_buf_get_name(buffer)
 

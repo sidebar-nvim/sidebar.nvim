@@ -1,5 +1,6 @@
 local LineBuilder = require("sidebar-nvim.lib.line_builder")
 local async = require("sidebar-nvim.lib.async")
+local ns = require("sidebar-nvim.lib.namespaces")
 local spy = require("luassert.spy")
 
 Helpers = {}
@@ -31,6 +32,10 @@ function Helpers.create_test_section(id)
         draw = spy.new(function()
             return { LineBuilder:new():left(id) }
         end),
+
+        get_default_keymaps = function()
+            return {}
+        end,
 
         _test_data = {},
     }
@@ -75,7 +80,7 @@ local function check_snapsot_hls(filename, hls)
     async.fs.write_file(filename, vim.json.encode(hls))
 end
 
-function Helpers.test_snapshot(test_name, opts)
+function Helpers.test_snapshot(bufnr, test_name, opts)
     opts = vim.tbl_extend("force", { with_hl = true }, opts or {})
 
     local base_filename = test_name:gsub("%s", "_"):gsub(":", "_"):gsub("/", "_")
@@ -84,10 +89,7 @@ function Helpers.test_snapshot(test_name, opts)
 
     local snapshot_filename_hl = string.format("__snapshots__/%s_hls.snap", base_filename)
 
-    local view = require("sidebar-nvim.view")
-    local renderer = require("sidebar-nvim.renderer")
-
-    local lines = async.api.nvim_buf_get_lines(view.View.bufnr, 0, -1, false)
+    local lines = async.api.nvim_buf_get_lines(bufnr, 0, -1, false)
     lines = table.concat(lines, "\n")
 
     check_snapsot_lines(snapshot_filename_lines, lines)
@@ -96,7 +98,7 @@ function Helpers.test_snapshot(test_name, opts)
         return
     end
 
-    local hls = async.api.nvim_buf_get_extmarks(view.View.bufnr, renderer.hl_namespace_id, 0, -1, { details = true })
+    local hls = async.api.nvim_buf_get_extmarks(bufnr, ns.hl_namespace_id, 0, -1, { details = true })
 
     check_snapsot_hls(snapshot_filename_hl, hls)
 end
@@ -104,8 +106,9 @@ end
 function Helpers.it_snapshot_wrapper(it, prefix)
     return function(test_name, test_fn)
         it(test_name, function()
-            test_fn()
-            Helpers.test_snapshot(string.format("%s: %s", prefix, test_name))
+            local view = test_fn()
+            assert(view, "snapshot test must return a View obj")
+            Helpers.test_snapshot(view._internal_state.bufnr, string.format("%s: %s", prefix, test_name))
         end)
     end
 end

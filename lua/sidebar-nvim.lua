@@ -1,12 +1,12 @@
 local pasync = require("sidebar-nvim.lib.async")
 local colors = require("sidebar-nvim.colors")
-local view = require("sidebar-nvim.view")
-local updater = require("sidebar-nvim.updater")
+local View = require("sidebar-nvim.lib.view")
 local config = require("sidebar-nvim.config")
-local renderer = require("sidebar-nvim.renderer")
 local logger = require("sidebar-nvim.logger")
 
-local M = {}
+local M = {
+    views = {},
+}
 
 function M.setup(opts)
     opts = opts or {}
@@ -20,22 +20,27 @@ function M.setup(opts)
     colors.setup()
 
     pasync.run(function()
-        view.setup()
-        renderer.setup()
-        updater.setup()
+        for view_name, view_opts in pairs(config.views or {}) do
+            M.views[view_name] = View:new(view_opts.sections, view_opts)
+        end
     end)
+end
+
+function M.get_view(name)
+    return M.views[name or "default"]
+end
+
+function M.open(view_name)
+    local view = M.views[view_name or "default"]
+    if view then
+        view:open()
+    end
 end
 
 function M._vim_enter()
-    pasync.run(function()
-        view.open()
-    end)
-end
-
-function M._session_load_post()
-    pasync.run(function()
-        view._wipe_rogue_buffer()
-    end)
+    -- pasync.run(function()
+    --     M.get_view().open()
+    -- end)
 end
 
 return M

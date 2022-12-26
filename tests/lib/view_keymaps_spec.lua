@@ -1,8 +1,7 @@
 local LineBuilder = require("sidebar-nvim.lib.line_builder")
-local renderer = require("sidebar-nvim.renderer")
-local view = require("sidebar-nvim.view")
-local state = require("sidebar-nvim.state")
+local View = require("sidebar-nvim.lib.view")
 local async = require("sidebar-nvim.lib.async")
+local ns = require("sidebar-nvim.lib.namespaces")
 local TestSection = require("sidebar-nvim.builtin.test")
 local api = async.api
 
@@ -23,15 +22,19 @@ TestSection = TestSection:with({
     end,
 })
 
-describe("Renderer keymaps", function()
+describe("View: keymaps", function()
     local cb_1 = nil
     local cb_2 = nil
     local cb_3 = nil
 
+    local view = nil
+
     before_each(function()
+        local sections = {}
+
         cb_1 = spy.new(function() end)
         table.insert(
-            state.tabs.default,
+            sections,
             TestSection:with({
                 title = "t1",
                 format = "a1: %d",
@@ -43,7 +46,7 @@ describe("Renderer keymaps", function()
 
         cb_2 = spy.new(function() end)
         table.insert(
-            state.tabs.default,
+            sections,
             TestSection:with({
                 title = "t2",
                 format = "b2: %d",
@@ -55,7 +58,7 @@ describe("Renderer keymaps", function()
 
         cb_3 = spy.new(function() end)
         table.insert(
-            state.tabs.default,
+            sections,
             TestSection:with({
                 title = "t3",
                 format = "c3: %d",
@@ -65,86 +68,77 @@ describe("Renderer keymaps", function()
             })
         )
 
-        view.setup()
-        view.open()
-        view.focus()
-
-        renderer.setup()
+        view = View:new(sections)
+        view:open({ focus = true })
     end)
 
-    after_each(function()
-        state.tabs.default = {}
-        renderer.hl_namespace_id = nil
-        renderer.extmarks_namespace_id = nil
-        renderer.keymaps_namespace_id = nil
-        renderer.keymaps_map = {}
-    end)
+    after_each(function() end)
 
     local function draw(index, section)
-        renderer.draw("default", index, section, section:draw())
+        view:draw(index, section, section:draw())
     end
 
     local function draw_all()
-        for i, section in ipairs(state.tabs.default) do
+        for i, section in ipairs(view.sections) do
             draw(i, section)
         end
     end
 
     local function send_keymap(key, row, col)
-        assert(view.get_winnr(), "could not get winnr")
-        assert(vim.api.nvim_get_current_buf() == view.View.bufnr, "wrong buffer")
-        api.nvim_win_set_cursor(view.get_winnr(), { row + 1, col + 1 })
+        assert(view:get_winnr(), "could not get winnr")
+        assert(vim.api.nvim_get_current_buf() == view._internal_state.bufnr, "wrong buffer")
+        api.nvim_win_set_cursor(view:get_winnr(), { row, col })
 
         key = api.nvim_replace_termcodes(key, true, false, true)
         api.nvim_feedkeys(key, "x", false)
     end
 
     it("setup", function()
-        assert.is.truthy(renderer.hl_namespace_id)
-        assert.is.truthy(renderer.extmarks_namespace_id)
-        assert.is.truthy(renderer.keymaps_namespace_id)
+        assert.is.truthy(ns.hl_namespace_id)
+        assert.is.truthy(ns.extmarks_namespace_id)
+        assert.is.truthy(ns.keymaps_namespace_id)
 
-        eq(api.nvim_buf_is_loaded(view.View.bufnr), true)
+        eq(api.nvim_buf_is_loaded(view._internal_state.bufnr), true)
     end)
 
-    -- it("creates the correct keymaps for each line", function()
-    --     draw_all()
-    --
-    --     local extmarks =
-    --         api.nvim_buf_get_extmarks(view.View.bufnr, renderer.keymaps_namespace_id, 0, -1, { details = true })
-    --
-    --     eq(#extmarks, 4)
-    --
-    --     -- this is the row in which the line of our test section will end up
-    --     send_keymap("a", 2, 0)
-    --     assert.spy(cb_1).was.called(1)
-    --     assert.spy(cb_2).was.called(0)
-    --     assert.spy(cb_3).was.called(0)
-    --
-    --     send_keymap("b", 6, 0)
-    --     assert.spy(cb_1).was.called(1)
-    --     assert.spy(cb_2).was.called(1)
-    --     assert.spy(cb_3).was.called(0)
-    --
-    --     send_keymap("c", 10, 0)
-    --     assert.spy(cb_1).was.called(1)
-    --     assert.spy(cb_2).was.called(1)
-    --     assert.spy(cb_3).was.called(1)
-    -- end)
+    it("creates the correct keymaps for each line", function()
+        draw_all()
+
+        local extmarks =
+            api.nvim_buf_get_extmarks(view._internal_state.bufnr, ns.keymaps_namespace_id, 0, -1, { details = true })
+
+        eq(#extmarks, 6)
+
+        -- this is the row in which the line of our test section will end up
+        send_keymap("a", 2, 0)
+        assert.spy(cb_1).was.called(1)
+        assert.spy(cb_2).was.called(0)
+        assert.spy(cb_3).was.called(0)
+
+        send_keymap("b", 6, 0)
+        assert.spy(cb_1).was.called(1)
+        assert.spy(cb_2).was.called(1)
+        assert.spy(cb_3).was.called(0)
+
+        send_keymap("c", 10, 0)
+        assert.spy(cb_1).was.called(1)
+        assert.spy(cb_2).was.called(1)
+        assert.spy(cb_3).was.called(1)
+    end)
 
     it("creates the correct keymaps for each line and default section keymaps", function()
         local cb_s = spy.new(function() end)
 
-        state.tabs.default[2].keymaps = { my_action_1 = "u" }
-        state.tabs.default[2].my_action_1 = cb_s
-        state.tabs.default[2].get_default_keymaps = function(self)
+        view.sections[2].keymaps = { my_action_1 = "u" }
+        view.sections[2].my_action_1 = cb_s
+        view.sections[2].get_default_keymaps = function(self)
             return self:bind_keymaps({ 42 })
         end
 
         draw_all()
 
         local extmarks =
-            api.nvim_buf_get_extmarks(view.View.bufnr, renderer.keymaps_namespace_id, 0, -1, { details = true })
+            api.nvim_buf_get_extmarks(view._internal_state.bufnr, ns.keymaps_namespace_id, 0, -1, { details = true })
 
         eq(6, #extmarks)
 
@@ -167,7 +161,7 @@ describe("Renderer keymaps", function()
         assert.spy(cb_3).was.called(1)
         assert.spy(cb_s).was.called(0)
 
-        send_keymap("u", 0, 0)
+        send_keymap("u", 1, 0)
         assert.spy(cb_1).was.called(1)
         assert.spy(cb_2).was.called(1)
         assert.spy(cb_3).was.called(1)
@@ -182,6 +176,22 @@ describe("Renderer keymaps", function()
             assert.spy(cb_2).was.called(1)
             assert.spy(cb_3).was.called(1)
             assert.spy(cb_s).was.called(calls)
+        end
+    end)
+
+    it("multiple keypresses with proper cleaning", function()
+        draw_all()
+
+        local extmarks =
+            api.nvim_buf_get_extmarks(view._internal_state.bufnr, ns.keymaps_namespace_id, 0, -1, { details = true })
+
+        eq(#extmarks, 6)
+
+        for i = 1, 10 do
+            -- this is the row in which the line of our test section will end up
+            send_keymap("a", 2, 0)
+            assert.spy(cb_1).was.called(i)
+            async.util.sleep(500)
         end
     end)
 end)

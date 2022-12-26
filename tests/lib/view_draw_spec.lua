@@ -1,7 +1,5 @@
 local LineBuilder = require("sidebar-nvim.lib.line_builder")
-local renderer = require("sidebar-nvim.renderer")
-local view = require("sidebar-nvim.view")
-local state = require("sidebar-nvim.state")
+local View = require("sidebar-nvim.lib.view")
 local async = require("sidebar-nvim.lib.async")
 local TestSection = require("sidebar-nvim.builtin.test")
 
@@ -14,68 +12,55 @@ local eq = assert.are.same
 
 local describe = async.tests.describe
 local it = async.tests.it
-local it_snapshot = Helpers.it_snapshot_wrapper(it, "renderer")
+local it_snapshot = Helpers.it_snapshot_wrapper(it, "view_draw")
 local before_each = async.tests.before_each
 local after_each = async.tests.after_each
 
-describe("Renderer", function()
+describe("View: Draw", function()
+    local view = nil
+
     before_each(function()
-        table.insert(state.tabs.default, TestSection:with({ title = "t1", format = "a1: %d" }))
-        table.insert(state.tabs.default, TestSection:with({ title = "t2", format = "b2: %d" }))
-        table.insert(state.tabs.default, TestSection:with({ title = "t3", format = "c3: %d" }))
+        local sections = {}
 
-        view.setup()
-        renderer.setup()
+        table.insert(sections, TestSection:with({ title = "t1", format = "a1: %d" }))
+        table.insert(sections, TestSection:with({ title = "t2", format = "b2: %d" }))
+        table.insert(sections, TestSection:with({ title = "t3", format = "c3: %d" }))
+
+        view = View:new(sections)
     end)
 
-    after_each(function()
-        state.tabs.default = {}
-        renderer.hl_namespace_id = nil
-        renderer.extmarks_namespace_id = nil
-        renderer.keymaps_namespace_id = nil
-    end)
+    after_each(function() end)
 
     local function draw(index, section)
-        renderer.draw("default", index, section, section:draw())
+        view:draw(index, section, section:draw())
     end
 
     local function draw_all()
-        for i, section in ipairs(state.tabs.default) do
+        for i, section in ipairs(view.sections) do
             draw(i, section)
         end
     end
 
     it("setup", function()
-        assert.is.truthy(renderer.hl_namespace_id)
-        assert.is.truthy(renderer.extmarks_namespace_id)
-        assert.is.truthy(renderer.keymaps_namespace_id)
+        eq(api.nvim_buf_is_loaded(view._internal_state.bufnr), true)
 
-        eq(api.nvim_buf_is_loaded(view.View.bufnr), true)
-    end)
-
-    it("first draw: no extmarks", function()
-        draw_all()
-
-        for i, section in ipairs(state.tabs.default) do
+        for i, section in ipairs(view.sections) do
             eq(section._internal_state.extmark_id, i)
         end
     end)
 
     it("second draw: with extmarks", function()
         draw_all()
-        draw_all()
-
-        for i, section in ipairs(state.tabs.default) do
-            eq(section._internal_state.extmark_id, i)
-        end
     end)
 
     it_snapshot("draw: set_lines", function()
         draw_all()
+
+        return view
     end)
 
     it_snapshot("draw: custom hls", function()
-        state.tabs.default[1] = TestSection:with({
+        view.sections[1] = TestSection:with({
             draw_header = function()
                 return { LineBuilder:new():left("header", "header_hl"):left("22", "hl22") }
             end,
@@ -88,10 +73,12 @@ describe("Renderer", function()
         })
 
         draw_all()
+
+        return view
     end)
 
     it_snapshot("section increasing size should move the next one below", function()
-        local section = state.tabs.default[2]
+        local section = view.sections[2]
 
         -- first draw
         draw_all()
@@ -108,10 +95,12 @@ describe("Renderer", function()
         end
 
         draw(2, section)
+
+        return view
     end)
 
     it_snapshot("section increasing size should move the next one below: decreasing", function()
-        local section = state.tabs.default[2]
+        local section = view.sections[2]
 
         -- first draw
         draw_all()
@@ -139,5 +128,7 @@ describe("Renderer", function()
         end
 
         draw(2, section)
+
+        return view
     end)
 end)
