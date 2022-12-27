@@ -4,7 +4,8 @@ M.enable_profile = false
 
 M.views = {
     default = {
-        sections = { "datetime", "git", "diagnostics" },
+        -- sections = { "datetime", "git", "diagnostics" },
+        sections = { "datetime" },
         winopts = {
             position = "left",
             width = 35,

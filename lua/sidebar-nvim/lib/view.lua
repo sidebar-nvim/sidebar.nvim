@@ -356,6 +356,15 @@ function View:close()
     api.nvim_win_hide(self:get_winnr())
 end
 
+function View:toggle()
+    if self:is_open() then
+        self:close()
+        return
+    end
+
+    self:open()
+end
+
 function View:resize()
     if not self:is_open() then
         return
@@ -509,8 +518,7 @@ function View:draw_section(max_width, section_index, section, data)
 
     self:render_hl(change.hls, change.start_row, change.end_row)
 
-    -- TODO: maybe not clean and reuse old extmarks?
-    api.nvim_buf_clear_namespace(self._internal_state.bufnr, ns.keymaps_namespace_id, change.start_row, change.end_row)
+    self:clear_old_keymap_extmarks(change.start_row, change.end_row)
 
     self:attach_change_keymaps(section, change.keymaps, change.start_row, change.end_row)
     self:attach_section_keymaps(section, change.start_row, change.end_row, 0, 0)
@@ -587,6 +595,22 @@ function View:update_keymaps_map(section, extmark_id, key, cb)
         nowait = true,
         desc = "SidebarNvim section keybinding",
     })
+end
+
+function View:clear_old_keymap_extmarks(start_row, end_row)
+    local extmarks = api.nvim_buf_get_extmarks(
+        self._internal_state.bufnr,
+        ns.keymaps_namespace_id,
+        { start_row, 0 },
+        { end_row + 1, 0 },
+        {}
+    )
+
+    for _, extmark in ipairs(extmarks) do
+        self._internal_state.keymaps[extmark[1]] = nil
+    end
+
+    api.nvim_buf_clear_namespace(self._internal_state.bufnr, ns.keymaps_namespace_id, start_row, end_row)
 end
 
 -- @private
