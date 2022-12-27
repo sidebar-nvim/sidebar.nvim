@@ -68,7 +68,7 @@ function M.on_tab_change()
     end)
 end
 
-function M.on_win_leave()
+function M.on_win_closed()
     async.run(function()
         local opened_views = {}
 
@@ -78,7 +78,7 @@ function M.on_win_leave()
             end
         end
 
-        if #opened_views > 0 then
+        if #opened_views == 0 then
             return
         end
 
@@ -87,11 +87,16 @@ function M.on_win_leave()
         local wins_in_tabpage = vim.tbl_filter(function(w)
             return api.nvim_win_get_tabpage(w) == curtab
         end, windows)
-        if #windows - #opened_views == 0 then
+        if #windows - #opened_views == 1 then
             for _, view in ipairs(opened_views) do
-                view:close()
+                -- detach from the WinClosed event
+                vim.defer_fn(function()
+                    async.run(function()
+                        view:close()
+                    end)
+                end, 100)
             end
-        elseif #wins_in_tabpage - #opened_views == 0 then
+        elseif #wins_in_tabpage - #opened_views == 1 then
             api.nvim_command(":tabclose")
         end
     end)
@@ -143,7 +148,7 @@ function M.create_autocommands()
     vim.api.nvim_create_autocmd("WinClosed", {
         group = group_id,
         callback = function()
-            M.on_win_leave()
+            M.on_win_closed()
         end,
     })
 end
