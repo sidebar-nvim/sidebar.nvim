@@ -2,16 +2,6 @@ local M = {}
 local api = vim.api
 local luv = vim.loop
 
-function M.echo_warning(msg)
-    api.nvim_command("echohl WarningMsg")
-    api.nvim_command("echom '[SidebarNvim] " .. msg:gsub("'", "''") .. "'")
-    api.nvim_command("echohl None")
-end
-
-function M.sidebar_nvim_cursor_move_callback(direction)
-    return string.format(":lua require('sidebar-nvim')._on_cursor_move('%s')<CR>", direction)
-end
-
 local function get_builtin_section(name)
     local ret, section = pcall(require, "sidebar-nvim.builtin." .. name)
     if not ret then
@@ -76,10 +66,6 @@ function M.shortest_path(path)
     end
 
     return path
-end
-
-function M.dir(path)
-    return path:match("^(.+/)")
 end
 
 function M.filename(path)
