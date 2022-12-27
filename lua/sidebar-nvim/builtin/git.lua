@@ -17,6 +17,7 @@ local git = Section:new({
     reloaders = {
         reloaders.autocmd({ "BufLeave" }, "term://*"),
         reloaders.autocmd({ "ShellCmdPost" }, "*"),
+        reloaders.autocmd({ "DirChanged" }, "*"),
     },
 
     keymaps = {

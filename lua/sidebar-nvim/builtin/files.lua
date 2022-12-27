@@ -31,6 +31,7 @@ local files = Section:new({
     reloaders = {
         reloaders.autocmd({ "BufLeave" }, "term://*"),
         reloaders.autocmd({ "ShellCmdPost" }, "*"),
+        reloaders.autocmd({ "DirChanged" }, "*"),
     },
 
     highlights = {
