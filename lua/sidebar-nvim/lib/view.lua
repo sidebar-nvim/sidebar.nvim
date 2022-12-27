@@ -4,6 +4,7 @@ local logger = require("sidebar-nvim.logger")
 local colors = require("sidebar-nvim.colors")
 local LineBuilder = require("sidebar-nvim.lib.line_builder")
 local ns = require("sidebar-nvim.lib.namespaces")
+local Error = require("sidebar-nvim.error")
 
 local api = async.api
 
@@ -132,7 +133,13 @@ local function start_sections(view, sections)
     for section_index, section_data in ipairs(sections) do
         local ok, section_or_err = pcall(utils.resolve_section, section_data)
         if not ok then
-            error(section_or_err .. " " .. " index: " .. section_index .. " view_id: " .. view.id)
+            error(
+                Error:new(
+                    section_or_err .. " " .. " index: " .. section_index .. " view_id: " .. view.id,
+                    { section_index = section_index, view_id = view.id },
+                    section_or_err
+                )
+            )
         end
 
         local section = section_or_err
@@ -349,7 +356,7 @@ function View:close()
         if #modified_buffers == 0 then
             api.nvim_command(":silent q!")
         else
-            utils.echo_warning("cannot exit with modified buffers!")
+            logger:warn("cannot exit with modified buffers!")
             api.nvim_command(":sb " .. modified_buffers[1])
         end
     end

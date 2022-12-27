@@ -248,7 +248,10 @@ local function create_file(dest)
     if not utils.file_exist(parent_folders) then
         local success = async.fn.mkdir(parent_folders, "p")
         if not success then
-            utils.echo_warning("Could not create directory " .. parent_folders)
+            logger:warn(
+                "Could not create directory " .. parent_folders,
+                { section = "files", operation = "create_file+fs_open", dest = dest }
+            )
         end
     end
 

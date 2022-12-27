@@ -32,7 +32,7 @@ function LocList:new(groups, opts)
 end
 
 function LocList:draw_group(ctx, name, with_name)
-    local group = self.groups[name]
+    local group = vim.tbl_extend("force", { items = {} }, self.groups[name])
 
     if #group.items == 0 and not self.show_empty_groups then
         return {}

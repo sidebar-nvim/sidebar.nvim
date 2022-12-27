@@ -2,10 +2,12 @@ local M = {}
 local api = vim.api
 local luv = vim.loop
 
+local logger = require("sidebar-nvim.logger")
+
 local function get_builtin_section(name)
     local ret, section = pcall(require, "sidebar-nvim.builtin." .. name)
     if not ret then
-        M.echo_warning("error trying to load section: " .. name)
+        logger:warn("error trying to load section: " .. name)
         return nil
     end
 
@@ -86,46 +88,6 @@ function M.truncate(s, size)
     else
         return s:sub(1, size) .. ".."
     end
-end
-
-function M.async_cmd(cmd, args, callback)
-    local stdout = luv.new_pipe(false)
-    local stderr = luv.new_pipe(false)
-    local handle
-
-    handle = luv.spawn(cmd, { args = args, stdio = { nil, stdout, stderr }, cwd = luv.cwd() }, function()
-        if callback then
-            callback()
-        end
-
-        luv.read_stop(stdout)
-        luv.read_stop(stderr)
-        stdout:close()
-        stderr:close()
-        handle:close()
-    end)
-
-    luv.read_start(stdout, function(err, _)
-        if err ~= nil then
-            vim.schedule(function()
-                M.echo_warning(err)
-            end)
-        end
-    end)
-
-    luv.read_start(stderr, function(err, data)
-        if data ~= nil then
-            vim.schedule(function()
-                M.echo_warning(data)
-            end)
-        end
-
-        if err ~= nil then
-            vim.schedule(function()
-                M.echo_warning(err)
-            end)
-        end
-    end)
 end
 
 -- @param opts table
