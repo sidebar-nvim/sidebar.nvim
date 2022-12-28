@@ -68,7 +68,7 @@ function diagnostics:draw_content(ctx)
             local filepath = api.nvim_buf_get_name(bufnr)
             local filename = vim.fs.basename(filepath)
 
-            local is_current_file_opened = current_buf_filename == filename
+            local is_cursor_in_current_file = current_buf_filename == filename
 
             local message = diag.message
             message = message:gsub("\n", " ")
@@ -81,10 +81,15 @@ function diagnostics:draw_content(ctx)
                 icon = level
             end
 
+            local is_closed = not is_cursor_in_current_file
+            if self.opened_groups[filename] then
+                is_closed = false
+            end
+
             groups[filename] = groups[filename]
                 or {
                     items = {},
-                    is_closed = not is_current_file_opened and not self.opened_groups[filename],
+                    is_closed = is_closed,
                     keymaps = self:bind_keymaps({ filepath }, { filter = { "file_toggle" } }),
                 }
 
