@@ -8,8 +8,6 @@ local utils = require("sidebar-nvim.utils")
 local has_devicons, devicons = pcall(require, "nvim-web-devicons")
 local logger = require("sidebar-nvim.logger")
 
-local api = async.api
-
 local git = Section:new({
     title = "Git Status",
     icon = "",

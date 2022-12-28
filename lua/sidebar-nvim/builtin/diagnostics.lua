@@ -1,110 +1,28 @@
-local Loclist = require("sidebar-nvim.components.loclist")
-local config = require("sidebar-nvim.config")
+local Section = require("sidebar-nvim.lib.section")
+local LineBuilder = require("sidebar-nvim.lib.line_builder")
+local reloaders = require("sidebar-nvim.lib.reloaders")
+local async = require("sidebar-nvim.lib.async")
+local Loclist = require("sidebar-nvim.lib.loclist")
 
-local loclist = Loclist:new({})
+local api = async.api
 
-local severity_level = { "Error", "Warning", "Info", "Hint" }
-local icons = { "", "", "", "" }
-local use_icons = true
-
-local function get_diagnostics()
-    local current_buf = vim.api.nvim_get_current_buf()
-    local current_buf_filepath = vim.api.nvim_buf_get_name(current_buf)
-    local current_buf_filename = vim.fn.fnamemodify(current_buf_filepath, ":t")
-
-    local open_bufs = vim.api.nvim_list_bufs()
-
-    local all_diagnostics = vim.diagnostic.get()
-    local loclist_items = {}
-
-    for _, diag in pairs(all_diagnostics) do
-        local bufnr = diag.bufnr
-        if open_bufs[bufnr] ~= nil and vim.api.nvim_buf_is_loaded(bufnr) then
-            local filepath = vim.api.nvim_buf_get_name(bufnr)
-            local filename = vim.fn.fnamemodify(filepath, ":t")
-
-            local message = diag.message
-            message = message:gsub("\n", " ")
-
-            local severity = diag.severity
-            local level = severity_level[severity]
-            local icon = icons[severity]
-
-            if not use_icons then
-                icon = level
-            end
-
-            table.insert(loclist_items, {
-                group = filename,
-                left = {
-                    { text = icon .. " ", hl = "SidebarNvimLspDiagnostics" .. level },
-                    {
-                        text = diag.lnum + 1,
-                        hl = "SidebarNvimLspDiagnosticsLineNumber",
-                    },
-                    { text = ":" },
-                    {
-                        text = (diag.col + 1) .. " ",
-                        hl = "SidebarNvimLspDiagnosticsColNumber",
-                    },
-                    { text = message },
-                },
-                lnum = diag.lnum + 1,
-                col = diag.col + 1,
-                filepath = filepath,
-            })
-        end
-    end
-
-    local previous_state = vim.tbl_map(function(group)
-        return group.is_closed
-    end, loclist.groups)
-
-    loclist:set_items(loclist_items, { remove_groups = true })
-    loclist:close_all_groups()
-
-    for group_name, is_closed in pairs(previous_state) do
-        if loclist.groups[group_name] ~= nil then
-            loclist.groups[group_name].is_closed = is_closed
-        end
-    end
-
-    if loclist.groups[current_buf_filename] ~= nil then
-        loclist.groups[current_buf_filename].is_closed = false
-    end
-end
-
-return {
+local diagnostics = Section:new({
     title = "Diagnostics",
-    icon = config["diagnostics"].icon,
-    setup = function(_)
-        vim.api.nvim_exec(
-            [[
-          augroup sidebar_nvim_diagnostics_update
-              autocmd!
-              autocmd DiagnosticChanged * lua require'sidebar-nvim.builtin.diagnostics'.update()
-          augroup END
-          ]],
-            false
-        )
+    icon = "",
 
-        get_diagnostics()
-    end,
-    update = function(_)
-        get_diagnostics()
-    end,
-    draw = function(ctx)
-        local lines = {}
-        local hl = {}
+    severity_level = { "Error", "Warning", "Info", "Hint" },
+    icons = { "", "", "", "" },
+    use_icons = true,
 
-        loclist:draw(ctx, lines, hl)
+    reloaders = { reloaders.autocmd({ "DiagnosticChanged", "BufEnter" }, "*") },
 
-        if lines == nil or #lines == 0 then
-            return "<no diagnostics>"
-        else
-            return { lines = lines, hl = hl }
-        end
-    end,
+    opened_groups = {},
+
+    keymaps = {
+        file_toggle = "t",
+        file_edit = "e",
+    },
+
     highlights = {
         groups = {},
         links = {
@@ -116,19 +34,92 @@ return {
             SidebarNvimLspDiagnosticsColNumber = "SidebarNvimLineNr",
         },
     },
-    bindings = {
-        ["t"] = function(line)
-            loclist:toggle_group_at(line)
-        end,
-        ["e"] = function(line)
-            local location = loclist:get_location_at(line)
-            if location == nil then
-                return
+})
+
+function diagnostics:file_toggle(filepath)
+    local filename = vim.fs.basename(filepath)
+    if self.opened_groups[filename] then
+        self.opened_groups[filename] = nil
+    else
+        self.opened_groups[filename] = true
+    end
+end
+
+function diagnostics:file_edit(filepath, location)
+    vim.cmd("wincmd p")
+    vim.cmd("e " .. filepath)
+    vim.api.nvim_win_set_cursor(0, { location.lnum, location.col })
+end
+
+function diagnostics:draw_content(ctx)
+    local groups = {}
+
+    local current_buf = api.nvim_get_current_buf()
+    local current_buf_filepath = api.nvim_buf_get_name(current_buf)
+    local current_buf_filename = vim.fs.basename(current_buf_filepath)
+
+    local open_bufs = api.nvim_list_bufs()
+
+    local all_diagnostics = vim.diagnostic.get()
+
+    for _, diag in pairs(all_diagnostics) do
+        local bufnr = diag.bufnr
+        if open_bufs[bufnr] ~= nil and api.nvim_buf_is_loaded(bufnr) then
+            local filepath = api.nvim_buf_get_name(bufnr)
+            local filename = vim.fs.basename(filepath)
+
+            local is_current_file_opened = current_buf_filename == filename
+
+            local message = diag.message
+            message = message:gsub("\n", " ")
+
+            local severity = diag.severity
+            local level = self.severity_level[severity]
+            local icon = self.icons[severity]
+
+            if not self.use_icons then
+                icon = level
             end
-            -- TODO: I believe there is a better way to do this, but I haven't had the time to do investigate
-            vim.cmd("wincmd p")
-            vim.cmd("e " .. location.filepath)
-            vim.fn.cursor(location.lnum, location.col)
-        end,
-    },
-}
+
+            groups[filename] = groups[filename]
+                or {
+                    items = {},
+                    is_closed = not is_current_file_opened and not self.opened_groups[filename],
+                    keymaps = self:bind_keymaps({ filepath }, { filter = { "file_toggle" } }),
+                }
+
+            table.insert(
+                groups[filename].items,
+                LineBuilder:new({
+                    keymaps = self:bind_keymaps({
+                        filepath,
+                        {
+
+                            lnum = diag.lnum + 1,
+                            col = diag.col + 1,
+                        },
+                    }, { filter = { "file_edit" } }),
+                })
+                    :left(icon .. " ", "SidebarNvimLspDiagnostics" .. level)
+                    :left(diag.lnum + 1, "SidebarNvimLspDiagnosticsLineNumber")
+                    :left(":")
+                    :left((diag.col + 1) .. " ", "SidebarNvimLspDiagnosticsColNumber")
+                    :left(message)
+            )
+        end
+    end
+
+    -- forget filenames without diagnostics
+    for _, filepath in ipairs(vim.tbl_keys(self.opened_groups)) do
+        local filename = vim.fs.basename(filepath)
+        if groups[filename] == nil then
+            self.opened_groups[filename] = nil
+        end
+    end
+
+    local loclist = Loclist:new(groups)
+
+    return loclist:draw()
+end
+
+return diagnostics
