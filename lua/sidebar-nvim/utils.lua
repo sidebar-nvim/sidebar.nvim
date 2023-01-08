@@ -70,11 +70,6 @@ function M.shortest_path(path)
     return path
 end
 
-function M.filename(path)
-    local split = vim.split(path, "/")
-    return split[#split]
-end
-
 function M.file_exist(path)
     local _, err = luv.fs_stat(path)
     return err == nil

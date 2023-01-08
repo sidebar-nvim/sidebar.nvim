@@ -1,19 +1,16 @@
 local Section = require("sidebar-nvim.lib.section")
 local LineBuilder = require("sidebar-nvim.lib.line_builder")
 local reloaders = require("sidebar-nvim.lib.reloaders")
-local pasync = require("sidebar-nvim.lib.async")
-local Job = require("sidebar-nvim.lib.async.job")
+local async = require("sidebar-nvim.lib.async")
+local Job = require("plenary.job")
 local Loclist = require("sidebar-nvim.lib.loclist")
-local utils = require("sidebar-nvim.utils")
-local luv = vim.loop
+local logger = require("sidebar-nvim.logger")
 
 local todos = Section:new({
     title = "TODOs",
     icon = "",
     ignored_paths = { "~" },
     initially_closed = false,
-
-    state = {},
 
     icons = {
         TODO = { text = "", hl = "SidebarNvimTodoIconTodo" },
@@ -22,6 +19,19 @@ local todos = Section:new({
         PERF = { text = "", hl = "SidebarNvimTodoIconPerf" },
         NOTE = { text = "", hl = "SidebarNvimTodoIconNote" },
         FIX = { text = "", hl = "SidebarNvimTodoIconFix" },
+    },
+
+    closed_groups = {},
+
+    reloaders = {
+        reloaders.autocmd({ "BufWritePost" }, "*"),
+        reloaders.autocmd({ "ShellCmdPost" }, "*"),
+        reloaders.autocmd({ "DirChanged" }, "*"),
+    },
+
+    keymaps = {
+        group_toggle = "t",
+        file_edit = "e",
     },
 
     highlights = {
@@ -40,28 +50,23 @@ local todos = Section:new({
     },
 })
 
-function todos:draw_content()
-    local groups = {
-        TODO = {},
-        HACK = {},
-        WARN = {},
-        PERF = {},
-        NOTE = {},
-        FIX = {},
-    }
-
-    local loclist = Loclist:new(groups, {
-        show_empty_groups = false,
-    })
-
-    return loclist:draw()
+function todos:group_toggle(group_name)
+    if self.closed_groups[group_name] then
+        self.closed_groups[group_name] = false
+    else
+        self.closed_groups[group_name] = true
+    end
 end
 
-local current_path_ignored_cache = false
+function todos:file_edit(item)
+    vim.cmd("wincmd p")
+    vim.cmd("e " .. item.filepath)
+    vim.api.nvim_win_set_cursor(0, { item.lnum, item.col })
+end
 
-local function is_current_path_ignored()
+function todos:is_current_path_ignored()
     local cwd = vim.loop.cwd()
-    for _, path in pairs(config.todos.ignored_paths or {}) do
+    for _, path in pairs(self.ignored_paths or {}) do
         if vim.fn.expand(path) == cwd then
             return true
         end
@@ -70,24 +75,14 @@ local function is_current_path_ignored()
     return false
 end
 
-local function async_update(ctx)
-    current_path_ignored_cache = is_current_path_ignored()
-    if current_path_ignored_cache then
-        return
-    end
-
-    local todos = {}
-
-    local stdout = luv.new_pipe(false)
-    local stderr = luv.new_pipe(false)
-    local handle
-    local cmd
-    local args
+function todos:run_search()
     local keywords_regex = [[(TODO|NOTE|FIX|PERF|HACK|WARN)]]
     local regex_end = [[\s*(\(.*\))?:.*]]
+    local cmd
+    local args
 
     -- Use ripgrep by default, if it's installed
-    if vim.fn.executable("rg") == 1 then
+    if async.fn.executable("rg") == 1 then
         cmd = "rg"
         args = {
             "--no-hidden",
@@ -100,152 +95,89 @@ local function async_update(ctx)
         args = { "grep", "-no", "--column", "-EI", keywords_regex .. regex_end }
     end
 
-    handle = luv.spawn(cmd, {
+    local output, code = Job:new({
+        command = cmd,
         args = args,
-        stdio = { nil, stdout, stderr },
-        cmd = luv.cwd(),
-    }, function()
-        local loclist_items = {}
-        for _, items in pairs(todos) do
-            for _, item in ipairs(items) do
-                table.insert(loclist_items, {
-                    group = item.tag,
-                    left = {
-                        icons[item.tag],
-                        { text = " " .. item.lnum, hl = "SidebarNvimTodoLineNumber" },
-                        { text = ":" },
-                        { text = item.col, hl = "SidebarNvimTodoColNumber" },
-                        { text = utils.truncate(item.text, ctx.width / 2) },
-                    },
-                    right = {
-                        {
-                            text = utils.filename(item.filepath),
-                            hl = "SidebarNvimLineNr",
-                        },
-                    },
-                    filepath = item.filepath,
-                    order = item.filepath,
-                    lnum = item.lnum,
-                    col = item.col,
+        env = vim.env,
+        cwd = vim.loop.cwd(),
+        interactive = false,
+    }):sync()
+    if code ~= 0 then
+        logger:error(
+            string.format("error trying to run '%s'", cmd),
+            { command = cmd, args = args, code = code, output = output }
+        )
+        return {}
+    end
+
+    output = output or {}
+
+    local current_todos = {}
+
+    for _, line in ipairs(output) do
+        if line ~= "" then
+            local filepath, lnum, col, tag, text = line:match("^(.+):(%d+):(%d+):([%w%(%)]+):(.*)$")
+
+            if filepath and tag then
+                local tag_with_scope = { tag:match("(%w+)%(.*%)") }
+                if #tag_with_scope > 0 then
+                    tag = tag_with_scope[1]
+                end
+
+                if not current_todos[tag] then
+                    current_todos[tag] = {}
+                end
+
+                local category_tbl = current_todos[tag]
+
+                table.insert(category_tbl, {
+                    filepath = filepath,
+                    lnum = tonumber(lnum),
+                    col = tonumber(col),
+                    tag = tag,
+                    text = vim.trim(text),
                 })
             end
         end
-        loclist:set_items(loclist_items, { remove_groups = false })
+    end
 
-        luv.read_stop(stdout)
-        luv.read_stop(stderr)
-        stdout:close()
-        stderr:close()
-        handle:close()
-    end)
-
-    luv.read_start(stdout, function(err, data)
-        if data == nil then
-            return
-        end
-
-        for _, line in ipairs(vim.split(data, "\n")) do
-            if line ~= "" then
-                local filepath, lnum, col, tag, text = line:match("^(.+):(%d+):(%d+):([%w%(%)]+):(.*)$")
-
-                if filepath and tag then
-                    local tag_with_scope = { tag:match("(%w+)%(.*%)") }
-                    if #tag_with_scope > 0 then
-                        tag = tag_with_scope[1]
-                    end
-
-                    if not todos[tag] then
-                        todos[tag] = {}
-                    end
-
-                    local category_tbl = todos[tag]
-
-                    category_tbl[#category_tbl + 1] = {
-                        filepath = filepath,
-                        lnum = lnum,
-                        col = col,
-                        tag = tag,
-                        text = text,
-                    }
-                end
-            end
-        end
-
-        if err ~= nil then
-            vim.schedule(function()
-                utils.echo_warning(err)
-            end)
-        end
-    end)
-
-    luv.read_start(stderr, function(err, data)
-        if data == nil then
-            return
-        end
-
-        if err ~= nil then
-            vim.schedule(function()
-                utils.echo_warning(err)
-            end)
-        end
-    end)
+    return current_todos
 end
 
-return {
-    title = "TODOs",
-    icon = config.todos.icon,
-    draw = function(ctx)
-        local lines = {}
-        local hl = {}
+function todos:draw_content()
+    if self:is_current_path_ignored() then
+        return { LineBuilder:new():left("<path ignored>") }
+    end
 
-        if current_path_ignored_cache then
-            lines = { "<path ignored>" }
-        end
+    local current_todos = self:run_search()
 
-        loclist:draw(ctx, lines, hl)
+    local groups = {}
 
-        if #lines == 0 then
-            lines = { "<no TODOs>" }
-        end
+    for _, group_name in ipairs(vim.tbl_keys(current_todos)) do
+        local is_closed = self.closed_groups[group_name] ~= nil and self.closed_groups[group_name]
+            or self.initially_closed
 
-        return { lines = lines, hl = hl }
-    end,
-    bindings = {
-        ["t"] = function(line)
-            loclist:toggle_group_at(line)
-        end,
-        ["e"] = function(line)
-            local location = loclist:get_location_at(line)
-            if not location then
-                return
-            end
-            vim.cmd("wincmd p")
-            vim.cmd("e " .. location.filepath)
-            vim.fn.cursor(location.lnum, location.col)
-        end,
-    },
-    setup = function(ctx)
-        async_update(ctx)
-    end,
-    update = function(ctx)
-        async_update(ctx)
-    end,
-    toggle_all = function()
-        loclist:toggle_all_groups()
-    end,
-    close_all = function()
-        loclist:close_all_groups()
-    end,
-    open_all = function()
-        loclist:open_all_groups()
-    end,
-    open = function(group)
-        loclist:open_group(group)
-    end,
-    close = function(group)
-        loclist:close_group(group)
-    end,
-    toggle = function(group)
-        loclist:toggle_group(group)
-    end,
-}
+        groups[group_name] = {
+            keymaps = self:bind_keymaps({ group_name }, { filter = { "group_toggle" } }),
+            is_closed = is_closed,
+            items = vim.tbl_map(function(item)
+                local icon = self.icons[group_name]
+                return LineBuilder:new({ keymaps = self:bind_keymaps({ item }, { filter = { "file_edit" } }) })
+                    :left(icon.text, icon.hl)
+                    :left(" " .. item.lnum, "SidebarNvimTodoLineNumber")
+                    :left(":")
+                    :left(item.col, "SidebarNvimTodoColNumber")
+                    :left(" " .. item.text)
+                    :right(vim.fs.basename(item.filepath), "SidebarNvimLineNr")
+            end, current_todos[group_name]),
+        }
+    end
+
+    local loclist = Loclist:new(groups, {
+        show_empty_groups = false,
+    })
+
+    return loclist:draw()
+end
+
+return todos

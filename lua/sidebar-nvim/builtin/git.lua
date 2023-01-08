@@ -50,11 +50,17 @@ function git:file_edit(filepath)
 end
 
 function git:file_stage(filepath)
-    self:run({ "add", filepath })
+    local output, code = self:run({ "add", filepath })
+    if code ~= 0 then
+        logger:error("error trying to stage file", { output = output, filepath = filepath, code = code })
+    end
 end
 
 function git:file_unstage(filepath)
-    self:run({ "restore", "--staged", filepath })
+    local output, code = self:run({ "restore", "--staged", filepath })
+    if code ~= 0 then
+        logger:error("error trying to unstage file", { output = output, filepath = filepath, code = code })
+    end
 end
 
 -- parse line from git diff --numstat into a loclist item
