@@ -54,6 +54,9 @@ local ViewProps = {
 
         -- keymap_extmark_id -> key -> cb
         keymaps = {},
+
+        -- section_index -> Array<lines builders>
+        draw_cache = {},
     },
 }
 
@@ -93,7 +96,7 @@ end
 
 -- @private
 local function create_buf(view_id, bufopts)
-    local bufnr = api.nvim_create_buf(false, false)
+    local bufnr = api.nvim_create_buf(false, true)
 
     local bufname = "SidebarNvimView" .. view_id
     wipe_rogue_buffer(bufname)
@@ -123,6 +126,7 @@ local function section_update(view, section_index, section, logger_props)
     data = data or {}
 
     view:draw(section_index, section, data)
+    view._internal_state.draw_cache[section_index] = data
 
     logger:debug("section update done", { view_id = view.id, section_index = section_index })
 end
@@ -315,6 +319,8 @@ function View:open(opts)
         end
     end
 
+    self:redraw()
+
     -- TODO: float
     -- TODO: should allow buffer override in float windows?
 end
@@ -383,6 +389,8 @@ function View:resize()
 
     set_width(self:get_winnr(), self.winopts.width)
     set_height(self:get_winnr(), self.winopts.height)
+
+    self:redraw()
 end
 
 function View:get_extmark_by_id(id)
@@ -411,6 +419,14 @@ function View:get_last_extmark()
     end
 
     return self:get_extmark_by_id(id)
+end
+
+-- @private
+function View:redraw()
+    for section_index, data in pairs(self._internal_state.draw_cache) do
+        local section = self.sections[section_index]
+        self:draw(section_index, section, data)
+    end
 end
 
 -- @private
