@@ -198,6 +198,13 @@ local function prevent_buffer_override(view)
                     or curbuf == view._internal_state.bufnr
                     or view.winopts.position == "float"
                 then
+                    if curbuf == view._internal_state.bufnr then
+                        -- we need to clear the extmarks because, because calling `:edit` on the buffer will wipe everything
+                        -- and the extmarks positions will be lost. Also calling `:edit` will trigger BufWinEnter
+                        -- only clear *after* startup
+                        local should_clear = vim.v.vim_did_enter == 1
+                        view:redraw(should_clear)
+                    end
                     return
                 end
 
@@ -422,9 +429,19 @@ function View:get_last_extmark()
 end
 
 -- @private
-function View:redraw()
+function View:redraw(clear_extmarks)
+    if clear_extmarks then
+        api.nvim_buf_clear_namespace(self._internal_state.bufnr, ns.extmarks_namespace_id, 0, -1)
+
+        -- since we rely on the last extmark in memory, we need to clear everything one of them before hand before redrawing
+        for _, section in pairs(self.sections) do
+            section._internal_state.extmark_id = nil
+        end
+    end
+
     for section_index, data in pairs(self._internal_state.draw_cache) do
         local section = self.sections[section_index]
+
         self:draw(section_index, section, data)
     end
 end
