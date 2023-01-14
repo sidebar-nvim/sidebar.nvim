@@ -18,10 +18,6 @@ M.section_separator = { "", "-----", "" }
 
 M.section_title_separator = { "" }
 
-M.git = { icon = "" }
-
-M.symbols = { icon = "ƒ" }
-
 M.containers = { icon = "", use_podman = false, attach_shell = "/bin/sh", show_all = true, interval = 5000 }
 
 return M

@@ -332,7 +332,7 @@ function View:open(opts)
     -- TODO: should allow buffer override in float windows?
 end
 
---- Returns the window number for sidebar-nvim within the tabpage specified
+--- Returns the window number for this view within the tabpage specified
 ---@param tabpage number|nil: (optional) the number of the chosen tabpage. Defaults to current tabpage.
 ---@return number | nil
 function View:get_winnr(tabpage)
@@ -689,6 +689,8 @@ function View:attach_section_keymaps(section, start_row, end_row, start_col, end
     end
 end
 
+-- Returns the buffer number for this view
+---@return number
 function View:get_bufnr()
     return self._internal_state.bufnr
 end
