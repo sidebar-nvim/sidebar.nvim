@@ -15,7 +15,7 @@ local Symbols = Section:new({
     title = "Symbols",
     icon = "ƒ",
 
-    reloaders = { reloaders.autocmd({ "InsertLeave" }, "*") },
+    reloaders = { reloaders.autocmd({ "InsertLeave", "LspAttach" }, "*") },
 
     opened_symbols = {},
     last_buffer = nil,
