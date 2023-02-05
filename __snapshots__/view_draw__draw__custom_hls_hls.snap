@@ -5,12 +5,12 @@
     0,
     {
       "priority": 4096,
-      "end_col": 4,
-      "hl_group": "SidebarNvimNormal",
+      "hl_eol": false,
       "end_row": 0,
-      "end_right_gravity": false,
       "right_gravity": true,
-      "hl_eol": false
+      "end_right_gravity": false,
+      "end_col": 4,
+      "hl_group": "SidebarNvimSectionTitle"
     }
   ],
   [
@@ -19,12 +19,12 @@
     0,
     {
       "priority": 4096,
-      "end_col": 0,
-      "hl_group": "SidebarNvimNormal",
+      "hl_eol": false,
       "end_row": 1,
-      "end_right_gravity": false,
       "right_gravity": true,
-      "hl_eol": false
+      "end_right_gravity": false,
+      "end_col": 0,
+      "hl_group": "SidebarNvimNormal"
     }
   ],
   [
@@ -33,12 +33,12 @@
     0,
     {
       "priority": 4096,
-      "end_col": 5,
-      "hl_group": "SidebarNvimNormal",
+      "hl_eol": false,
       "end_row": 2,
-      "end_right_gravity": false,
       "right_gravity": true,
-      "hl_eol": false
+      "end_right_gravity": false,
+      "end_col": 5,
+      "hl_group": "SidebarNvimNormal"
     }
   ],
   [
@@ -47,12 +47,12 @@
     0,
     {
       "priority": 4096,
-      "end_col": 0,
-      "hl_group": "SidebarNvimNormal",
+      "hl_eol": false,
       "end_row": 3,
-      "end_right_gravity": false,
       "right_gravity": true,
-      "hl_eol": false
+      "end_right_gravity": false,
+      "end_col": 0,
+      "hl_group": "SidebarNvimNormal"
     }
   ],
   [
@@ -61,12 +61,12 @@
     0,
     {
       "priority": 4096,
-      "end_col": 4,
-      "hl_group": "SidebarNvimNormal",
+      "hl_eol": false,
       "end_row": 4,
-      "end_right_gravity": false,
       "right_gravity": true,
-      "hl_eol": false
+      "end_right_gravity": false,
+      "end_col": 4,
+      "hl_group": "SidebarNvimSectionTitle"
     }
   ],
   [
@@ -75,12 +75,12 @@
     0,
     {
       "priority": 4096,
-      "end_col": 0,
-      "hl_group": "SidebarNvimNormal",
+      "hl_eol": false,
       "end_row": 5,
-      "end_right_gravity": false,
       "right_gravity": true,
-      "hl_eol": false
+      "end_right_gravity": false,
+      "end_col": 0,
+      "hl_group": "SidebarNvimNormal"
     }
   ],
   [
@@ -89,12 +89,12 @@
     0,
     {
       "priority": 4096,
-      "end_col": 5,
-      "hl_group": "SidebarNvimNormal",
+      "hl_eol": false,
       "end_row": 6,
-      "end_right_gravity": false,
       "right_gravity": true,
-      "hl_eol": false
+      "end_right_gravity": false,
+      "end_col": 5,
+      "hl_group": "SidebarNvimNormal"
     }
   ],
   [
@@ -103,12 +103,12 @@
     0,
     {
       "priority": 4096,
-      "end_col": 0,
-      "hl_group": "SidebarNvimNormal",
+      "hl_eol": false,
       "end_row": 7,
-      "end_right_gravity": false,
       "right_gravity": true,
-      "hl_eol": false
+      "end_right_gravity": false,
+      "end_col": 0,
+      "hl_group": "SidebarNvimNormal"
     }
   ],
   [
@@ -117,12 +117,12 @@
     0,
     {
       "priority": 4096,
-      "end_col": 4,
-      "hl_group": "SidebarNvimNormal",
+      "hl_eol": false,
       "end_row": 8,
-      "end_right_gravity": false,
       "right_gravity": true,
-      "hl_eol": false
+      "end_right_gravity": false,
+      "end_col": 4,
+      "hl_group": "SidebarNvimSectionTitle"
     }
   ],
   [
@@ -131,12 +131,12 @@
     0,
     {
       "priority": 4096,
-      "end_col": 0,
-      "hl_group": "SidebarNvimNormal",
+      "hl_eol": false,
       "end_row": 9,
-      "end_right_gravity": false,
       "right_gravity": true,
-      "hl_eol": false
+      "end_right_gravity": false,
+      "end_col": 0,
+      "hl_group": "SidebarNvimNormal"
     }
   ],
   [
@@ -145,12 +145,12 @@
     0,
     {
       "priority": 4096,
-      "end_col": 5,
-      "hl_group": "SidebarNvimNormal",
+      "hl_eol": false,
       "end_row": 10,
-      "end_right_gravity": false,
       "right_gravity": true,
-      "hl_eol": false
+      "end_right_gravity": false,
+      "end_col": 5,
+      "hl_group": "SidebarNvimNormal"
     }
   ],
   [
@@ -159,12 +159,12 @@
     0,
     {
       "priority": 4096,
-      "end_col": 0,
-      "hl_group": "SidebarNvimNormal",
+      "hl_eol": false,
       "end_row": 11,
-      "end_right_gravity": false,
       "right_gravity": true,
-      "hl_eol": false
+      "end_right_gravity": false,
+      "end_col": 0,
+      "hl_group": "SidebarNvimNormal"
     }
   ],
   [
@@ -173,12 +173,12 @@
     0,
     {
       "priority": 4096,
-      "end_col": 6,
-      "hl_group": "header_hl",
+      "hl_eol": false,
       "end_row": 12,
-      "end_right_gravity": false,
       "right_gravity": true,
-      "hl_eol": false
+      "end_right_gravity": false,
+      "end_col": 6,
+      "hl_group": "header_hl"
     }
   ],
   [
@@ -187,12 +187,12 @@
     6,
     {
       "priority": 4096,
-      "end_col": 8,
-      "hl_group": "hl22",
+      "hl_eol": false,
       "end_row": 12,
-      "end_right_gravity": false,
       "right_gravity": true,
-      "hl_eol": false
+      "end_right_gravity": false,
+      "end_col": 8,
+      "hl_group": "hl22"
     }
   ],
   [
@@ -201,12 +201,12 @@
     0,
     {
       "priority": 4096,
-      "end_col": 9,
-      "hl_group": "hl1",
+      "hl_eol": false,
       "end_row": 13,
-      "end_right_gravity": false,
       "right_gravity": true,
-      "hl_eol": false
+      "end_right_gravity": false,
+      "end_col": 9,
+      "hl_group": "hl1"
     }
   ],
   [
@@ -215,12 +215,12 @@
     69,
     {
       "priority": 4096,
-      "end_col": 80,
-      "hl_group": "hl2",
+      "hl_eol": false,
       "end_row": 13,
-      "end_right_gravity": false,
       "right_gravity": true,
-      "hl_eol": false
+      "end_right_gravity": false,
+      "end_col": 80,
+      "hl_group": "hl2"
     }
   ],
   [
@@ -229,12 +229,12 @@
     0,
     {
       "priority": 4096,
-      "end_col": 6,
-      "hl_group": "footer_hl",
+      "hl_eol": false,
       "end_row": 14,
-      "end_right_gravity": false,
       "right_gravity": true,
-      "hl_eol": false
+      "end_right_gravity": false,
+      "end_col": 6,
+      "hl_group": "footer_hl"
     }
   ]
 ]

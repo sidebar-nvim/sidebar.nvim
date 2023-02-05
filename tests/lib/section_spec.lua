@@ -17,7 +17,7 @@ describe("Section", function()
 
     it("get header", function()
         local section = Section:new({ title = "test", icon = "#" })
-        eq({ LineBuilder:new():left("# test"), LineBuilder:empty() }, section:draw_header())
+        eq({ LineBuilder:new():left("# test", "SidebarNvimSectionTitle"), LineBuilder:empty() }, section:draw_header())
     end)
 
     it("get footer", function()
@@ -28,8 +28,11 @@ describe("Section", function()
     it("override", function()
         local section1 = Section:new({ title = "test", icon = "#" })
         local section2 = section1:with({ title = "test2" })
-        eq({ LineBuilder:new():left("# test"), LineBuilder:empty() }, section1:draw_header())
-        eq({ LineBuilder:new():left("# test2"), LineBuilder:empty() }, section2:draw_header())
+        eq({ LineBuilder:new():left("# test", "SidebarNvimSectionTitle"), LineBuilder:empty() }, section1:draw_header())
+        eq(
+            { LineBuilder:new():left("# test2", "SidebarNvimSectionTitle"), LineBuilder:empty() },
+            section2:draw_header()
+        )
     end)
 
     it("overrides highlights", function()

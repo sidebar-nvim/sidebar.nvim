@@ -45,8 +45,14 @@ function Section:get_icon()
     return self.icon
 end
 
+function Section:get_title_separator()
+    return { LineBuilder:empty() }
+end
+
 function Section:draw_header(ctx)
-    return { LineBuilder:new():left(self:get_icon() .. " " .. self:get_title()), LineBuilder:empty() }
+    return vim.list_extend({
+        LineBuilder:new():left(self:get_icon() .. " " .. self:get_title(), "SidebarNvimSectionTitle"),
+    }, self:get_title_separator())
 end
 
 function Section:draw_footer(ctx)

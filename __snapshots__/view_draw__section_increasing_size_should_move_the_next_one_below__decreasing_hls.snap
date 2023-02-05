@@ -1,1 +1,170 @@
-[[13,0,0,{"end_row":0,"end_col":4,"right_gravity":true,"end_right_gravity":false,"hl_group":"SidebarNvimNormal","hl_eol":false,"priority":4096}],[14,1,0,{"end_row":1,"end_col":0,"right_gravity":true,"end_right_gravity":false,"hl_group":"SidebarNvimNormal","hl_eol":false,"priority":4096}],[15,2,0,{"end_row":2,"end_col":5,"right_gravity":true,"end_right_gravity":false,"hl_group":"SidebarNvimNormal","hl_eol":false,"priority":4096}],[16,3,0,{"end_row":3,"end_col":0,"right_gravity":true,"end_right_gravity":false,"hl_group":"SidebarNvimNormal","hl_eol":false,"priority":4096}],[33,4,0,{"end_row":4,"end_col":4,"right_gravity":true,"end_right_gravity":false,"hl_group":"SidebarNvimNormal","hl_eol":false,"priority":4096}],[34,5,0,{"end_row":5,"end_col":0,"right_gravity":true,"end_right_gravity":false,"hl_group":"SidebarNvimNormal","hl_eol":false,"priority":4096}],[35,6,0,{"end_row":6,"end_col":1,"right_gravity":true,"end_right_gravity":false,"hl_group":"SidebarNvimNormal","hl_eol":false,"priority":4096}],[36,7,0,{"end_row":7,"end_col":0,"right_gravity":true,"end_right_gravity":false,"hl_group":"SidebarNvimNormal","hl_eol":false,"priority":4096}],[21,8,0,{"end_row":8,"end_col":4,"right_gravity":true,"end_right_gravity":false,"hl_group":"SidebarNvimNormal","hl_eol":false,"priority":4096}],[22,9,0,{"end_row":9,"end_col":0,"right_gravity":true,"end_right_gravity":false,"hl_group":"SidebarNvimNormal","hl_eol":false,"priority":4096}],[23,10,0,{"end_row":10,"end_col":5,"right_gravity":true,"end_right_gravity":false,"hl_group":"SidebarNvimNormal","hl_eol":false,"priority":4096}],[24,11,0,{"end_row":11,"end_col":0,"right_gravity":true,"end_right_gravity":false,"hl_group":"SidebarNvimNormal","hl_eol":false,"priority":4096}]]
+[
+  [
+    13,
+    0,
+    0,
+    {
+      "right_gravity": true,
+      "end_right_gravity": false,
+      "end_row": 0,
+      "hl_eol": false,
+      "priority": 4096,
+      "end_col": 4,
+      "hl_group": "SidebarNvimSectionTitle"
+    }
+  ],
+  [
+    14,
+    1,
+    0,
+    {
+      "right_gravity": true,
+      "end_right_gravity": false,
+      "end_row": 1,
+      "hl_eol": false,
+      "priority": 4096,
+      "end_col": 0,
+      "hl_group": "SidebarNvimNormal"
+    }
+  ],
+  [
+    15,
+    2,
+    0,
+    {
+      "right_gravity": true,
+      "end_right_gravity": false,
+      "end_row": 2,
+      "hl_eol": false,
+      "priority": 4096,
+      "end_col": 5,
+      "hl_group": "SidebarNvimNormal"
+    }
+  ],
+  [
+    16,
+    3,
+    0,
+    {
+      "right_gravity": true,
+      "end_right_gravity": false,
+      "end_row": 3,
+      "hl_eol": false,
+      "priority": 4096,
+      "end_col": 0,
+      "hl_group": "SidebarNvimNormal"
+    }
+  ],
+  [
+    33,
+    4,
+    0,
+    {
+      "right_gravity": true,
+      "end_right_gravity": false,
+      "end_row": 4,
+      "hl_eol": false,
+      "priority": 4096,
+      "end_col": 4,
+      "hl_group": "SidebarNvimSectionTitle"
+    }
+  ],
+  [
+    34,
+    5,
+    0,
+    {
+      "right_gravity": true,
+      "end_right_gravity": false,
+      "end_row": 5,
+      "hl_eol": false,
+      "priority": 4096,
+      "end_col": 0,
+      "hl_group": "SidebarNvimNormal"
+    }
+  ],
+  [
+    35,
+    6,
+    0,
+    {
+      "right_gravity": true,
+      "end_right_gravity": false,
+      "end_row": 6,
+      "hl_eol": false,
+      "priority": 4096,
+      "end_col": 1,
+      "hl_group": "SidebarNvimNormal"
+    }
+  ],
+  [
+    36,
+    7,
+    0,
+    {
+      "right_gravity": true,
+      "end_right_gravity": false,
+      "end_row": 7,
+      "hl_eol": false,
+      "priority": 4096,
+      "end_col": 0,
+      "hl_group": "SidebarNvimNormal"
+    }
+  ],
+  [
+    21,
+    8,
+    0,
+    {
+      "right_gravity": true,
+      "end_right_gravity": false,
+      "end_row": 8,
+      "hl_eol": false,
+      "priority": 4096,
+      "end_col": 4,
+      "hl_group": "SidebarNvimSectionTitle"
+    }
+  ],
+  [
+    22,
+    9,
+    0,
+    {
+      "right_gravity": true,
+      "end_right_gravity": false,
+      "end_row": 9,
+      "hl_eol": false,
+      "priority": 4096,
+      "end_col": 0,
+      "hl_group": "SidebarNvimNormal"
+    }
+  ],
+  [
+    23,
+    10,
+    0,
+    {
+      "right_gravity": true,
+      "end_right_gravity": false,
+      "end_row": 10,
+      "hl_eol": false,
+      "priority": 4096,
+      "end_col": 5,
+      "hl_group": "SidebarNvimNormal"
+    }
+  ],
+  [
+    24,
+    11,
+    0,
+    {
+      "right_gravity": true,
+      "end_right_gravity": false,
+      "end_row": 11,
+      "hl_eol": false,
+      "priority": 4096,
+      "end_col": 0,
+      "hl_group": "SidebarNvimNormal"
+    }
+  ]
+]
