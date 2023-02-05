@@ -4,6 +4,7 @@ local Path = require("plenary.path")
 local Error = require("sidebar-nvim.error")
 
 local async_vim_notify = vim.schedule_wrap(vim.notify)
+local async_vim_notify_once = vim.schedule_wrap(vim.notify_once)
 
 local default_notify_opts = {
     title = "sidebar-nvim",
@@ -119,17 +120,27 @@ end
 ---Add a log entry at WARN level
 ---@param msg any
 ---@param props table key-value props to attach to the message
-function log:warn(msg, props)
+---@param once boolean|nil if vim.notify_once should be used instead of vim.notify
+function log:warn(msg, props, once)
     self:add_entry(msg, props, "warn")
-    async_vim_notify(self.__notify_fmt(msg, props), vim.log.levels.WARN, default_notify_opts)
+    if once then
+        async_vim_notify_once(self.__notify_fmt(msg, props), vim.log.levels.WARN, default_notify_opts)
+    else
+        async_vim_notify(self.__notify_fmt(msg, props), vim.log.levels.WARN, default_notify_opts)
+    end
 end
 
 ---Add a log entry at ERROR level
 ---@param msg any
 ---@param props table key-value props to attach to the message
-function log:error(msg, props)
+---@param once boolean|nil if vim.notify_once should be used instead of vim.notify
+function log:error(msg, props, once)
     self:add_entry(msg, props, "error")
-    async_vim_notify(self.__notify_fmt(msg, props), vim.log.levels.ERROR, default_notify_opts)
+    if once then
+        async_vim_notify_once(self.__notify_fmt(msg, props), vim.log.levels.ERROR, default_notify_opts)
+    else
+        async_vim_notify(self.__notify_fmt(msg, props), vim.log.levels.ERROR, default_notify_opts)
+    end
 end
 
 setmetatable({}, log)

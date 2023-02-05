@@ -77,12 +77,12 @@ end
 function Symbols:file_edit(filepath, symbol)
     vim.cmd("wincmd p")
     vim.cmd("e " .. filepath)
-    vim.api.nvim_win_set_cursor(0, { symbol.range.start.line, symbol.range.start.character })
+    vim.api.nvim_win_set_cursor(0, { symbol.range.start.line + 1, symbol.range.start.character })
 end
 
 function Symbols:build_loclist(filepath, loclist_items, symbols, level)
-    table.sort(symbols, function(a, _)
-        return get_range(a).start.line < get_range(a).start.line
+    table.sort(symbols, function(a, b)
+        return get_range(a).start.line < get_range(b).start.line
     end)
 
     for _, symbol in ipairs(symbols) do
@@ -140,17 +140,20 @@ function Symbols:draw_content(ctx)
         return no_symbols_view
     end
 
-    local err, method, symbols = async.lsp.buf_request_all(current_buf, "textDocument/documentSymbol", current_pos)
+    local symbols_per_client = async.lsp.buf_request_all(current_buf, "textDocument/documentSymbol", current_pos)
 
-    if vim.fn.has("nvim-0.5.1") == 1 or vim.fn.has("nvim-0.8") == 1 then
-        symbols = method
+    local symbols = {}
+
+    -- buf_request_all returns a map of client_id:client_result we need to concatenate the symbols from all clients
+    for _, client_result in pairs(symbols_per_client) do
+        vim.list_extend(symbols, client_result.result or {})
     end
 
     local filepath = vim.api.nvim_buf_get_name(current_buf)
-    if err ~= nil then
-        logger:error("error trying to get symbols: " .. tostring(err), { err = err })
-        return no_symbols_view
-    end
+    -- if err ~= nil then
+    --     logger:error("error trying to get symbols: " .. tostring(err), { err = err })
+    --     return no_symbols_view
+    -- end
 
     if symbols == nil then
         return no_symbols_view

@@ -1,17 +1,70 @@
-local utils = require("sidebar-nvim.utils")
-local docker_utils = require("sidebar-nvim.docker_utils")
-local Loclist = require("sidebar-nvim.components.loclist")
-local Debouncer = require("sidebar-nvim.debouncer")
-local config = require("sidebar-nvim.config")
-local luv = vim.loop
+local async = require("sidebar-nvim.lib.async")
+local Section = require("sidebar-nvim.lib.section")
+local LineBuilder = require("sidebar-nvim.lib.line_builder")
+local reloaders = require("sidebar-nvim.lib.reloaders")
+local Job = require("plenary.job")
+local Loclist = require("sidebar-nvim.lib.loclist")
+local logger = require("sidebar-nvim.logger")
 
-local loclist = Loclist:new({
-    omit_single_group = true,
+local Containers = Section:new({
+    title = "Containers",
+
+    icon = "",
+    use_podman = false,
+    attach_shell = "/bin/sh",
+    show_all = true,
+
+    reloaders = { reloaders.interval(5000) },
+
+    keymaps = {
+        container_attach = "e",
+    },
+
+    highlights = {
+        groups = {},
+        links = {
+            SidebarNvimDockerContainerStatusRunning = "LspDiagnosticsDefaultInformation",
+            SidebarNvimDockerContainerStatusExited = "LspDiagnosticsDefaultError",
+            SidebarNvimDockerContainerName = "Normal",
+        },
+    },
 })
 
-local output_tmp = ""
+function Containers:get_docker_bin()
+    local bin = "docker"
 
-local function get_container_icon(container)
+    if self.use_podman then
+        bin = "podman"
+    end
+
+    return bin
+end
+
+function Containers:build_docker_command(args)
+    local cmd = self:get_docker_bin()
+
+    args = args or {}
+    -- make sure the command only fetches the bare minimum fields to work
+    -- otherwise docker goes crazy with high load. See https://github.com/sidebar-nvim/sidebar.nvim/issues/3
+    -- we also need to make sure that each line has valid json syntax so the parser can understand
+    -- the formatting string below is to make sure we reconstruct the json object with only the fields we want
+    table.insert(args, '--format=\'{"Names": {{json .Names}}, "State": {{json .State}}, "ID": {{json .ID}} }\'')
+
+    return { cmd = cmd, args = args }
+end
+
+function Containers:build_docker_attach_command(container_id)
+    local bin = Containers:get_docker_bin()
+
+    return bin .. " exec -it " .. container_id .. " " .. self.attach_shell
+end
+
+function Containers:container_attach(container_id)
+    vim.cmd("wincmd p")
+    vim.cmd("terminal " .. self:build_docker_attach_command(container_id))
+end
+
+function Containers:get_container_icon(container)
     local default = { hl = "SidebarNvimDockerContainerStatusRunning", text = "✓" }
 
     local mapping = { running = default, exited = { hl = "SidebarNvimDockerContainerStatusExited", text = "☒" } }
@@ -21,129 +74,87 @@ local function get_container_icon(container)
     return icon
 end
 
-local state_order_mapping = { running = 0, exited = 1 }
-
-local function async_update(_)
-    local stdout = luv.new_pipe(false)
-    local stderr = luv.new_pipe(false)
-
-    local handle
-
+function Containers:get_containers()
     local args = { "ps" }
-    if config.containers.show_all then
+    if self.show_all then
         args = { "ps", "-a" }
     end
 
-    local cmd = docker_utils.build_docker_command(args, stdout, stderr)
-    handle = luv.spawn(cmd.bin, cmd.opts, function()
-        vim.schedule(function()
-            local loclist_items = {}
-            if output_tmp ~= "" then
-                for _, line in ipairs(vim.split(output_tmp, "\n")) do
-                    line = string.sub(line, 2, #line - 1)
-                    if line ~= "" then
-                        -- TODO: on nightly change `vim.fn.json_*` to `vim.json_decode`, which is way faster and no need for schedule wrap
-                        local ret, container = pcall(vim.fn.json_decode, line)
-                        if ret then
-                            local icon = get_container_icon(container)
-                            table.insert(loclist_items, {
-                                group = "containers",
-                                left = {
-                                    { text = icon.text .. " ", hl = icon.hl },
-                                    { text = container.Names },
-                                },
-                                order = state_order_mapping[container.State] or 999,
-                                id = container.ID,
-                            })
-                        else
-                            vim.schedule(function()
-                                utils.echo_warning("invalid container output: " .. container)
-                            end)
-                        end
-                    end
-                end
+    local cmd = self:build_docker_command(args)
+
+    if async.fn.executable(cmd.cmd) ~= 1 then
+        logger:warn("docker executable not found: " .. cmd.cmd, { cmd = cmd }, true)
+        return {}
+    end
+
+    local output, code = Job:new({
+        command = cmd.cmd,
+        args = cmd.args,
+        cwd = vim.loop.cwd(),
+        -- interactive = false,
+    }):sync()
+
+    if code ~= 0 then
+        logger:error(
+            string.format("error trying to run '%s'", cmd),
+            { command = cmd, args = args, code = code, output = output },
+            true
+        )
+        return {}
+    end
+
+    output = output or {}
+
+    local containers = {}
+
+    for _, line in ipairs(output) do
+        line = vim.trim(line)
+        if line ~= "" then
+            line = string.sub(line, 2, #line - 1)
+            local ret, container = pcall(vim.json.decode, line)
+            if ret then
+                table.insert(containers, container)
+            else
+                logger:warn("error trying to parse container json line", { line = line, err = container })
             end
-            loclist:set_items(loclist_items, { remove_groups = false })
-        end)
+        end
+    end
 
-        luv.read_stop(stdout)
-        luv.read_stop(stderr)
-        stdout:close()
-        stderr:close()
-        handle:close()
+    local state_order_mapping = { running = 1, exited = 2 }
+
+    table.sort(containers, function(a, b)
+        return (state_order_mapping[a.State] or 0) < (state_order_mapping[b.State] or 0)
     end)
 
-    output_tmp = ""
+    local loclist_items = {}
 
-    luv.read_start(stdout, function(err, data)
-        if data == nil then
-            return
-        end
+    for _, container in ipairs(containers) do
+        local icon = self:get_container_icon(container)
+        table.insert(
+            loclist_items,
+            LineBuilder:new({ keymaps = self:bind_keymaps({ container.ID }) })
+                :left(icon.text .. " ", icon.hl)
+                :left(container.Names, "SidebarNvimDockerContainerName")
+        )
+    end
 
-        output_tmp = output_tmp .. data
-
-        if err ~= nil then
-            vim.schedule(function()
-                utils.echo_warning(err)
-            end)
-        end
-    end)
-
-    luv.read_start(stderr, function(err, data)
-        if data == nil then
-            return
-        end
-
-        if err ~= nil then
-            vim.schedule(function()
-                utils.echo_warning(err)
-            end)
-        end
-    end)
+    return loclist_items
 end
 
-local async_update_debounced
+function Containers:draw_content(ctx)
+    local container_items = self:get_containers()
 
-return {
-    title = "Containers",
-    icon = config.containers.icon,
-    setup = function()
-        local interval = config.containers.interval or 2000
-        async_update_debounced = Debouncer:new(async_update, interval)
-        async_update_debounced:call()
-    end,
-    update = function(ctx)
-        async_update_debounced:call(ctx)
-    end,
-    draw = function(ctx)
-        async_update_debounced:call(ctx)
+    if #container_items == 0 then
+        return { LineBuilder:new():left("<no containers>") }
+    end
 
-        local lines = {}
-        local hl = {}
+    local loclist = Loclist:new({
+        containers = { items = container_items },
+    }, {
+        omit_single_group = true,
+    })
 
-        loclist:draw(ctx, lines, hl)
+    return loclist:draw()
+end
 
-        if #lines == 0 then
-            lines = { "<no containers>" }
-        end
-
-        return { lines = lines, hl = hl }
-    end,
-    highlights = {
-        groups = {},
-        links = {
-            SidebarNvimDockerContainerStatusRunning = "LspDiagnosticsDefaultInformation",
-            SidebarNvimDockerContainerStatusExited = "LspDiagnosticsDefaultError",
-        },
-    },
-    bindings = {
-        ["e"] = function(line)
-            local location = loclist:get_location_at(line)
-            if location == nil then
-                return
-            end
-            vim.cmd("wincmd p")
-            vim.cmd("terminal " .. docker_utils.build_docker_attach_command(location.id))
-        end,
-    },
-}
+return Containers

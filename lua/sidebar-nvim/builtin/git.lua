@@ -40,7 +40,6 @@ function git:run(args)
         command = "git",
         args = args,
         cwd = vim.loop.cwd(),
-        env = vim.env,
     }):sync()
 end
 

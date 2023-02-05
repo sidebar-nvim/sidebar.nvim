@@ -6,7 +6,7 @@ local Job = require("plenary.job")
 local Loclist = require("sidebar-nvim.lib.loclist")
 local logger = require("sidebar-nvim.logger")
 
-local todos = Section:new({
+local Todos = Section:new({
     title = "TODOs",
     icon = "",
     ignored_paths = { "~" },
@@ -50,7 +50,7 @@ local todos = Section:new({
     },
 })
 
-function todos:group_toggle(group_name)
+function Todos:group_toggle(group_name)
     if self.closed_groups[group_name] then
         self.closed_groups[group_name] = false
     else
@@ -58,13 +58,13 @@ function todos:group_toggle(group_name)
     end
 end
 
-function todos:file_edit(item)
+function Todos:file_edit(item)
     vim.cmd("wincmd p")
     vim.cmd("e " .. item.filepath)
     vim.api.nvim_win_set_cursor(0, { item.lnum, item.col })
 end
 
-function todos:is_current_path_ignored()
+function Todos:is_current_path_ignored()
     local cwd = vim.loop.cwd()
     for _, path in pairs(self.ignored_paths or {}) do
         if vim.fn.expand(path) == cwd then
@@ -75,7 +75,7 @@ function todos:is_current_path_ignored()
     return false
 end
 
-function todos:run_search()
+function Todos:run_search()
     local keywords_regex = [[(TODO|NOTE|FIX|PERF|HACK|WARN)]]
     local regex_end = [[\s*(\(.*\))?:.*]]
     local cmd
@@ -98,7 +98,6 @@ function todos:run_search()
     local output, code = Job:new({
         command = cmd,
         args = args,
-        env = vim.env,
         cwd = vim.loop.cwd(),
         interactive = false,
     }):sync()
@@ -144,7 +143,7 @@ function todos:run_search()
     return current_todos
 end
 
-function todos:draw_content()
+function Todos:draw_content()
     if self:is_current_path_ignored() then
         return { LineBuilder:new():left("<path ignored>") }
     end
@@ -180,4 +179,4 @@ function todos:draw_content()
     return loclist:draw()
 end
 
-return todos
+return Todos
