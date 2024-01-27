@@ -60,6 +60,10 @@ local function get_buffers(ctx)
                 ignored = true
             end
 
+            if vim.bo[buffer].buflisted ~= true then
+                ignored = true
+            end
+
             -- always ignore terminals
             if config.buffers.ignore_terminal and string.match(bufname, "term://.*") then
                 ignored = true
