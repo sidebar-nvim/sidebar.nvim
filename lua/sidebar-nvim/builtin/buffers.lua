@@ -60,7 +60,7 @@ local function get_buffers(ctx)
                 ignored = true
             end
 
-            if vim.bo[buffer].buflisted ~= true then
+            if vim.fn.buflisted(buffer) ~= 1 then
                 ignored = true
             end
 
