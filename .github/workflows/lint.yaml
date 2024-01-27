@@ -13,7 +13,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - uses: leafo/gh-actions-lua@master
         with:
@@ -27,8 +27,9 @@ jobs:
       - name: Lint
         run: luacheck lua
 
-      - uses: JohnnyMorganz/stylua-action@1.0.0
+      - uses: JohnnyMorganz/stylua-action@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          # CLI arguments
-          args: --check lua
+         token: ${{ secrets.GITHUB_TOKEN }}
+         version: v0.20.0 # NOTE: we recommend pinning to a specific version in case of formatting changes
+         # CLI arguments
+         args: --check lua
