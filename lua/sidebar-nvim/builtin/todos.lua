@@ -193,20 +193,15 @@ return {
         },
     },
     bindings = {
-        ["t"] = function(line)
-            loclist:toggle_group_at(line)
+        ["<CR>"] = function(line)
             local location = loclist:get_location_at(line)
-            print(location.node.type)
-        end,
-        ["e"] = function(line)
-            local location = loclist:get_location_at(line)
-            if not location then
+            if location == nil then
+                loclist:toggle_group_at(line)
                 return
             end
             vim.cmd("wincmd p")
             vim.cmd("e " .. location.filepath)
             vim.fn.cursor(location.lnum, location.col)
-            print(location.node.type)
         end,
     },
     setup = function(ctx)
