@@ -19,7 +19,7 @@ local cut_files = {}
 local open_directories = {}
 
 local history = { position = 0, groups = {} }
-local trash_dir = luv.os_homedir() .. "/.local/share/Trash/files/"
+local trash_dir = luv.os_homedir() .. "/.Trash/"
 
 local function get_fileicon(filename)
     if has_devicons and devicons.has_loaded() then
