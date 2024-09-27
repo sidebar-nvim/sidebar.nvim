@@ -200,9 +200,16 @@ local function copy_file(src, dest, confirm_overwrite)
 
     print(dest)
     local last_backslash_index = string.find(dest, "/[^/]*$")
+
+    if last_backslash_index == nil then
+      last_backslash_index = 0
+    end
+
     print(last_backslash_index)
     local parent_directory = string.sub(dest, 0, last_backslash_index)
+    local file_name = string.sub(dest, last_backslash_index)
     print(parent_directory)
+    print(file_name)
 
 
     luv.fs_copyfile(src, dest, function(err, _)
