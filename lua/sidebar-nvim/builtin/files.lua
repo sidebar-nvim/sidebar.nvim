@@ -188,8 +188,7 @@ local function undo(group)
 end
 
 local function copy_file(src, dest, confirm_overwrite)
-    print(dest)
-    print(type(dest))
+    --[[
     if confirm_overwrite and luv.fs_access(dest, "r") ~= false then
         local overwrite = vim.fn.input('file "' .. dest .. '" already exists. Overwrite? y/n: ')
 
@@ -197,6 +196,14 @@ local function copy_file(src, dest, confirm_overwrite)
             return
         end
     end
+    --]]
+
+    print(dest)
+    local last_backslash_index = string.find(dest, "/[^/]*$")
+    print(last_backslash_index)
+    local parent_directory = string.sub(dest, 0, last_backslash_index)
+    print(parent_directory)
+
 
     luv.fs_copyfile(src, dest, function(err, _)
         if err ~= nil then
