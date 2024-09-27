@@ -189,6 +189,7 @@ end
 
 local function copy_file(src, dest, confirm_overwrite)
     print(dest)
+    print(type(dest))
     if confirm_overwrite and luv.fs_access(dest, "r") ~= false then
         local overwrite = vim.fn.input('file "' .. dest .. '" already exists. Overwrite? y/n: ')
 
