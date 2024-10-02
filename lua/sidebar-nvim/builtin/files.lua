@@ -198,14 +198,12 @@ local function copy_file(src, dest, confirm_overwrite)
     end
     --]]
 
-    print(dest)
     local last_backslash_index = string.find(dest, "/[^/]*$")
 
     if last_backslash_index == nil then
       last_backslash_index = 0
     end
 
-    print(last_backslash_index)
     local parent_directory = string.sub(dest, 0, last_backslash_index)
     local entire_file_name = string.sub(dest, last_backslash_index + 1)
     local first_period = string.find(entire_file_name, "[.]")
@@ -221,9 +219,9 @@ local function copy_file(src, dest, confirm_overwrite)
       new_file_name = file_name .. " copy" .. file_extension
     end
 
+    print(luv.fs_access(dest, "r"))
     dest = parent_directory .. new_file_name
-    print("dest: " .. parent_directory)
-    print("new file name: " .. new_file_name)
+    print(luv.fs_access(dest, "r"))
 
 
     luv.fs_copyfile(src, dest, function(err, _)
