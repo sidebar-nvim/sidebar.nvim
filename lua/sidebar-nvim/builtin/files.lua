@@ -496,6 +496,10 @@ return {
 
             exec(group)
         end,
+        -- create folder
+        ["f"] = function(line)
+          print('hello, world!')
+        end,
         -- open current file
         ["e"] = function(line)
             local location = loclist:get_location_at(line)
