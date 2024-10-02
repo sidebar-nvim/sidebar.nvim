@@ -288,6 +288,14 @@ local function delete_file(src, trash, confirm_deletion)
     end)
 end
 
+local function create_directory(dest)
+  print("creating directory")
+end
+
+local function delete_directory(src, trash, confirm_deletion)
+  print("deleting directory")
+end
+
 local function move_file(src, dest, confirm_overwrite)
     if confirm_overwrite and luv.fs_access(dest, "r") ~= false then
         local overwrite = vim.fn.input('file "' .. dest .. '" already exists. Overwrite? y/n: ')
@@ -498,7 +506,48 @@ return {
         end,
         -- create folder
         ["f"] = function(line)
-          print('hello, world!')
+            local location = loclist:get_location_at(line)
+            if location == nil then
+                return
+            end
+
+            local parent
+
+            if location.type == "directory" then
+                parent = location.path
+            else
+                parent = location.parent
+            end
+
+            open_directories[parent] = true
+
+            local name = vim.fn.input("directory name: ")
+
+            if string.len(vim.trim(name)) == 0 then
+                return
+            end
+
+            local operation
+
+            operation = {
+                success = true,
+                exec = function()
+                    create_directory(operation.dest)
+                end,
+                undo = function()
+                    delete_directory(operation.dest, trash_dir .. name, true)
+                end,
+                src = nil,
+                dest = parent .. "/" .. name,
+            }
+
+            local group = { executed = false, operations = { operation } }
+
+            history.position = history.position + 1
+            history.groups = vim.list_slice(history.groups, 1, history.position)
+            history.groups[history.position] = group
+
+            exec(group)
         end,
         -- open current file
         ["e"] = function(line)
