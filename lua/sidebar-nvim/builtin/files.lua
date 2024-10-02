@@ -188,6 +188,7 @@ local function undo(group)
 end
 
 local function copy_file(src, dest, confirm_overwrite)
+    --[[
     if confirm_overwrite and luv.fs_access(dest, "r") ~= false then
         local overwrite = vim.fn.input('file "' .. dest .. '" already exists. Overwrite? y/n: ')
 
@@ -195,6 +196,39 @@ local function copy_file(src, dest, confirm_overwrite)
             return
         end
     end
+    --]]
+
+    local last_backslash_index = string.find(dest, "/[^/]*$")
+
+    if last_backslash_index == nil then
+      last_backslash_index = 0
+    end
+
+    local parent_directory = string.sub(dest, 0, last_backslash_index)
+    local entire_file_name = string.sub(dest, last_backslash_index + 1)
+    local first_period = string.find(entire_file_name, "[.]")
+    local new_file_name = nil
+
+    if first_period == nil or first_period == 1 then
+      -- There is no period or a period is the first character (.gitignore)
+      new_file_name = entire_file_name .. " copy"
+    else
+      -- Average file name (has file extension)
+      local file_name = string.sub(entire_file_name, 0, first_period - 1)
+      local file_extension = string.sub(entire_file_name, first_period)
+      new_file_name = file_name .. " copy" .. file_extension
+    end
+
+    dest = parent_directory .. new_file_name
+
+    if luv.fs_access(dest, "r") ~= false then
+      -- If I wanted this could be removed in the future. Turn the logic
+      -- above into a function that keeps adding "copy" to the filename.
+      -- Continue this in a while loop until a unique filename has been
+      -- generated.
+      print('file "' .. dest .. '" already exists')
+    end
+
 
     luv.fs_copyfile(src, dest, function(err, _)
         if err ~= nil then
