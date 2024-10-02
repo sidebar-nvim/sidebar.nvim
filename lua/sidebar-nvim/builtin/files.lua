@@ -219,9 +219,15 @@ local function copy_file(src, dest, confirm_overwrite)
       new_file_name = file_name .. " copy" .. file_extension
     end
 
-    print(luv.fs_access(dest, "r"))
     dest = parent_directory .. new_file_name
-    print(luv.fs_access(dest, "r"))
+
+    if luv.fs_access(dest, "r") ~= false then
+      -- If I wanted this could be removed in the future. Turn the logic
+      -- above into a function that keeps adding "copy" to the filename.
+      -- Continue this in a while loop until a unique filename has been
+      -- generated.
+      print('file "' .. dest .. '" already exists')
+    end
 
 
     luv.fs_copyfile(src, dest, function(err, _)
