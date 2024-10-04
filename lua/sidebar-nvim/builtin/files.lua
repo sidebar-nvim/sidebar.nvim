@@ -292,7 +292,7 @@ end
 local function create_directory(dest)
   print("creating directory")
   print("1" .. dest)
-  print("2" .. luv.fs_access(dest), "r")
+  print("2" .. luv.fs_access(dest, "r"))
   local is_file = not dest:match("/$")
   local parent_folders = vim.fn.fnamemodify(dest, ":h")
   print("3" .. is_file)
