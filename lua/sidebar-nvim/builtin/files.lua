@@ -1,3 +1,4 @@
+local sidebar = require("sidebar-nvim")
 local utils = require("sidebar-nvim.utils")
 local Loclist = require("sidebar-nvim.components.loclist")
 local config = require("sidebar-nvim.config")
@@ -381,6 +382,7 @@ return {
             history.groups[history.position] = group
 
             exec(group)
+            sidebar.update()
         end,
         -- yank
         ["y"] = function(line)
@@ -391,6 +393,7 @@ return {
 
             yanked_files[location.node.path] = true
             cut_files = {}
+            sidebar.update()
         end,
         -- cut
         ["x"] = function(line)
@@ -401,6 +404,7 @@ return {
 
             cut_files[location.node.path] = true
             yanked_files = {}
+            sidebar.update()
         end,
         -- paste
         ["p"] = function(line)
@@ -458,6 +462,7 @@ return {
             cut_files = {}
 
             exec(group)
+            sidebar.update()
         end,
         -- create
         ["c"] = function(line)
@@ -503,6 +508,7 @@ return {
             history.groups[history.position] = group
 
             exec(group)
+            sidebar.update()
         end,
         -- create folder
         ["f"] = function(line)
@@ -596,6 +602,7 @@ return {
             history.groups[history.position] = group
 
             exec(group)
+            sidebar.update()
         end,
         -- undo
         ["u"] = function(_)
@@ -603,6 +610,7 @@ return {
                 undo(history.groups[history.position])
                 history.position = history.position - 1
             end
+            sidebar.update()
         end,
         -- redo
         ["<C-r>"] = function(_)
@@ -610,6 +618,7 @@ return {
                 history.position = history.position + 1
                 exec(history.groups[history.position])
             end
+            sidebar.update()
         end,
         ["<CR>"] = function(line)
             local location = loclist:get_location_at(line)
