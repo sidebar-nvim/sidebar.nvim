@@ -298,6 +298,8 @@ local function create_directory(dest)
   print("3" .. tostring(is_file))
   print("4" .. parent_folders)
   print("5" .. tostring(utils.file_exist(parent_folders)))
+
+  os.execute(string.format("mkdir %s", dest))
 end
 
 local function delete_directory(src, trash, confirm_deletion)
