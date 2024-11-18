@@ -280,15 +280,6 @@ local function delete_file(src, trash, confirm_deletion)
         end
     end
 
-    --[[
-    luv.fs_rename(src, trash, function(err, _)
-        if err ~= nil then
-            vim.schedule(function()
-                utils.echo_warning(err)
-            end)
-        end
-    end)
-    ]]--
     os.execute(string.format("mv %s %s", src, trash))
 end
 
