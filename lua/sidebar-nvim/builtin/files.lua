@@ -290,20 +290,14 @@ local function delete_file(src, trash, confirm_deletion)
 end
 
 local function create_directory(dest)
-  print("creating directory")
-  print("1" .. dest)
-  print("2" .. tostring(luv.fs_access(dest, "r")))
-  local is_file = not dest:match("/$")
-  local parent_folders = vim.fn.fnamemodify(dest, ":h")
-  print("3" .. tostring(is_file))
-  print("4" .. parent_folders)
-  print("5" .. tostring(utils.file_exist(parent_folders)))
-
-  os.execute(string.format("mkdir %s", dest))
+    os.execute(string.format("mkdir %s", dest))
+    sidebar.update()
 end
 
 local function delete_directory(src, trash, confirm_deletion)
-  print("deleting directory")
+    print("1" .. src)
+    print("2" .. trash)
+    print("3" .. confirm_deletion)
 end
 
 local function move_file(src, dest, confirm_overwrite)
