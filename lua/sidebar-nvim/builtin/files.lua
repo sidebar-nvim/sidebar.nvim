@@ -295,9 +295,7 @@ local function create_directory(dest)
 end
 
 local function delete_directory(src, trash, confirm_deletion)
-    print("1" .. src)
-    print("2" .. trash)
-    print("3" .. confirm_deletion)
+    os.execute(string.format("mv %s %s", src, trash))
 end
 
 local function move_file(src, dest, confirm_overwrite)
