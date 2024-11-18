@@ -280,6 +280,7 @@ local function delete_file(src, trash, confirm_deletion)
         end
     end
 
+    --[[
     luv.fs_rename(src, trash, function(err, _)
         if err ~= nil then
             vim.schedule(function()
@@ -287,15 +288,13 @@ local function delete_file(src, trash, confirm_deletion)
             end)
         end
     end)
+    ]]--
+    os.execute(string.format("mv %s %s", src, trash))
 end
 
 local function create_directory(dest)
     os.execute(string.format("mkdir %s", dest))
     sidebar.update()
-end
-
-local function delete_directory(src, trash, confirm_deletion)
-    os.execute(string.format("mv %s %s", src, trash))
 end
 
 local function move_file(src, dest, confirm_overwrite)
@@ -542,7 +541,7 @@ return {
                     create_directory(operation.dest)
                 end,
                 undo = function()
-                    delete_directory(operation.dest, trash_dir .. name, true)
+                    delete_file(operation.dest, trash_dir .. name, true)
                 end,
                 src = nil,
                 dest = parent .. "/" .. name,
