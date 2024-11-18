@@ -280,13 +280,12 @@ local function delete_file(src, trash, confirm_deletion)
         end
     end
 
-    luv.fs_rename(src, trash, function(err, _)
-        if err ~= nil then
-            vim.schedule(function()
-                utils.echo_warning(err)
-            end)
-        end
-    end)
+    os.execute(string.format("mv %s %s", src, trash))
+end
+
+local function create_directory(dest)
+    os.execute(string.format("mkdir %s", dest))
+    sidebar.update()
 end
 
 local function move_file(src, dest, confirm_overwrite)
@@ -501,6 +500,51 @@ return {
 
             exec(group)
             sidebar.update()
+        end,
+        -- create folder
+        ["f"] = function(line)
+            local location = loclist:get_location_at(line)
+            if location == nil then
+                return
+            end
+
+            local parent
+
+            if location.type == "directory" then
+                parent = location.path
+            else
+                parent = location.parent
+            end
+
+            open_directories[parent] = true
+
+            local name = vim.fn.input("directory name: ")
+
+            if string.len(vim.trim(name)) == 0 then
+                return
+            end
+
+            local operation
+
+            operation = {
+                success = true,
+                exec = function()
+                    create_directory(operation.dest)
+                end,
+                undo = function()
+                    delete_file(operation.dest, trash_dir .. name, true)
+                end,
+                src = nil,
+                dest = parent .. "/" .. name,
+            }
+
+            local group = { executed = false, operations = { operation } }
+
+            history.position = history.position + 1
+            history.groups = vim.list_slice(history.groups, 1, history.position)
+            history.groups[history.position] = group
+
+            exec(group)
         end,
         -- open current file
         ["e"] = function(line)
