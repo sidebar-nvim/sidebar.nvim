@@ -1,5 +1,13 @@
 # sidebar.nvim
 
+My fork of sidebar.nvim. sidebar.nvim is pretty inactive and has some bugs and missing features. I created
+this fork to fix this myself. 
+
+## Changes:
+- Added directory creation
+- Fixed deleting on MacOS
+- Fix missing re-renders
+
 A generic and modular lua sidebar inspired by [lualine](https://github.com/hoob3rt/lualine.nvim)
 
 Development status: Alpha - bugs are expected
