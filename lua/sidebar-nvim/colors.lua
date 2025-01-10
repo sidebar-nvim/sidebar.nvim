@@ -12,7 +12,7 @@ local function get_links()
         SidebarNvimSectionSeperator = "Comment",
         SidebarNvimSectionTitleSeperator = "Comment",
         SidebarNvimNormal = "Normal",
-        SidebarNvimLabel = "Label",
+        SidebarNvimLabel = "Error",
         SidebarNvimComment = "Comment",
         SidebarNvimLineNr = "LineNr",
         SidebarNvimKeyword = "Keyword",
