@@ -208,16 +208,19 @@ local function copy_file(src, dest, confirm_overwrite)
     local parent_directory = string.sub(dest, 0, last_backslash_index)
     local entire_file_name = string.sub(dest, last_backslash_index + 1)
     local first_period = string.find(entire_file_name, "[.]")
-    local new_file_name = nil
+    local new_file_name = entire_file_name
+    local duplicate = luv.fs_access(dest, "r") ~= false
 
-    if first_period == nil or first_period == 1 then
-      -- There is no period or a period is the first character (.gitignore)
-      new_file_name = entire_file_name .. " copy"
-    else
-      -- Average file name (has file extension)
-      local file_name = string.sub(entire_file_name, 0, first_period - 1)
-      local file_extension = string.sub(entire_file_name, first_period)
-      new_file_name = file_name .. " copy" .. file_extension
+    if duplicate then
+      if first_period == nil or first_period == 1 then
+        -- There is no period or a period is the first character (.gitignore)
+        new_file_name = entire_file_name .. " copy"
+      else
+        -- Average file name (has file extension)
+        local file_name = string.sub(entire_file_name, 0, first_period - 1)
+        local file_extension = string.sub(entire_file_name, first_period)
+        new_file_name = file_name .. " copy" .. file_extension
+      end
     end
 
     dest = parent_directory .. new_file_name
