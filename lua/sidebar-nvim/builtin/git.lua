@@ -77,7 +77,9 @@ local function parse_git_status(group, line)
         local fileicon = ""
 
         if has_devicons and devicons.has_loaded() then
-            local icon = devicons.get_icon_color(filepath, extension)
+            local icon = vim.schedule_wrap(function()
+                return devicons.get_icon_color(filepath, extension)
+            end)()
             if icon then
                 fileicon = icon
             end
